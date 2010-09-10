@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!--
+Copyright 2010 PRODYNA AG
+
+Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.opensource.org/licenses/eclipse-1.0.php or
+http://www.nabucco-source.org/nabucco-license.html
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<entity-mappings>
+
+	<entity class="DatatypeTemplate">
+		<table name="DatatypeTemplate" />
+		<inheritance strategy="JOINED" />
+		<attributes>
+			<transient name="constraints" />
+			<transient name="properties" />
+			<transient name="propertyNames" />
+		</attributes>
+	</entity>
+
+	<id name="id">
+		<column name="id" nullable="false" length="30" />
+		<generated-value />
+	</id>
+
+	<version name="version" />
+	
+	<lob/>
+
+	<basic name="attributeTemplate">
+		<column nullable="false" />
+	</basic>
+
+	<enumerated>STRING</enumerated>
+
+	<embedded name="name">
+		<attribute-override name="value">
+			<column name="name" length="255" />
+		</attribute-override>
+	</embedded>
+
+	<embedded-id name="idTemplate">
+		<attribute-override name="value">
+			<column nullable="false" length="30" />
+		</attribute-override>
+	</embedded-id>
+
+	<one-to-one name="datatypeTemplate" target-entity="DatatypeTemplate"
+		fetch="LAZY">
+		<join-column name="foreign_key_id" unique="true" />
+	</one-to-one>
+
+	<one-to-many name="datatypeTemplate" target-entity="DatatypeTemplate"
+		fetch="LAZY">
+		<join-column name="foreign_key_id" nullable="true" />
+	</one-to-many>
+
+	<many-to-one name="datatypeTemplate" target-entity="DatatypeTemplate"
+		fetch="LAZY">
+		<join-column name="foreign_key_id" nullable="true" />
+	</many-to-one>
+	
+	<transient name="name" />
+
+	<many-to-many name="datatypeTemplate" target-entity="DatatypeTemplate"
+		fetch="LAZY">
+		<join-table>
+			<join-column name="foreign_key_id" nullable="true" />
+			<inverse-join-column name="foreign_key_id"
+				nullable="true" />
+		</join-table>
+	</many-to-many>
+
+	<mapped-superclass class="DatatypeTemplate">
+		<attributes>
+			<transient name="constraints" />
+			<transient name="properties" />
+			<transient name="propertyNames" />
+		</attributes>
+	</mapped-superclass>
+	
+	<embeddable class="BasetypeTemplate">
+		<attributes>
+			<transient name="constraints" />
+		</attributes>
+	</embeddable>
+	
+</entity-mappings>

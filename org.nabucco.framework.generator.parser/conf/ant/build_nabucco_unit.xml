@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+Copyright 2010 PRODYNA AG
+
+Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.opensource.org/licenses/eclipse-1.0.php or
+http://www.nabucco-source.org/nabucco-license.html
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<!--
+ ############################################################################
+ ##
+ ## Project:	    NABUCCO Framework
+ ## Part:		    org.nabucco.framework.generator.parser Nabucco Unit Build
+ ## Author:		    Frank Ratschinski, Nicolas Moser
+ ## 
+ ## Version:  		1
+ ## 
+ ## Build file for project org.nabucco.framework.generator.parser
+ ##
+ ############################################################################
+ -->
+<project basedir="." default="javacc" name="org.nabucco.framework.generator.parser Nabucco Unit Build">
+
+	<property name="gen.parser.path" value="${compile.src.path}/gen/org/nabucco/framework/generator/parser"/>
+	<property name="gen.parser.package" value="org.nabucco.framework.generator.parser"/>
+	<property name="gen.grammar.file.jj.name" value="nabucco.jj"/>
+	<property name="gen.grammar.file.jjt.path" value="../../../../../../../conf/grammar/nabucco.jjt"/>
+
+	<property name="compile.lib" value="../org.nabucco.framework.generator/${dir.lib}"/>
+	
+	<!-- 
+	##################################################################################
+	##
+	## Defines the buildpath for generating (JavaCC, JTB)
+	##
+	##################################################################################
+	-->
+	<path id="javacc.classpath">
+		<fileset dir="${compile.lib}">
+			<include name="javacc.jar" />
+		</fileset>
+	</path>
+	<path id="jtb.classpath">
+		<fileset dir="${compile.lib}">
+			<include name="jtb.jar" />
+		</fileset>
+	</path>
+	<!-- 
+	##################################################################################
+	##
+	## Cleaning all generated fragments.
+	##
+	##################################################################################
+	-->
+	<target name="clean">
+		<delete>
+			<fileset dir="${gen.parser.path}" excludes="**/CVS/*"/>
+		</delete>
+	</target>
+	<!-- 
+	##################################################################################
+	##
+	## Building Syntax Tree and Visitor.
+	##
+	##################################################################################
+	-->
+	<target name="javatreebuilder" depends="clean">
+		<java fork="true" dir="${gen.parser.path}" classname="EDU.purdue.jtb.JTB" classpathref="jtb.classpath">
+			<!-- Specifies the filename JTB should use to output the annotated grammar rather than use the default jtb.out.jj. -->
+			<arg line="-o ${gen.grammar.file.jj.name}" />
+			<!-- the folder structure, needed for package statement; the jtb expects to be in this folder an generate sources accordingly -->
+			<arg line="-p ${gen.parser.package}" />
+			<!-- java doc friendly comments -->
+			<arg line="-jd" />
+			<!-- Generates descrpitive node class child field names such as whileStatement and nodeToken2 rather than f0, f1, etc. -->
+			<arg line="-f" />
+			<!-- Generates parent pointers in all node classes as well as getParent() and setParent() methods.   The parent reference of a given node will automatically be set when the node is passed to the constructor of another node.  The root node's parent will be null.-->
+			<arg line="-pp" />
+			<!-- The -printer option causes JTB to generate two additional visitors for aid in printing and formatting your syntax trees -->
+			<arg line="-printer" />
+			<!-- The grammar file to read -->
+			<arg line="${gen.grammar.file.jjt.path}" />
+		</java>
+	</target>
+	<!-- 
+	##################################################################################
+	##
+	## Building Parser.
+	##
+	##################################################################################
+	-->
+	<target name="javacc" depends="javatreebuilder">
+		<java fork="true" dir="${gen.parser.path}" classname="javacc" classpathref="javacc.classpath">
+			<arg line="-STATIC=false" />
+			<arg line="-IGNORE_CASE=false" />
+			<arg line="${gen.grammar.file.jj.name}" />
+		</java>
+	</target>
+
+	<!-- 
+	##################################################################################
+	##
+	## Building JJDoc.
+	##
+	##################################################################################
+	-->
+	<target name="jjdoc" description="Generate JJDoc">
+		<jjdoc target="${gen.parser.path}/${gen.grammar.file.jj.name}" javacchome="${compile.lib}" text="true" outputfile="doc/nabucco_doc.bnf" />
+	</target>
+
+</project>

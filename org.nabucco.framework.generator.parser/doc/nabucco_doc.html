@@ -1,0 +1,348 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<TITLE>BNF for nabucco.jj</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=CENTER>BNF for nabucco.jj</H1>
+<H2 ALIGN=CENTER>TOKENS</H2>
+<TABLE>
+ <!-- Token -->
+ <TR>
+  <TD>
+   <PRE>
+&lt;DEFAULT&gt; SKIP : {
+&lt;EOL: "\n" | "\r" | "\r\n"&gt;
+| &lt;SPACECHAR: " " | "\t" | "\f"&gt;
+}
+
+   </PRE>
+  </TD>
+ </TR>
+ <!-- Token -->
+ <TR>
+  <TD>
+   <PRE>
+&lt;DEFAULT&gt; TOKEN : {
+&lt;UNDERSCORE_CHAR: "_"&gt;
+| &lt;HASH_CHAR: "#"&gt;
+| &lt;LPAREN_CHAR: "("&gt;
+| &lt;RPAREN_CHAR: ")"&gt;
+| &lt;LBRACE_CHAR: "{"&gt;
+| &lt;RBRACE_CHAR: "}"&gt;
+| &lt;MINUS_CHAR: "-"&gt;
+| &lt;PLUS_CHAR: "+"&gt;
+| &lt;ASTERISK_CHAR: "*"&gt;
+| &lt;SLASH_CHAR: "/"&gt;
+| &lt;EQUAL_CHAR: "="&gt;
+| &lt;GT_CHAR: "&gt;"&gt;
+| &lt;LT_CHAR: "&lt;"&gt;
+| &lt;GTE_CHAR: "&gt;="&gt;
+| &lt;LTE_CHAR: "&lt;="&gt;
+| &lt;LBRACKET_CHAR: "["&gt;
+| &lt;RBRACKET_CHAR: "]"&gt;
+| &lt;PERCENT_CHAR: "%"&gt;
+| &lt;DOT_CHAR: "."&gt;
+| &lt;COLON_CHAR: ":"&gt;
+| &lt;SEMICOLON_CHAR: ";"&gt;
+| &lt;SINGLEQUOTE_CHAR: "\'"&gt;
+| &lt;PIPE_CHAR: "|"&gt;
+| &lt;COMMA_CHAR: ","&gt;
+| &lt;EXCLAMATION_CHAR: "!"&gt;
+| &lt;QUESTIONMARK_CHAR: "?"&gt;
+| &lt;TILDE_CHAR: "~"&gt;
+| &lt;DOLLAR_CHAR: "$"&gt;
+| &lt;AND_CHAR: "&amp;"&gt;
+| &lt;#UMLAUTE: ["\u00c4","\u00d6","\u00dc","\u00e4","\u00f6","\u00fc"]&gt;
+}
+
+   </PRE>
+  </TD>
+ </TR>
+ <!-- Token -->
+ <TR>
+  <TD>
+   <PRE>
+&lt;DEFAULT&gt; TOKEN : {
+&lt;COMPONENT: "Component"&gt;
+| &lt;BASETYPE: "Basetype"&gt;
+| &lt;DATATYPE: "Datatype"&gt;
+| &lt;ENUMERATION: "Enumeration"&gt;
+| &lt;SERVICE: "Service"&gt;
+| &lt;EXCEPTION: "Exception"&gt;
+| &lt;MESSAGE: "Message"&gt;
+| &lt;EDITVIEW: "EditView"&gt;
+| &lt;LISTVIEW: "ListView"&gt;
+| &lt;SEARCHVIEW: "SearchView"&gt;
+| &lt;COMMAND: "Command"&gt;
+| &lt;PACKAGE: "package"&gt;
+| &lt;IMPORT: "import"&gt;
+| &lt;EXTENDS: "extends"&gt;
+| &lt;VOID: "void"&gt;
+| &lt;THROWS: "throws"&gt;
+| &lt;PUBLIC: "public"&gt;
+| &lt;PROTECTED: "protected"&gt;
+| &lt;PRIVATE: "private"&gt;
+| &lt;PERSISTENT: "persistent"&gt;
+}
+
+   </PRE>
+  </TD>
+ </TR>
+ <!-- Token -->
+ <TR>
+  <TD>
+   <PRE>
+&lt;DEFAULT&gt; TOKEN : {
+&lt;SIMPLE_DATA_TYPE: "String" | "Byte" | "Character" | "Integer" | "Long" | "Float" | "Double" | "Boolean"&gt;
+}
+
+   </PRE>
+  </TD>
+ </TR>
+ <!-- Token -->
+ <TR>
+  <TD>
+   <PRE>
+&lt;DEFAULT&gt; TOKEN : {
+&lt;#DIGIT: ["0"-"9"]&gt;
+| &lt;#LC_SEQUENCE: (["a"-"z"])+&gt;
+| &lt;#HC_SEQUENCE: (["A"-"Z"])+&gt;
+| &lt;#LCUC_SEQUENCE: ["a"-"z"] (["a"-"z"] | ["A"-"Z"])+&gt;
+| &lt;#UCLC_SEQUENCE: ["A"-"Z"] (["a"-"z"] | ["A"-"Z"])+&gt;
+| &lt;NAME_IDENTIFIER: &lt;LCUC_SEQUENCE&gt;&gt;
+| &lt;PACKAGE_IDENTIFIER: &lt;LC_SEQUENCE&gt; (&lt;DOT_CHAR&gt; &lt;LC_SEQUENCE&gt;)*&gt;
+| &lt;UNQUALIFIED_TYPE_NAME: &lt;UCLC_SEQUENCE&gt;&gt;
+| &lt;QUALIFIED_TYPE_NAME: &lt;PACKAGE_IDENTIFIER&gt; &lt;DOT_CHAR&gt; &lt;UNQUALIFIED_TYPE_NAME&gt;&gt;
+| &lt;MULTIPLICITY: &lt;LBRACKET_CHAR&gt; ["0"-"1"] (&lt;DOT_CHAR&gt; &lt;DOT_CHAR&gt; ("1" | &lt;ASTERISK_CHAR&gt;))? &lt;RBRACKET_CHAR&gt;&gt;
+}
+
+   </PRE>
+  </TD>
+ </TR>
+ <!-- Token -->
+ <TR>
+  <TD>
+   <PRE>
+&lt;DEFAULT&gt; MORE : {
+"/*" : IN_COMMENT
+}
+
+   </PRE>
+  </TD>
+ </TR>
+ <!-- Token -->
+ <TR>
+  <TD>
+   <PRE>
+&lt;IN_COMMENT&gt; MORE : {
+&lt;~[]&gt;
+}
+
+   </PRE>
+  </TD>
+ </TR>
+ <!-- Token -->
+ <TR>
+  <TD>
+   <PRE>
+&lt;IN_COMMENT&gt; SKIP : {
+"*/" : DEFAULT
+}
+
+   </PRE>
+  </TD>
+ </TR>
+ <!-- Token -->
+ <TR>
+  <TD>
+   <PRE>
+&lt;DEFAULT&gt; SKIP : {
+&lt;START_ANNOTATION: "@"&gt; : IN_ANNOTATION
+}
+
+   </PRE>
+  </TD>
+ </TR>
+ <!-- Token -->
+ <TR>
+  <TD>
+   <PRE>
+&lt;IN_ANNOTATION&gt; SKIP : {
+" "
+| "\t"
+| "\f"
+}
+
+   </PRE>
+  </TD>
+ </TR>
+ <!-- Token -->
+ <TR>
+  <TD>
+   <PRE>
+&lt;IN_ANNOTATION&gt; TOKEN : {
+&lt;#ANNOTATION_PARAM: ~["\n","\r"]&gt;
+| &lt;ANNOTATION: (&lt;ANNOTATION_PARAM&gt;)+&gt;
+}
+
+   </PRE>
+  </TD>
+ </TR>
+ <!-- Token -->
+ <TR>
+  <TD>
+   <PRE>
+&lt;IN_ANNOTATION&gt; SKIP : {
+&lt;END_ANNOTATION: "\n" | "\r" | "\r\n"&gt; : DEFAULT
+}
+
+   </PRE>
+  </TD>
+ </TR>
+</TABLE>
+<H2 ALIGN=CENTER>NON-TERMINALS</H2>
+<TABLE>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod1">NabuccoUnit</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod2">PackageDeclaration</A> ( <A HREF="#prod3">ImportDeclaration</A> )* <A HREF="#prod4">NabuccoStatement</A> &lt;EOF&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod2">PackageDeclaration</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;PACKAGE&gt; &lt;PACKAGE_IDENTIFIER&gt; &lt;SEMICOLON_CHAR&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod3">ImportDeclaration</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;IMPORT&gt; &lt;QUALIFIED_TYPE_NAME&gt; &lt;SEMICOLON_CHAR&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod5">AnnotationDeclaration</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( &lt;ANNOTATION&gt; )*</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod6">ExtensionDeclaration</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;EXTENDS&gt; ( ( &lt;UNQUALIFIED_TYPE_NAME&gt; | &lt;QUALIFIED_TYPE_NAME&gt; ) )</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod4">NabuccoStatement</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( ( <A HREF="#prod7">ComponentStatement</A> | <A HREF="#prod8">DatatypeStatement</A> | <A HREF="#prod9">BasetypeStatement</A> | <A HREF="#prod10">ExceptionStatement</A> | <A HREF="#prod11">ServiceStatement</A> | <A HREF="#prod12">MessageStatement</A> | <A HREF="#prod13">EditViewStatement</A> | <A HREF="#prod14">ListViewStatement</A> | <A HREF="#prod15">SearchViewStatement</A> | <A HREF="#prod16">CommandStatement</A> ) )</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod7">ComponentStatement</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod5">AnnotationDeclaration</A> &lt;PUBLIC&gt; &lt;COMPONENT&gt; &lt;UNQUALIFIED_TYPE_NAME&gt; &lt;LBRACE_CHAR&gt; ( <A HREF="#prod17">ComponentPropertyDeclaration</A> )* &lt;RBRACE_CHAR&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod8">DatatypeStatement</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod5">AnnotationDeclaration</A> &lt;PUBLIC&gt; &lt;DATATYPE&gt; &lt;UNQUALIFIED_TYPE_NAME&gt; ( <A HREF="#prod6">ExtensionDeclaration</A> )? &lt;LBRACE_CHAR&gt; ( <A HREF="#prod18">PropertyDeclaration</A> )* &lt;RBRACE_CHAR&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod9">BasetypeStatement</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod5">AnnotationDeclaration</A> &lt;PUBLIC&gt; &lt;BASETYPE&gt; &lt;UNQUALIFIED_TYPE_NAME&gt; ( <A HREF="#prod6">ExtensionDeclaration</A> )? &lt;LBRACE_CHAR&gt; &lt;RBRACE_CHAR&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod11">ServiceStatement</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod5">AnnotationDeclaration</A> &lt;PUBLIC&gt; &lt;SERVICE&gt; &lt;UNQUALIFIED_TYPE_NAME&gt; &lt;LBRACE_CHAR&gt; ( <A HREF="#prod19">ServicePropertyDeclaration</A> )* &lt;RBRACE_CHAR&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod12">MessageStatement</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod5">AnnotationDeclaration</A> &lt;PUBLIC&gt; &lt;MESSAGE&gt; &lt;UNQUALIFIED_TYPE_NAME&gt; &lt;LBRACE_CHAR&gt; ( <A HREF="#prod18">PropertyDeclaration</A> )* &lt;RBRACE_CHAR&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod10">ExceptionStatement</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod5">AnnotationDeclaration</A> &lt;PUBLIC&gt; &lt;EXCEPTION&gt; &lt;UNQUALIFIED_TYPE_NAME&gt; ( <A HREF="#prod6">ExtensionDeclaration</A> )? &lt;LBRACE_CHAR&gt; &lt;RBRACE_CHAR&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod13">EditViewStatement</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod5">AnnotationDeclaration</A> &lt;PUBLIC&gt; &lt;EDITVIEW&gt; &lt;UNQUALIFIED_TYPE_NAME&gt; &lt;LBRACE_CHAR&gt; ( ( <A HREF="#prod20">DatatypeDeclaration</A> | <A HREF="#prod21">WidgetDeclaration</A> ) )* &lt;RBRACE_CHAR&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod14">ListViewStatement</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod5">AnnotationDeclaration</A> &lt;PUBLIC&gt; &lt;LISTVIEW&gt; &lt;UNQUALIFIED_TYPE_NAME&gt; &lt;LBRACE_CHAR&gt; ( ( <A HREF="#prod20">DatatypeDeclaration</A> | <A HREF="#prod21">WidgetDeclaration</A> ) )* &lt;RBRACE_CHAR&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod15">SearchViewStatement</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod5">AnnotationDeclaration</A> &lt;PUBLIC&gt; &lt;SEARCHVIEW&gt; &lt;UNQUALIFIED_TYPE_NAME&gt; &lt;LBRACE_CHAR&gt; ( ( <A HREF="#prod20">DatatypeDeclaration</A> | <A HREF="#prod21">WidgetDeclaration</A> ) )* &lt;RBRACE_CHAR&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod16">CommandStatement</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod5">AnnotationDeclaration</A> &lt;PUBLIC&gt; &lt;COMMAND&gt; &lt;UNQUALIFIED_TYPE_NAME&gt; &lt;LBRACE_CHAR&gt; ( <A HREF="#prod22">ViewDeclaration</A> )* <A HREF="#prod23">MethodDeclaration</A> &lt;RBRACE_CHAR&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod17">ComponentPropertyDeclaration</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( ( <A HREF="#prod20">DatatypeDeclaration</A> | <A HREF="#prod24">EnumerationDeclaration</A> | <A HREF="#prod25">ServiceDeclaration</A> ) )</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod19">ServicePropertyDeclaration</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( ( <A HREF="#prod26">BasetypeDeclaration</A> | <A HREF="#prod25">ServiceDeclaration</A> | <A HREF="#prod23">MethodDeclaration</A> ) )</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod18">PropertyDeclaration</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( ( <A HREF="#prod26">BasetypeDeclaration</A> | <A HREF="#prod20">DatatypeDeclaration</A> | <A HREF="#prod24">EnumerationDeclaration</A> ) )</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod26">BasetypeDeclaration</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod5">AnnotationDeclaration</A> ( ( &lt;PUBLIC&gt; | &lt;PROTECTED&gt; | &lt;PRIVATE&gt; ) ) ( &lt;PERSISTENT&gt; )? &lt;UNQUALIFIED_TYPE_NAME&gt; &lt;MULTIPLICITY&gt; &lt;NAME_IDENTIFIER&gt; &lt;SEMICOLON_CHAR&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod20">DatatypeDeclaration</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod5">AnnotationDeclaration</A> ( ( &lt;PUBLIC&gt; | &lt;PROTECTED&gt; | &lt;PRIVATE&gt; ) ) ( &lt;PERSISTENT&gt; )? &lt;DATATYPE&gt; ( ( &lt;QUALIFIED_TYPE_NAME&gt; | &lt;UNQUALIFIED_TYPE_NAME&gt; ) ) &lt;MULTIPLICITY&gt; &lt;NAME_IDENTIFIER&gt; &lt;SEMICOLON_CHAR&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod24">EnumerationDeclaration</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod5">AnnotationDeclaration</A> ( ( &lt;PUBLIC&gt; | &lt;PROTECTED&gt; | &lt;PRIVATE&gt; ) ) &lt;ENUMERATION&gt; ( ( &lt;QUALIFIED_TYPE_NAME&gt; | &lt;UNQUALIFIED_TYPE_NAME&gt; ) ) &lt;MULTIPLICITY&gt; &lt;NAME_IDENTIFIER&gt; &lt;SEMICOLON_CHAR&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod25">ServiceDeclaration</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod5">AnnotationDeclaration</A> ( ( &lt;PUBLIC&gt; | &lt;PROTECTED&gt; ) ) &lt;SERVICE&gt; &lt;UNQUALIFIED_TYPE_NAME&gt; &lt;SEMICOLON_CHAR&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod23">MethodDeclaration</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod5">AnnotationDeclaration</A> &lt;PUBLIC&gt; ( ( &lt;VOID&gt; | &lt;UNQUALIFIED_TYPE_NAME&gt; ) ) &lt;NAME_IDENTIFIER&gt; &lt;LPAREN_CHAR&gt; <A HREF="#prod27">ParameterList</A> &lt;RPAREN_CHAR&gt; ( &lt;THROWS&gt; &lt;UNQUALIFIED_TYPE_NAME&gt; )? &lt;SEMICOLON_CHAR&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod22">ViewDeclaration</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod5">AnnotationDeclaration</A> &lt;PRIVATE&gt; ( ( &lt;EDITVIEW&gt; | &lt;LISTVIEW&gt; | &lt;SEARCHVIEW&gt; ) ) &lt;UNQUALIFIED_TYPE_NAME&gt; &lt;NAME_IDENTIFIER&gt; &lt;SEMICOLON_CHAR&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod21">WidgetDeclaration</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod5">AnnotationDeclaration</A> &lt;PRIVATE&gt; &lt;UNQUALIFIED_TYPE_NAME&gt; &lt;NAME_IDENTIFIER&gt; &lt;SEMICOLON_CHAR&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod27">ParameterList</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( <A HREF="#prod28">Parameter</A> )*</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod28">Parameter</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( &lt;COMMA_CHAR&gt; )? &lt;UNQUALIFIED_TYPE_NAME&gt; &lt;NAME_IDENTIFIER&gt;</TD>
+</TR>
+</TABLE>
+</BODY>
+</HTML>

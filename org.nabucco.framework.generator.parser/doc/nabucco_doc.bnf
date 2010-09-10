@@ -1,0 +1,172 @@
+
+DOCUMENT START
+TOKENS
+<DEFAULT> SKIP : {
+<EOL: "\n" | "\r" | "\r\n">
+| <SPACECHAR: " " | "\t" | "\f">
+}
+
+<DEFAULT> TOKEN : {
+<UNDERSCORE_CHAR: "_">
+| <HASH_CHAR: "#">
+| <LPAREN_CHAR: "(">
+| <RPAREN_CHAR: ")">
+| <LBRACE_CHAR: "{">
+| <RBRACE_CHAR: "}">
+| <MINUS_CHAR: "-">
+| <PLUS_CHAR: "+">
+| <ASTERISK_CHAR: "*">
+| <SLASH_CHAR: "/">
+| <EQUAL_CHAR: "=">
+| <GT_CHAR: ">">
+| <LT_CHAR: "<">
+| <GTE_CHAR: ">=">
+| <LTE_CHAR: "<=">
+| <LBRACKET_CHAR: "[">
+| <RBRACKET_CHAR: "]">
+| <PERCENT_CHAR: "%">
+| <DOT_CHAR: ".">
+| <COLON_CHAR: ":">
+| <SEMICOLON_CHAR: ";">
+| <SINGLEQUOTE_CHAR: "\'">
+| <PIPE_CHAR: "|">
+| <COMMA_CHAR: ",">
+| <EXCLAMATION_CHAR: "!">
+| <QUESTIONMARK_CHAR: "?">
+| <TILDE_CHAR: "~">
+| <DOLLAR_CHAR: "$">
+| <AND_CHAR: "&">
+| <#UMLAUTE: ["\u00c4","\u00d6","\u00dc","\u00e4","\u00f6","\u00fc"]>
+}
+
+<DEFAULT> TOKEN : {
+<COMPONENT: "Component">
+| <BASETYPE: "Basetype">
+| <DATATYPE: "Datatype">
+| <ENUMERATION: "Enumeration">
+| <SERVICE: "Service">
+| <EXCEPTION: "Exception">
+| <MESSAGE: "Message">
+| <EDITVIEW: "EditView">
+| <LISTVIEW: "ListView">
+| <SEARCHVIEW: "SearchView">
+| <COMMAND: "Command">
+| <MAP: "Map">
+| <PACKAGE: "package">
+| <IMPORT: "import">
+| <EXTENDS: "extends">
+| <VOID: "void">
+| <THROWS: "throws">
+| <PUBLIC: "public">
+| <PROTECTED: "protected">
+| <PRIVATE: "private">
+| <ABSTRACT: "abstract">
+| <PERSISTENT: "persistent">
+| <TRANSIENT: "transient">
+| <PARAMETER: "Parameter">
+}
+
+<DEFAULT> TOKEN : {
+<LABELED_INPUT_FIELD: "LabeledInputField">
+| <LABELED_COMBO_BOX: "LabeledComboBox">
+| <LABELED_PICKER: "LabeledPicker">
+| <INPUT_FIELD: "InputField">
+| <COMBO_BOX: "ComboBox">
+| <PICKER: "Picker">
+| <COLUMN: "Column">
+}
+
+<DEFAULT> TOKEN : {
+<SIMPLE_DATA_TYPE: "String" | "Byte" | "Character" | "Integer" | "Long" | "Float" | "Double" | "Boolean">
+}
+
+<DEFAULT> TOKEN : {
+<#DIGIT: ["0"-"9"]>
+| <#LC_SEQUENCE: (["a"-"z"])+>
+| <#HC_SEQUENCE: (["A"-"Z","_"])+>
+| <#LCUC_SEQUENCE: ["a"-"z"] (["a"-"z"] | ["A"-"Z"])+>
+| <#UCLC_SEQUENCE: ["A"-"Z"] (["a"-"z"] | ["A"-"Z"])+>
+| <NAME_IDENTIFIER: <LCUC_SEQUENCE>>
+| <CONSTANT_IDENTIFIER: <HC_SEQUENCE>>
+| <PACKAGE_IDENTIFIER: <LC_SEQUENCE> (<DOT_CHAR> <LC_SEQUENCE>)*>
+| <UNQUALIFIED_TYPE_NAME: <UCLC_SEQUENCE>>
+| <QUALIFIED_TYPE_NAME: <PACKAGE_IDENTIFIER> <DOT_CHAR> <UNQUALIFIED_TYPE_NAME>>
+| <MULTIPLICITY: <LBRACKET_CHAR> ["0"-"1"] (<DOT_CHAR> <DOT_CHAR> ("1" | <ASTERISK_CHAR>))? <RBRACKET_CHAR>>
+}
+
+<DEFAULT> MORE : {
+"/*" : IN_COMMENT
+}
+
+<IN_COMMENT> MORE : {
+<~[]>
+}
+
+<IN_COMMENT> SKIP : {
+"*/" : DEFAULT
+}
+
+<DEFAULT> SKIP : {
+<START_ANNOTATION: "@"> : IN_ANNOTATION
+}
+
+<IN_ANNOTATION> SKIP : {
+" "
+| "\t"
+| "\f"
+}
+
+<IN_ANNOTATION> TOKEN : {
+<#ANNOTATION_PARAM: ~["\n","\r"]>
+| <ANNOTATION: (<ANNOTATION_PARAM>)+>
+}
+
+<IN_ANNOTATION> SKIP : {
+<END_ANNOTATION: "\n" | "\r" | "\r\n"> : DEFAULT
+}
+
+NON-TERMINALS
+	NabuccoUnit	:=	PackageDeclaration ( ImportDeclaration )* NabuccoStatement <EOF>
+	PackageDeclaration	:=	<PACKAGE> <PACKAGE_IDENTIFIER> <SEMICOLON_CHAR>
+	ImportDeclaration	:=	<IMPORT> <QUALIFIED_TYPE_NAME> <SEMICOLON_CHAR>
+	AnnotationDeclaration	:=	( <ANNOTATION> )*
+	ExtensionDeclaration	:=	<EXTENDS> ( ( <UNQUALIFIED_TYPE_NAME> | <QUALIFIED_TYPE_NAME> ) )
+	NabuccoStatement	:=	( ( ComponentStatement | DatatypeStatement | BasetypeStatement | EnumerationStatement | ExceptionStatement | ServiceStatement | MessageStatement | EditViewStatement | ListViewStatement | SearchViewStatement | CommandStatement ) )
+	ComponentStatement	:=	AnnotationDeclaration <PUBLIC> <COMPONENT> <UNQUALIFIED_TYPE_NAME> <LBRACE_CHAR> ( ComponentPropertyDeclaration )* <RBRACE_CHAR>
+	DatatypeStatement	:=	AnnotationDeclaration <PUBLIC> ( <ABSTRACT> )? <DATATYPE> <UNQUALIFIED_TYPE_NAME> ( ExtensionDeclaration )? <LBRACE_CHAR> ( PropertyDeclaration )* <RBRACE_CHAR>
+	BasetypeStatement	:=	AnnotationDeclaration <PUBLIC> <BASETYPE> <UNQUALIFIED_TYPE_NAME> ( ExtensionDeclaration )? <LBRACE_CHAR> <RBRACE_CHAR>
+	EnumerationStatement	:=	AnnotationDeclaration <PUBLIC> <ENUMERATION> <UNQUALIFIED_TYPE_NAME> <LBRACE_CHAR> ( EnumerationLiteralDeclaration )* <RBRACE_CHAR>
+	ServiceStatement	:=	AnnotationDeclaration <PUBLIC> <SERVICE> <UNQUALIFIED_TYPE_NAME> <LBRACE_CHAR> ( ServicePropertyDeclaration )* <RBRACE_CHAR>
+	MessageStatement	:=	AnnotationDeclaration <PUBLIC> <MESSAGE> <UNQUALIFIED_TYPE_NAME> <LBRACE_CHAR> ( PropertyDeclaration )* <RBRACE_CHAR>
+	ExceptionStatement	:=	AnnotationDeclaration <PUBLIC> <EXCEPTION> <UNQUALIFIED_TYPE_NAME> ( ExtensionDeclaration )? <LBRACE_CHAR> ( ExceptionParameterDeclaration )* <RBRACE_CHAR>
+	EditViewStatement	:=	AnnotationDeclaration <PUBLIC> <EDITVIEW> <UNQUALIFIED_TYPE_NAME> <LBRACE_CHAR> ( ( DatatypeDeclaration | WidgetDeclaration ) )* <RBRACE_CHAR>
+	ListViewStatement	:=	AnnotationDeclaration <PUBLIC> <LISTVIEW> <UNQUALIFIED_TYPE_NAME> <LBRACE_CHAR> ( ( DatatypeDeclaration | ColumnDeclaration ) )* <RBRACE_CHAR>
+	SearchViewStatement	:=	AnnotationDeclaration <PUBLIC> <SEARCHVIEW> <UNQUALIFIED_TYPE_NAME> <LBRACE_CHAR> ( ( DatatypeDeclaration | WidgetDeclaration ) )* <RBRACE_CHAR>
+	CommandStatement	:=	AnnotationDeclaration <PUBLIC> <COMMAND> <UNQUALIFIED_TYPE_NAME> <LBRACE_CHAR> ( ViewDeclaration )* MethodDeclaration <RBRACE_CHAR>
+	ComponentPropertyDeclaration	:=	( ( ComponentDatatypeDeclaration | EnumerationDeclaration | ServiceDeclaration | ComponentDeclaration ) )
+	ServicePropertyDeclaration	:=	( ( CustomDeclaration | ServiceDeclaration | MethodDeclaration ) )
+	PropertyDeclaration	:=	( ( BasetypeDeclaration | DatatypeDeclaration | EnumerationDeclaration | MapDeclaration ) )
+	CustomDeclaration	:=	AnnotationDeclaration ( ( <PUBLIC> | <PROTECTED> | <PRIVATE> ) ) <UNQUALIFIED_TYPE_NAME> <MULTIPLICITY> <NAME_IDENTIFIER> <SEMICOLON_CHAR>
+	BasetypeDeclaration	:=	AnnotationDeclaration ( ( <PUBLIC> | <PROTECTED> | <PRIVATE> ) ) ( <TRANSIENT> )? <BASETYPE> <UNQUALIFIED_TYPE_NAME> <MULTIPLICITY> <NAME_IDENTIFIER> <SEMICOLON_CHAR>
+	ComponentDatatypeDeclaration	:=	AnnotationDeclaration ( ( <PUBLIC> | <PROTECTED> | <PRIVATE> ) ) ( <PERSISTENT> )? <DATATYPE> ( ( <QUALIFIED_TYPE_NAME> | <UNQUALIFIED_TYPE_NAME> ) ) <MULTIPLICITY> <NAME_IDENTIFIER> <SEMICOLON_CHAR>
+	DatatypeDeclaration	:=	AnnotationDeclaration ( ( <PUBLIC> | <PROTECTED> | <PRIVATE> ) ) ( <TRANSIENT> )? <DATATYPE> ( ( <QUALIFIED_TYPE_NAME> | <UNQUALIFIED_TYPE_NAME> ) ) <MULTIPLICITY> <NAME_IDENTIFIER> <SEMICOLON_CHAR>
+	EnumerationDeclaration	:=	AnnotationDeclaration ( ( <PUBLIC> | <PROTECTED> | <PRIVATE> ) ) <ENUMERATION> ( ( <QUALIFIED_TYPE_NAME> | <UNQUALIFIED_TYPE_NAME> ) ) <MULTIPLICITY> <NAME_IDENTIFIER> <SEMICOLON_CHAR>
+	EnumerationLiteralDeclaration	:=	AnnotationDeclaration <CONSTANT_IDENTIFIER>
+	ExceptionParameterDeclaration	:=	AnnotationDeclaration <PRIVATE> <PARAMETER> <NAME_IDENTIFIER> <SEMICOLON_CHAR>
+	ComponentDeclaration	:=	AnnotationDeclaration ( ( <PUBLIC> | <PROTECTED> | <PRIVATE> ) ) <COMPONENT> <UNQUALIFIED_TYPE_NAME> <SEMICOLON_CHAR>
+	ServiceDeclaration	:=	AnnotationDeclaration ( ( <PUBLIC> | <PROTECTED> | <PRIVATE> ) ) <SERVICE> <UNQUALIFIED_TYPE_NAME> <SEMICOLON_CHAR>
+	MethodDeclaration	:=	AnnotationDeclaration <PUBLIC> ( ( <VOID> | <UNQUALIFIED_TYPE_NAME> ) ) <NAME_IDENTIFIER> <LPAREN_CHAR> ParameterList <RPAREN_CHAR> ( <THROWS> <UNQUALIFIED_TYPE_NAME> )? <SEMICOLON_CHAR>
+	MapDeclaration	:=	AnnotationDeclaration ( ( <PUBLIC> | <PROTECTED> | <PRIVATE> ) ) <MAP> <LBRACKET_CHAR> <UNQUALIFIED_TYPE_NAME> <COMMA_CHAR> <UNQUALIFIED_TYPE_NAME> <RBRACKET_CHAR> <NAME_IDENTIFIER> <SEMICOLON_CHAR>
+	ViewDeclaration	:=	AnnotationDeclaration <PRIVATE> ( ( <EDITVIEW> | <LISTVIEW> | <SEARCHVIEW> ) ) <UNQUALIFIED_TYPE_NAME> <NAME_IDENTIFIER> <SEMICOLON_CHAR>
+	WidgetDeclaration	:=	( LabeledInputFieldDeclaration | InputFieldDeclaration | LabeledPickerDeclaration | PickerDeclaration | LabeledComboBoxDeclaration | ComboBoxDeclaration )
+	LabeledInputFieldDeclaration	:=	AnnotationDeclaration <PRIVATE> <LABELED_INPUT_FIELD> <NAME_IDENTIFIER> <SEMICOLON_CHAR>
+	InputFieldDeclaration	:=	AnnotationDeclaration <PRIVATE> <INPUT_FIELD> <NAME_IDENTIFIER> <SEMICOLON_CHAR>
+	LabeledPickerDeclaration	:=	AnnotationDeclaration <PRIVATE> <LABELED_PICKER> <NAME_IDENTIFIER> <SEMICOLON_CHAR>
+	PickerDeclaration	:=	AnnotationDeclaration <PRIVATE> <PICKER> <NAME_IDENTIFIER> <SEMICOLON_CHAR>
+	LabeledComboBoxDeclaration	:=	AnnotationDeclaration <PRIVATE> <LABELED_COMBO_BOX> <NAME_IDENTIFIER> <SEMICOLON_CHAR>
+	ComboBoxDeclaration	:=	AnnotationDeclaration <PRIVATE> <COMBO_BOX> <NAME_IDENTIFIER> <SEMICOLON_CHAR>
+	ColumnDeclaration	:=	AnnotationDeclaration <PRIVATE> <COLUMN> <NAME_IDENTIFIER> <SEMICOLON_CHAR>
+	ParameterList	:=	( Parameter )*
+	Parameter	:=	( <COMMA_CHAR> )? <UNQUALIFIED_TYPE_NAME> <NAME_IDENTIFIER>
+
+DOCUMENT END

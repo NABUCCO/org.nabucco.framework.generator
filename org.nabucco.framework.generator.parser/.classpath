@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" output="out/ide/gen" path="src/gen"/>
+	<classpathentry kind="src" output="out/ide/main" path="src/main"/>
+	<classpathentry kind="src" output="out/ide/test" path="src/test"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="lib" path="/org.nabucco.framework.generator/lib/org.nabucco.framework.mda.jar"/>
+	<classpathentry kind="output" path="out/ide"/>
+</classpath>
