@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2010 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco-source.org/nabucco-license.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java.datatype;
 
 import java.util.Arrays;
@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
+import org.eclipse.jdt.internal.compiler.ast.Assignment;
 import org.eclipse.jdt.internal.compiler.ast.BinaryExpression;
 import org.eclipse.jdt.internal.compiler.ast.Block;
 import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
@@ -34,15 +35,16 @@ import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
+import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationException;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotation;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationMapper;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationType;
-import org.nabucco.framework.generator.compiler.transformation.java.basetype.NabuccoToJavaBasetypeReferences;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.container.JavaAstContainter;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.container.JavaAstType;
+import org.nabucco.framework.generator.compiler.transformation.java.common.basetype.BasetypeFacade;
 import org.nabucco.framework.generator.compiler.transformation.java.common.extension.NabuccoToJavaExtensionEvaluator;
 import org.nabucco.framework.generator.compiler.transformation.java.constants.ServerConstants;
 import org.nabucco.framework.generator.compiler.transformation.util.NabuccoTransformationUtility;
@@ -284,8 +286,8 @@ final class NabuccoToJavaDatatypeVisitorSupport implements ServerConstants {
             Block thenStatement = modelProducer.createBlock(new Statement[] { modelProducer
                     .createAssignment(fieldReference, nullLiteral) });
 
-            MessageSend valueOf = modelProducer.createMessageSend(VALUE_OF, type, Arrays
-                    .asList(nameReference));
+            MessageSend valueOf = modelProducer.createMessageSend(VALUE_OF, type,
+                    Arrays.asList(nameReference));
 
             Block elseStatement = modelProducer.createBlock(modelProducer.createAssignment(
                     fieldReference, valueOf));
@@ -318,12 +320,13 @@ final class NabuccoToJavaDatatypeVisitorSupport implements ServerConstants {
     public static String resolveBasetypeDelegate(String rootDirectory, String pkg,
             String importString, String outDirectory) {
         try {
-            NabuccoUnit unit = NabuccoDependencyResolver.getInstance().resolveDependency(
-                    rootDirectory, pkg, importString, outDirectory).getModel().getUnit();
+            NabuccoUnit unit = NabuccoDependencyResolver.getInstance()
+                    .resolveDependency(rootDirectory, pkg, importString, outDirectory).getModel()
+                    .getUnit();
 
             String extension = NabuccoToJavaExtensionEvaluator.getInstance().getExtension(unit);
 
-            return NabuccoToJavaBasetypeReferences.mapToJavaType(extension);
+            return BasetypeFacade.mapToPrimitiveType(extension);
         } catch (NabuccoTransformationException e) {
             throw new NabuccoVisitorException(e);
         }
@@ -418,8 +421,8 @@ final class NabuccoToJavaDatatypeVisitorSupport implements ServerConstants {
             if (defaultValue != null) {
                 JavaAstModelProducer jamp = JavaAstModelProducer.getInstance();
                 SingleNameReference fieldReference = jamp.createSingleNameReference(name);
-                Literal defaultLiteral = jamp.createLiteral(defaultValue.getValue(), LiteralType
-                        .mapFromString(type));
+                Literal defaultLiteral = jamp.createLiteral(defaultValue.getValue(),
+                        LiteralType.mapFromString(type));
                 TypeReference createTypeReference = jamp.createTypeReference(typeName, false);
                 AllocationExpression createAllocationExpression = jamp.createAllocationExpression(
                         createTypeReference, Arrays.asList(new Expression[] { defaultLiteral }));
@@ -467,5 +470,62 @@ final class NabuccoToJavaDatatypeVisitorSupport implements ServerConstants {
         }
 
         return true;
+    }
+
+    /**
+     * Adds component comprehensive functionality to the datatype setter.
+     * <p/>
+     * Sets the refId implicitly by calling the datatype setter.
+     * 
+     * @param container
+     *            container for the setter container
+     * 
+     * @throws JavaModelException
+     */
+    public static void prepareSetterForRefId(JavaAstContainter<MethodDeclaration> container)
+            throws JavaModelException {
+
+        if (container == null || container.getAstNode() == null) {
+            throw new IllegalArgumentException("Cannot prepare setter for ref ID [null].");
+        }
+
+        MethodDeclaration methodDeclaration = container.getAstNode();
+
+        if (!(methodDeclaration.statements[0] instanceof Assignment)) {
+            return;
+        }
+
+        Assignment assignment = (Assignment) methodDeclaration.statements[0];
+        if (!(assignment.expression instanceof SingleNameReference)) {
+            return;
+        }
+
+        JavaAstMethod methodFactory = JavaAstElementFactory.getInstance().getJavaAstMethod();
+        JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
+
+        String methodName = methodFactory.getMethodName(methodDeclaration);
+
+        Literal nullLiteral = producer.createLiteral(null, LiteralType.NULL_LITERAL);
+        SingleNameReference nameReference = (SingleNameReference) assignment.expression;
+
+        BinaryExpression condition = producer.createBinaryExpression(
+                BinaryExpressionType.EQUAL_EXPRESSION, nameReference, nullLiteral,
+                BinaryExpression.NOT_EQUAL);
+
+        ThisReference thisReference = producer.createThisReference();
+
+        // TODO: Validate whether the datatypes is of type NabuccoDatatype and has a method getId()
+
+        MessageSend getId = producer.createMessageSend("getId", nameReference, null);
+        MessageSend thenStatement = producer.createMessageSend(methodName + REF_ID, thisReference,
+                Arrays.asList(getId));
+
+        MessageSend elseStatement = producer.createMessageSend(methodName + REF_ID, thisReference,
+                Arrays.asList(nullLiteral));
+
+        IfStatement ifStatement = producer.createIfStatement(condition,
+                producer.createBlock(thenStatement), producer.createBlock(elseStatement));
+
+        methodFactory.addStatement(methodDeclaration, ifStatement);
     }
 }

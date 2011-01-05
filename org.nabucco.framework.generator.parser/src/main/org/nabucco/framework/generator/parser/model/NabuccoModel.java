@@ -1,25 +1,27 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2010 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco-source.org/nabucco-license.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.parser.model;
 
 import java.io.Serializable;
+import java.io.StringWriter;
 
 import org.nabucco.framework.generator.parser.syntaxtree.NabuccoUnit;
-
+import org.nabucco.framework.generator.parser.visitor.TreeDumper;
+import org.nabucco.framework.generator.parser.visitor.TreeFormatter;
 import org.nabucco.framework.mda.model.MdaModelType;
 import org.nabucco.framework.mda.model.ModelImplementation;
 
@@ -41,7 +43,7 @@ public class NabuccoModel extends ModelImplementation implements Serializable {
 
     private NabuccoModelType type;
 
-    private transient NabuccoPathEntryType resourceType;
+    private transient NabuccoModelResourceType resourceType;
 
     /**
      * Creates a new {@link NabuccoModel} instance.
@@ -56,20 +58,18 @@ public class NabuccoModel extends ModelImplementation implements Serializable {
      *            type of the ressource
      */
     public NabuccoModel(NabuccoUnit unit, String path, NabuccoModelType modelType,
-            NabuccoPathEntryType resourceType) {
+            NabuccoModelResourceType resourceType) {
         super(MdaModelType.NABUCCO);
 
         if (unit == null) {
-            throw new IllegalArgumentException("NabuccoUnit must not be null.");
-        }
-        if (path == null) {
-            throw new IllegalArgumentException("NabuccoModelPath must not be null.");
+            throw new IllegalArgumentException("Cannot create model for NabuccoUnit [null].");
         }
         if (modelType == null) {
-            throw new IllegalArgumentException("NabuccoModelType must not be null.");
+            throw new IllegalArgumentException("Cannot create model for NabuccoModelType [null].");
         }
         if (resourceType == null) {
-            throw new IllegalArgumentException("NabuccoResourceType must not be null.");
+            throw new IllegalArgumentException(
+                    "Cannot create model for NabuccoResourceType [null].");
         }
 
         this.unit = unit;
@@ -85,6 +85,18 @@ public class NabuccoModel extends ModelImplementation implements Serializable {
      */
     public NabuccoUnit getUnit() {
         return this.unit;
+    }
+
+    /**
+     * Getter for the name of the NabuccoModel.
+     * 
+     * @return the statement name
+     */
+    public String getName() {
+        StringBuilder name = new StringBuilder();
+        NabuccoModelNameVisitor nameVisitor = new NabuccoModelNameVisitor();
+        this.unit.accept(nameVisitor, name);
+        return name.toString();
     }
 
     /**
@@ -110,7 +122,7 @@ public class NabuccoModel extends ModelImplementation implements Serializable {
      * 
      * @return the ressource type of the model.
      */
-    public NabuccoPathEntryType getResourceType() {
+    public NabuccoModelResourceType getResourceType() {
         return this.resourceType;
     }
 
@@ -120,7 +132,7 @@ public class NabuccoModel extends ModelImplementation implements Serializable {
      * @param resourceType
      *            the ressource type to set
      */
-    public void setResourceType(NabuccoPathEntryType resourceType) {
+    public void setResourceType(NabuccoModelResourceType resourceType) {
         this.resourceType = resourceType;
     }
 
@@ -165,6 +177,34 @@ public class NabuccoModel extends ModelImplementation implements Serializable {
         } else if (!unit.equals(other.unit))
             return false;
         return true;
+    }
+
+    /**
+     * Print the NABUCCO model.
+     * 
+     * @return the model as string
+     */
+    public String printModel() {
+        StringWriter writer = new StringWriter();
+        TreeFormatter formatter = new TreeFormatter(3, 40);
+        TreeDumper dumper = new TreeDumper(writer);
+
+        this.getUnit().accept(formatter);
+        this.getUnit().accept(dumper);
+
+        dumper.flushWriter();
+        return writer.getBuffer().toString();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder result = new StringBuilder();
+        result.append(super.toString());
+        result.append(" (");
+        result.append(this.getName());
+        result.append(")\n\n");
+        result.append(this.printModel());
+        return result.toString();
     }
 
 }

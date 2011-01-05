@@ -37,6 +37,12 @@ public class NabuccoModelTypeComponentMapper implements NabuccoModelConstants {
     public static String mapModelToProjectString(NabuccoModelType modelType) {
 
         switch (modelType) {
+        
+        case APPLICATION:
+            return SERVER;
+
+        case CONNECTOR:
+            return SERVER;
 
         case BASETYPE:
             return DATATYPE;
@@ -58,15 +64,6 @@ public class NabuccoModelTypeComponentMapper implements NabuccoModelConstants {
 
         case EXCEPTION:
             return EXCEPTION;           
-/*case EDIT_VIEW:
-            return RCP_VIEW;
-            
-        case LIST_VIEW:
-            return RCP_VIEW;
-            
-        case SEARCH_VIEW:
-            return RCP_VIEW;   
-*/
         }
 
         throw new IllegalArgumentException("ModelType '" + modelType + "' is not supported.");

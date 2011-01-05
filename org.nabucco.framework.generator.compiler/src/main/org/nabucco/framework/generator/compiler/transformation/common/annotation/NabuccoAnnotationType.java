@@ -54,19 +54,39 @@ public enum NabuccoAnnotationType {
     ASSOCIATION_STRATEGY("AssociationStrategy", NabuccoAnnotationGroupType.RELATION),
 
     FETCH_STRATEGY("FetchStrategy", NabuccoAnnotationGroupType.RELATION),
+    
+    SOURCE("Source", NabuccoAnnotationGroupType.CONNECTOR),
+    
+    TARGET("Target", NabuccoAnnotationGroupType.CONNECTOR),
+    
+    MAINTAIN("Maintain", NabuccoAnnotationGroupType.CONNECTOR),
+    
+    RESOLVE("Resolve", NabuccoAnnotationGroupType.CONNECTOR),
+    
+    CONNECTOR_TYPE("ConnectorType", NabuccoAnnotationGroupType.CONNECTOR),
+    
+    CONNECTOR_STRATEGY("ConnectorStrategy", NabuccoAnnotationGroupType.CONNECTOR),
+
+    REFERENCEABLE("Referenceable", NabuccoAnnotationGroupType.CONNECTOR),
 
     INJECT("Inject", NabuccoAnnotationGroupType.INJECTION),
 
     INJECTION_ID("InjectionId", NabuccoAnnotationGroupType.INJECTION),
 
+    COMPONENT_PREFIX("ComponentPrefix", NabuccoAnnotationGroupType.DB),
+    
     PRIMARY("Primary", NabuccoAnnotationGroupType.DB),
 
     OPTIMISTIC_LOCK("OptimisticLock", NabuccoAnnotationGroupType.DB),
 
     ROLLBACK("Rollback", NabuccoAnnotationGroupType.DB),
 
+    IMMUTABLE("Immutable", NabuccoAnnotationGroupType.DB),
+    
     LITERAL_ID("LiteralId", NabuccoAnnotationGroupType.DB),
 
+    USER_INTERFACE("UserInterface", NabuccoAnnotationGroupType.UI),
+    
     MAPPED_FIELD("MappedField", NabuccoAnnotationGroupType.UI),
 
     LEADING("Leading", NabuccoAnnotationGroupType.UI),

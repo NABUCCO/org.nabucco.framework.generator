@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2010 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco-source.org/nabucco-license.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.xml.datatype;
 
 import java.util.List;
@@ -26,7 +26,8 @@ import org.nabucco.framework.generator.compiler.transformation.common.annotation
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationType;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.association.AssociationStrategyType;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.association.FetchStrategyType;
-import org.nabucco.framework.generator.compiler.transformation.java.basetype.NabuccoToJavaBasetypeMapping;
+import org.nabucco.framework.generator.compiler.transformation.java.common.basetype.BasetypeMapping;
+import org.nabucco.framework.generator.compiler.transformation.java.constants.CollectionConstants;
 import org.nabucco.framework.generator.compiler.transformation.util.NabuccoTransformationUtility;
 import org.nabucco.framework.generator.compiler.transformation.util.dependency.NabuccoDependencyResolver;
 import org.nabucco.framework.generator.compiler.transformation.xml.basetype.NabuccoToXmlBasetypeFacade;
@@ -35,24 +36,25 @@ import org.nabucco.framework.generator.compiler.transformation.xml.visitor.Nabuc
 import org.nabucco.framework.generator.compiler.transformation.xml.visitor.NabuccoToXmlVisitorSupport;
 import org.nabucco.framework.generator.compiler.visitor.NabuccoVisitorException;
 import org.nabucco.framework.generator.parser.model.NabuccoModel;
-import org.nabucco.framework.generator.parser.model.NabuccoPathEntryType;
+import org.nabucco.framework.generator.parser.model.NabuccoModelResourceType;
 import org.nabucco.framework.generator.parser.model.multiplicity.NabuccoMultiplicityType;
 import org.nabucco.framework.generator.parser.model.multiplicity.NabuccoMultiplicityTypeMapper;
 import org.nabucco.framework.generator.parser.syntaxtree.BasetypeDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.ComponentDatatypeDeclaration;
+import org.nabucco.framework.generator.parser.syntaxtree.ComponentStatement;
 import org.nabucco.framework.generator.parser.syntaxtree.DatatypeDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.EnumerationDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.ExtensionDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.NodeToken;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
 import org.nabucco.framework.mda.logger.MdaLogger;
 import org.nabucco.framework.mda.logger.MdaLoggingFactory;
 import org.nabucco.framework.mda.model.MdaModel;
 import org.nabucco.framework.mda.model.xml.XmlModel;
 import org.nabucco.framework.mda.template.xml.XmlTemplate;
 import org.nabucco.framework.mda.template.xml.XmlTemplateException;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * NabuccoToXmlDatatypeVisitor
@@ -63,11 +65,13 @@ import org.nabucco.framework.mda.template.xml.XmlTemplateException;
  * @author Nicolas Moser, PRODYNA AG
  */
 class NabuccoToXmlDatatypeVisitor extends NabuccoToXmlVisitorSupport implements
-        PersistenceConstants {
+        PersistenceConstants, CollectionConstants {
 
     private String componentName;
-    
+
     private String rootPackage;
+
+    private String componentId;
 
     /** ORM dependencies must be collected seperately */
     NabuccoToXmlDatatypeCollector collector;
@@ -97,15 +101,61 @@ class NabuccoToXmlDatatypeVisitor extends NabuccoToXmlVisitorSupport implements
     }
 
     @Override
+    public void visit(ComponentStatement nabuccoComponent, MdaModel<XmlModel> target) {
+        if (this.rootPackage == null) {
+            this.rootPackage = super.getVisitorContext().getPackage();
+        }
+
+        this.componentId = this.createComponentId(nabuccoComponent).toLowerCase();
+
+        super.visit(nabuccoComponent, target);
+    }
+
+    /**
+     * Extracts the component id from the ComponentId annotation.
+     * 
+     * @param nabuccoComponent
+     *            the component
+     * 
+     * @return the component id
+     */
+    private String createComponentId(ComponentStatement nabuccoComponent) {
+
+        NabuccoAnnotation annotation = NabuccoAnnotationMapper.getInstance().mapToAnnotation(
+                nabuccoComponent.annotationDeclaration, NabuccoAnnotationType.COMPONENT_PREFIX);
+
+        if (annotation == null) {
+            String componentName = nabuccoComponent.nodeToken2.tokenImage;
+
+            if (componentName.length() < 4) {
+                return COMPONENT.substring(0, componentName.length()) + componentName;
+            }
+
+            return componentName.substring(0, 4);
+        }
+
+        if (annotation.getValue() == null || annotation.getValue().length() != 4) {
+            String componentName = nabuccoComponent.nodeToken2.tokenImage;
+
+            if (componentName.length() < 4) {
+                return COMPONENT.toLowerCase().substring(0, componentName.length()) + componentName;
+            }
+
+            logger.warning("ComponentId ", annotation.getValue(), " is not valid using name '",
+                    componentName.substring(0, 4), "'. Must be a 4 character string.");
+
+            return componentName.substring(0, 4);
+        }
+
+        return annotation.getValue();
+    }
+
+    @Override
     public void visit(ExtensionDeclaration nabuccoExtension, MdaModel<XmlModel> target) {
 
         // Components do not have an extension declaration!
 
         super.visit(nabuccoExtension, target); // Extract super type
-
-        if (this.rootPackage == null) {
-            this.rootPackage = super.getVisitorContext().getPackage();
-        }
 
         String superType = this.getVisitorContext().getNabuccoExtension();
         String superImport = super.resolveImport(superType);
@@ -129,15 +179,29 @@ class NabuccoToXmlDatatypeVisitor extends NabuccoToXmlVisitorSupport implements
         String type = ((NodeToken) nabuccoDatatype.nodeChoice1.choice).tokenImage;
         boolean isPersistent = nabuccoDatatype.nodeOptional.present();
 
-        if (isPersistent) {
-            String datatypeImport = super.resolveImport(type);
+        String datatypeImport = super.resolveImport(type);
 
-            if (datatypeImport == null) {
-                logger.warning("Cannot resolve depdendency for Datatype '", type, "'.");
-                return;
+        try {
+
+            if (isPersistent) {
+
+                if (datatypeImport == null) {
+                    logger.warning("Cannot resolve depdendency for Datatype '", type, "'.");
+                    return;
+                }
+
+                this.createEntity(type, datatypeImport, target);
+
+                if (NabuccoAnnotationMapper.getInstance().hasAnnotation(
+                        nabuccoDatatype.annotationDeclaration, NabuccoAnnotationType.REFERENCEABLE)) {
+
+                    this.createComponentRelationEntity(datatypeImport, target);
+                }
             }
 
-            this.createEntity(type, datatypeImport, target);
+        } catch (NabuccoTransformationException e) {
+            throw new NabuccoVisitorException("Error resolving XML dependency for Datatype '"
+                    + type + "'.", e);
         }
     }
 
@@ -146,41 +210,59 @@ class NabuccoToXmlDatatypeVisitor extends NabuccoToXmlVisitorSupport implements
      * 
      * @param type
      *            the type
-     * @param entityImport
+     * @param datatypeImport
      *            the import to resolve
      * @param target
      *            the target model
+     * 
+     * @throws NabuccoTransformationException
      */
-    private void createEntity(String type, String entityImport, MdaModel<XmlModel> target) {
+    private void createEntity(String type, String datatypeImport, MdaModel<XmlModel> target)
+            throws NabuccoTransformationException {
 
-        if (this.collector.isEntity(entityImport)) {
-            logger.debug("Entity already visited '" + entityImport + "'.");
+        if (this.collector.isEntity(datatypeImport)) {
+            logger.debug("Entity already visited '" + datatypeImport + "'.");
+            return;
+        }
+        MdaModel<NabuccoModel> model = this.resolveDependency(datatypeImport);
+
+        // Do not create XML for archived entities (only mapped-superclasses).
+        if (model.getModel().getResourceType() == NabuccoModelResourceType.ARCHIVE) {
             return;
         }
 
-        try {
-            MdaModel<NabuccoModel> model = this.resolveDependency(entityImport);
+        NabuccoToXmlVisitorContext context = this.copyContext();
 
-            // Do not create XML for archived entities (only mapped-superclasses).
-            if (model.getModel().getResourceType() == NabuccoPathEntryType.ARCHIVE) {
-                return;
-            }
-            
-            NabuccoToXmlVisitorContext context = this.copyContext();
+        NabuccoToXmlDatatypeEntityVisitor visitor = new NabuccoToXmlDatatypeEntityVisitor(context,
+                this.collector, this.rootPackage, this.componentId);
 
-            NabuccoToXmlDatatypeEntityVisitor visitor = new NabuccoToXmlDatatypeEntityVisitor(
-                    context, this.collector, this.rootPackage);
+        model.getModel().getUnit().accept(visitor, target);
 
-            model.getModel().getUnit().accept(visitor, target);
+        // Create basetype embeddables
+        NabuccoToXmlBasetypeFacade.getInstance().createOrmBasetypeFragments(model, target,
+                super.getVisitorContext(), this.componentName);
+    }
 
-            // Create basetype embeddables
-            NabuccoToXmlBasetypeFacade.getInstance().createOrmBasetypeFragments(model, target,
-                    super.getVisitorContext(), this.componentName);
+    /**
+     * Create an entity fragment for a component relation of a particular type.
+     * 
+     * @param datatypeImport
+     *            the datatype import
+     * @param target
+     *            the target XML model
+     * 
+     * @throws NabuccoTransformationException
+     */
+    private void createComponentRelationEntity(String datatypeImport, MdaModel<XmlModel> target)
+            throws NabuccoTransformationException {
 
-        } catch (NabuccoTransformationException e) {
-            throw new NabuccoVisitorException("Error resolving XML dependency for Datatype '"
-                    + type + "'.", e);
-        }
+        NabuccoToXmlVisitorContext context = this.copyContext();
+        MdaModel<NabuccoModel> model = this.resolveDependency(datatypeImport);
+
+        NabuccoToXmlComponentRelationEntityVisitor visitor = new NabuccoToXmlComponentRelationEntityVisitor(
+                new NabuccoToXmlVisitorContext(context), this.componentId);
+
+        model.getModel().getUnit().accept(visitor, target);
     }
 
     /**
@@ -208,7 +290,7 @@ class NabuccoToXmlDatatypeVisitor extends NabuccoToXmlVisitorSupport implements
 
             NabuccoToXmlDatatypeSuperclassVisitor visitor = new NabuccoToXmlDatatypeSuperclassVisitor(
                     new NabuccoToXmlVisitorContext(context), this.componentName, this.collector,
-                    this.rootPackage);
+                    this.rootPackage, this.componentId);
 
             model.getModel().getUnit().accept(visitor, target);
 
@@ -231,9 +313,11 @@ class NabuccoToXmlDatatypeVisitor extends NabuccoToXmlVisitorSupport implements
      *            the list to add the mapping
      * @param name
      *            name of the root entity/mapped-superclass
+     * @param componentPrefix
+     *            the component prefix for join tables
      */
     void createEntityRelation(DatatypeDeclaration nabuccoDatatype, List<Node> attributeList,
-            String name) {
+            String name, String componentPrefix) {
 
         String type = ((NodeToken) nabuccoDatatype.nodeChoice1.choice).tokenImage;
         String refName = nabuccoDatatype.nodeToken2.tokenImage;
@@ -241,6 +325,9 @@ class NabuccoToXmlDatatypeVisitor extends NabuccoToXmlVisitorSupport implements
         String typeImport = super.resolveImport(type);
 
         try {
+
+            NabuccoMultiplicityType multiplicity = NabuccoMultiplicityTypeMapper.getInstance()
+                    .mapToMultiplicity(nabuccoDatatype.nodeToken1.tokenImage);
 
             XmlTemplate ormTemplate = this.getVisitorContext().getTemplate(
                     NabuccoXmlTemplateConstants.ORM_TEMPLATE);
@@ -252,25 +339,25 @@ class NabuccoToXmlDatatypeVisitor extends NabuccoToXmlVisitorSupport implements
             }
 
             // NType cannot be mapped
-            if (NabuccoToJavaBasetypeMapping.N_TYPE.getName().equals(type)) {
+            if (BasetypeMapping.N_TYPE.getName().equals(type)) {
                 this.createTransientField(type, attributeList);
                 return;
             }
 
-            NabuccoMultiplicityType multiplicity = NabuccoMultiplicityTypeMapper.getInstance()
-                    .mapToMultiplicity(nabuccoDatatype.nodeToken1.tokenImage);
-
             if (NabuccoCompilerSupport.isOtherComponent(pkg, typeImport)
-                    && !NabuccoCompilerSupport.isBase(typeImport)) {
+                    || NabuccoCompilerSupport.isBase(typeImport)) {
 
                 if (multiplicity.isMultiple()) {
+
+                    // TODO: Validate in verifier before!
+
                     StringBuilder msg = new StringBuilder();
-                    msg.append("Cannot create a reference for lists of datatypes between different components for ");
+                    msg.append("Relations between datatypes of different components and a multiplicity larger 1 are not valid (");
                     msg.append(refName).append(" in ").append(name).append(".");
-                    throw new IllegalArgumentException(msg.toString());
+                    throw new NabuccoVisitorException(msg.toString());
                 }
 
-                this.createReferenceId(refName, attributeList);
+                this.createRefId(refName, multiplicity, attributeList);
 
             } else {
 
@@ -282,13 +369,22 @@ class NabuccoToXmlDatatypeVisitor extends NabuccoToXmlVisitorSupport implements
                 Element relation = NabuccoToXmlDatatypeVisitorSupport.resolveMapping(multiplicity,
                         association, ormTemplate);
 
-                relation.setAttribute(NAME, refName);
+                // JPA specific property name.
+                if (multiplicity.isMultiple()) {
+                    this.createTransientField(refName, attributeList);
+
+                    relation.setAttribute(NAME, refName + SUFFIX_JPA);
+                } else {
+                    relation.setAttribute(NAME, refName);
+                }
+
                 relation.setAttribute(TARGET_ENTITY, typeImport);
                 relation.setAttribute(FETCH, fetch.getId());
 
                 String foreignKey;
                 if (association == AssociationStrategyType.COMPOSITION && multiplicity.isMultiple()) {
                     foreignKey = NabuccoTransformationUtility.toTableName(name)
+                            + TABLE_SEPARATOR + NabuccoTransformationUtility.toTableName(refName)
                             + TABLE_SEPARATOR + ID;
                 } else {
                     foreignKey = NabuccoTransformationUtility.toTableName(refName)
@@ -297,7 +393,7 @@ class NabuccoToXmlDatatypeVisitor extends NabuccoToXmlVisitorSupport implements
 
                 // 1:1, 1:N, N:1, N:N Mappings
                 if (association == AssociationStrategyType.AGGREGATION && multiplicity.isMultiple()) {
-                    this.createJoinTable(relation, name, type);
+                    this.createJoinTable(relation, name, type, componentPrefix);
                 } else {
                     this.createJoinColumn(relation, foreignKey);
                 }
@@ -305,9 +401,18 @@ class NabuccoToXmlDatatypeVisitor extends NabuccoToXmlVisitorSupport implements
                 attributeList.add(relation);
             }
 
+            // Transient field for code path
+            NabuccoAnnotation codePath = NabuccoAnnotationMapper.getInstance().mapToAnnotation(
+                    nabuccoDatatype.annotationDeclaration, NabuccoAnnotationType.CODE_PATH);
+
+            if (codePath != null && codePath.getValue() != null) {
+                this.createTransientField(refName + NabuccoAnnotationType.CODE_PATH.getName(),
+                        attributeList);
+            }
+
         } catch (XmlTemplateException te) {
             throw new NabuccoVisitorException("Cannot extract XML template '"
-                    + NabuccoXmlTemplateConstants.ORM_TEMPLATE + "'", te);
+                    + NabuccoXmlTemplateConstants.ORM_TEMPLATE + "'.", te);
         }
     }
 
@@ -316,11 +421,13 @@ class NabuccoToXmlDatatypeVisitor extends NabuccoToXmlVisitorSupport implements
      * 
      * @param name
      *            the element name
+     * @param multiplicity
+     *            the multiplicity
      * 
      * @throws XmlTemplateException
      */
-    private void createReferenceId(String name, List<Node> attributeList)
-            throws XmlTemplateException {
+    private void createRefId(String name, NabuccoMultiplicityType multiplicity,
+            List<Node> attributeList) throws XmlTemplateException {
 
         this.createTransientField(name, attributeList);
 
@@ -330,9 +437,18 @@ class NabuccoToXmlDatatypeVisitor extends NabuccoToXmlVisitorSupport implements
         List<Node> nodes = ormTemplate.copyNodesByXPath(XPATH_BASIC);
 
         if (nodes.size() == 1 && nodes.get(0) instanceof Element) {
-            Element reference = (Element) nodes.get(0);
-            reference.setAttribute(NAME, name + REF_ID);
-            attributeList.add(reference);
+            Element basic = (Element) nodes.get(0);
+            basic.setAttribute(NAME, name + REF_ID);
+
+            if (!multiplicity.isOptional()) {
+                NodeList childNodes = basic.getChildNodes();
+                if (childNodes.getLength() == 1 && childNodes.item(0) instanceof Element) {
+                    Element column = (Element) childNodes.item(0);
+                    column.setAttribute(NULLABLE, "false");
+                }
+            }
+
+            attributeList.add(basic);
         }
     }
 
@@ -358,8 +474,11 @@ class NabuccoToXmlDatatypeVisitor extends NabuccoToXmlVisitorSupport implements
      *            the first type name
      * @param secondType
      *            the second type name
+     * @param componentPrefix
+     *            the table name prefix
      */
-    private void createJoinTable(Element mapping, String firstType, String secondType) {
+    private void createJoinTable(Element mapping, String firstType, String secondType,
+            String componentPrefix) {
 
         Element joinTable = (Element) mapping.getElementsByTagName(JOIN_TABLE).item(0);
 
@@ -371,7 +490,7 @@ class NabuccoToXmlDatatypeVisitor extends NabuccoToXmlVisitorSupport implements
             second = second + TABLE_SEPARATOR + 2;
         }
 
-        String tableName = first + TABLE_SEPARATOR + second;
+        String tableName = componentPrefix + TABLE_SEPARATOR + first + TABLE_SEPARATOR + second;
         String joinColumnName = first + TABLE_SEPARATOR + ID;
         String inverseColumnName = second + TABLE_SEPARATOR + ID;
 
@@ -443,6 +562,9 @@ class NabuccoToXmlDatatypeVisitor extends NabuccoToXmlVisitorSupport implements
                     + multiplicity + "' is not supported for basetype '" + name + "'.");
         }
 
+        boolean immutable = NabuccoAnnotationMapper.getInstance().hasAnnotation(
+                nabuccoBasetype.annotationDeclaration, NabuccoAnnotationType.IMMUTABLE);
+
         String columnLength = NabuccoToXmlDatatypeVisitorSupport.extractColumnLength(
                 nabuccoBasetype, super.getVisitorContext(), this.rootPackage,
                 super.resolveImport(type));
@@ -456,7 +578,8 @@ class NabuccoToXmlDatatypeVisitor extends NabuccoToXmlVisitorSupport implements
                 this.createTransientField(name, attributeList);
             } else {
                 Element element = NabuccoToXmlDatatypeVisitorSupport.resolveElementType(
-                        nabuccoBasetype.annotationDeclaration, ormTemplate, name, columnLength);
+                        nabuccoBasetype.annotationDeclaration, ormTemplate, name, columnLength,
+                        immutable);
 
                 if (this.isLarge(nabuccoBasetype)) {
                     List<Node> nodes = ormTemplate.copyNodesByXPath(XPATH_LOB);

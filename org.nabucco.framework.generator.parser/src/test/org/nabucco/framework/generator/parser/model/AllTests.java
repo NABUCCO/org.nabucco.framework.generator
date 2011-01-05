@@ -22,7 +22,8 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses( { 
     
-    org.nabucco.framework.generator.parser.model.NabuccoFileTest.class
+    org.nabucco.framework.generator.parser.model.NabuccoFileTest.class,
+    org.nabucco.framework.generator.parser.model.NabuccoModelTest.class
     
 })
 

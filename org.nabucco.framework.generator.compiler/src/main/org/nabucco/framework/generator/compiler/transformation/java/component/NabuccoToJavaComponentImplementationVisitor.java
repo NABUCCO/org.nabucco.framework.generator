@@ -72,7 +72,7 @@ class NabuccoToJavaComponentImplementationVisitor extends NabuccoToJavaVisitorSu
         String interfaceName = nabuccoComponent.nodeToken2.tokenImage;
         String interfacePackage = this.getVisitorContext().getPackage();
         String name = interfaceName + IMPLEMENTATION;
-        String componentName = super.getComponentName(NabuccoModelType.COMPONENT, NabuccoModifierType.PRIVATE);
+        String componentName = super.getProjectName(NabuccoModelType.COMPONENT, NabuccoModifierType.PRIVATE);
 
         try {
             // Load Template

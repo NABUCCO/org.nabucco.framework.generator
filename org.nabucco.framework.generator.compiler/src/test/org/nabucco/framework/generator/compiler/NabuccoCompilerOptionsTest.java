@@ -32,7 +32,7 @@ public class NabuccoCompilerOptionsTest {
     @Test
     public void printNabuccoProperties() throws Exception {
 
-        File file = new File("conf/compiler.properties");
+        File file = new File("conf/options/compiler.properties");
 
         NabuccoCompilerOptions options = new NabuccoCompilerOptions(file);
 

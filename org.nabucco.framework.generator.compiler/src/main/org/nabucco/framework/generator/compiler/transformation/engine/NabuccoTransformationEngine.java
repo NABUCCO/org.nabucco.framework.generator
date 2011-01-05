@@ -1,42 +1,42 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2010 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco-source.org/nabucco-license.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.engine;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.nabucco.framework.generator.compiler.NabuccoCompilerOptions;
+import org.nabucco.framework.generator.compiler.precompiler.NabuccoPreCompilerInstance;
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformation;
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationException;
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationResult;
 import org.nabucco.framework.generator.compiler.transformation.util.dependency.NabuccoDependencyResolver;
 import org.nabucco.framework.generator.compiler.transformation.util.dependency.NabuccoDependencyThread;
-import org.nabucco.framework.generator.compiler.verifier.NabuccoVerificationException;
-import org.nabucco.framework.generator.compiler.verifier.NabuccoVerifier;
 import org.nabucco.framework.generator.parser.model.NabuccoModel;
 import org.nabucco.framework.generator.parser.model.NabuccoModelType;
-import org.nabucco.framework.generator.parser.model.NabuccoPathEntryType;
-
+import org.nabucco.framework.generator.parser.model.NabuccoModelResourceType;
 import org.nabucco.framework.mda.model.MdaModel;
 import org.nabucco.framework.mda.model.ModelException;
 import org.nabucco.framework.mda.model.java.JavaModel;
@@ -113,7 +113,6 @@ public abstract class NabuccoTransformationEngine implements TransformationEngin
      */
     private void init(String templateLocation) throws NabuccoTransformationException {
         try {
-            // TODO: Add Template Loader to Generator
             JavaTemplateLoader.getInstance().setTemplateProvider(
                     new JavaTemplateFileProvider(templateLocation));
             XmlTemplateLoader.getInstance().setTemplateProvider(
@@ -190,15 +189,18 @@ public abstract class NabuccoTransformationEngine implements TransformationEngin
             List<Future<NabuccoTransformationResult>> transformationResults = new ArrayList<Future<NabuccoTransformationResult>>();
             List<NabuccoTransformation<?>> transformationList = new ArrayList<NabuccoTransformation<?>>();
 
+            Set<String> alreadyTransformed = new HashSet<String>();
+
             while (!dependencyQueue.isEmpty() || !modelQueue.isEmpty()) {
 
                 Future<List<MdaModel<NabuccoModel>>> dependencyResult = null;
 
                 if (dependencyQueue.peek() != null) {
 
-                    // Verify model
                     MdaModel<NabuccoModel> source = dependencyQueue.poll();
-                    NabuccoVerifier.getInstance().verifyNabuccoModel(source);
+
+                    // Pre Compile
+                    NabuccoPreCompilerInstance.getInstance().preCompile(source.getModel());
 
                     // Resolve Dependencies
                     NabuccoDependencyThread dependencyResolver = new NabuccoDependencyThread(
@@ -209,11 +211,14 @@ public abstract class NabuccoTransformationEngine implements TransformationEngin
                 while (modelQueue.peek() != null) {
 
                     MdaModel<NabuccoModel> source = modelQueue.poll();
+
                     this.produceTransformations(source, transformationList);
 
                     // Start transformation threads
                     transformationResults.addAll(EXECUTOR_SERVICE.invokeAll(transformationList));
                     transformationList.clear();
+
+                    alreadyTransformed.add(source.getModel().getPath());
                 }
 
                 // Wait for dependencies and put them into the queues.
@@ -221,7 +226,11 @@ public abstract class NabuccoTransformationEngine implements TransformationEngin
                     List<MdaModel<NabuccoModel>> dependencyList = dependencyResult.get();
 
                     for (MdaModel<NabuccoModel> dependency : dependencyList) {
-                        if (dependency.getModel().getResourceType() == NabuccoPathEntryType.PROJECT) {
+                        NabuccoModel model = dependency.getModel();
+
+                        if (model.getResourceType() == NabuccoModelResourceType.PROJECT
+                                && !alreadyTransformed.contains(model.getPath())) {
+
                             modelQueue.add(dependency);
                             dependencyQueue.add(dependency);
                         }
@@ -234,32 +243,33 @@ public abstract class NabuccoTransformationEngine implements TransformationEngin
                 transformationResult.get();
             }
 
-            this.shutDown();
-
-        } catch (NabuccoVerificationException ve) {
-            raiseException(ve, "Error verifying NABUCCO model.");
         } catch (ExecutionException ee) {
             raiseException(ee.getCause(), "NABUCCO transformation did not finish successful.");
         } catch (InterruptedException ie) {
             raiseException(ie, "NABUCCO transformation was interrupted.");
-        } catch (Throwable t) {
-            raiseException(t, "Unexpected error in NABUCCO transformation.");
+        } catch (Exception e) {
+            raiseException(e, "Unexpected error during NABUCCO transformation.");
+        } finally {
+            this.shutDown();
         }
     }
 
     /**
      * Raises the {@link NabuccoTransformationException}.
      * 
-     * @param t
+     * @param cause
      *            the throwable to handle
      * @param message
      *            the exception message
      */
-    private void raiseException(Throwable t, String message) throws NabuccoTransformationException {
-        if (t instanceof NabuccoTransformationException) {
-            throw (NabuccoTransformationException) t;
+    private void raiseException(Throwable cause, String message) throws NabuccoTransformationException {
+        if (cause instanceof NabuccoTransformationException) {
+            throw (NabuccoTransformationException) cause;
         }
-        throw new NabuccoTransformationException(message, t);
+        if (cause instanceof Exception) {
+            throw new NabuccoTransformationException(message, (Exception) cause);
+        }
+        throw new RuntimeException(cause);
     }
 
     /**

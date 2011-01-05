@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2010 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco-source.org/nabucco-license.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java.view.edit;
 
 import java.util.HashMap;
@@ -57,7 +57,6 @@ import org.nabucco.framework.generator.parser.syntaxtree.LabeledPickerDeclaratio
 import org.nabucco.framework.generator.parser.syntaxtree.ListPickerDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.NodeToken;
 import org.nabucco.framework.generator.parser.syntaxtree.PickerDeclaration;
-
 import org.nabucco.framework.mda.model.MdaModel;
 import org.nabucco.framework.mda.model.java.JavaCompilationUnit;
 import org.nabucco.framework.mda.model.java.JavaModel;
@@ -100,7 +99,8 @@ public class NabuccoToJavaRcpViewModelEditVisitor extends NabuccoToJavaVisitorSu
 
         String pkg = super.getVisitorContext().getPackage()
                 .replace(ViewConstants.UI, ViewConstants.UI_RCP)
-                + ViewConstants.PKG_SEPARATOR + ViewConstants.MODEL_PACKAGE;
+                + ViewConstants.PKG_SEPARATOR
+                + ViewConstants.MODEL_PACKAGE;
         String name = editViewStatement.nodeToken2.tokenImage.replace(
                 NabuccoJavaTemplateConstants.VIEW, NabuccoJavaTemplateConstants.VIEW
                         + NabuccoJavaTemplateConstants.MODEL);
@@ -109,9 +109,9 @@ public class NabuccoToJavaRcpViewModelEditVisitor extends NabuccoToJavaVisitorSu
         try {
             // Load Template
             JavaCompilationUnit unit = super
-                    .extractAst(NabuccoJavaTemplateConstants.COMMON_VIEW_MODEL_TEMPLATE);
+                    .extractAst(NabuccoJavaTemplateConstants.EDIT_VIEW_MODEL_TEMPLATE);
             TypeDeclaration type = unit
-                    .getType(NabuccoJavaTemplateConstants.COMMON_VIEW_MODEL_TEMPLATE);
+                    .getType(NabuccoJavaTemplateConstants.EDIT_VIEW_MODEL_TEMPLATE);
             JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
             javaFactory.getJavaAstType().setTypeName(type, name);

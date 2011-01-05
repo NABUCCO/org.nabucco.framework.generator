@@ -23,17 +23,16 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-options {
-  LOOKAHEAD = 1;
-  DEBUG_PARSER = false;
-  //ERROR_REPORTING = false;
-  //FORCE_LA_CHECK = true;
+options{    LOOKAHEAD = 1;    DEBUG_PARSER = false;    // DEBUG_TOKEN_MANAGER = true;
+    // DEBUG_LOOKAHEAD = true;
+        ERROR_REPORTING = false;    // FORCE_LA_CHECK = true;
+
+    STATIC = false;
 }
 
 PARSER_BEGIN(NabuccoParser)
 package org.nabucco.framework.generator.parser;
 	public class NabuccoParser {
-
 	}
 PARSER_END(NabuccoParser)
 
@@ -97,18 +96,20 @@ TOKEN: {
 //                                                                                                                   //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 TOKEN: {
-  < COMPONENT:		"Component" >
+  < APPLICATION:	"Application" >
+| < COMPONENT:		"Component" >
 | < BASETYPE:		"Basetype" >
 | < DATATYPE:		"Datatype" >
 | < ENUMERATION:	"Enumeration" >
 | < SERVICE:		"Service" >
 | < EXCEPTION:		"Exception" >
 | < MESSAGE:		"Message" >
+| < CONNECTOR:		"Connector" >
+| < SERVICELINK:	"ServiceLink" >
 | < EDITVIEW:		"EditView" >
 | < LISTVIEW:		"ListView" >
 | < SEARCHVIEW:		"SearchView" >
 | < COMMAND:		"Command" >
-| < MAP:			"Map" >
 | < PACKAGE:		"package" >
 | < IMPORT:			"import" >
 | < EXTENDS:		"extends" >
@@ -247,7 +248,10 @@ void ExtensionDeclaration() :
 void NabuccoStatement() :
 {}
 {
-    (        LOOKAHEAD(AnnotationDeclaration() <PUBLIC> <COMPONENT> )
+    (        LOOKAHEAD(AnnotationDeclaration() <PUBLIC> <APPLICATION> )
+        ApplicationStatement()
+      |
+        LOOKAHEAD(AnnotationDeclaration() <PUBLIC> <COMPONENT> )
         ComponentStatement()
       |
         LOOKAHEAD(AnnotationDeclaration() <PUBLIC> [ <ABSTRACT> ] <DATATYPE> )
@@ -280,6 +284,23 @@ void NabuccoStatement() :
 		LOOKAHEAD(AnnotationDeclaration() <PUBLIC> <COMMAND> )
 	  	CommandStatement()
     )
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Application Statement 													                                             //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void ApplicationStatement() :
+{}
+{
+	AnnotationDeclaration()
+	
+	<PUBLIC> <APPLICATION> <UNQUALIFIED_TYPE_NAME> <LBRACE_CHAR>
+	
+	 ( ApplicationPropertyDeclaration() ) * 
+	
+	<RBRACE_CHAR>
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -401,6 +422,23 @@ void ExceptionStatement() :
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                                   //
+// Connector Statement 													                                             //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void ConnectorStatement() :
+{}
+{
+	AnnotationDeclaration()
+	
+	<PRIVATE> <CONNECTOR> <UNQUALIFIED_TYPE_NAME> <LBRACE_CHAR>
+
+		( ConnectorPropertyDeclaration() ) *
+	
+	<RBRACE_CHAR>
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
 // EditView Statement 													                                             //
 //                                                                                                                   //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -486,9 +524,40 @@ void CommandStatement() :
 	<RBRACE_CHAR>
 }
 
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////                                                                                                               ////
+//// DECLARATIONS	(Statement Properties)									                                       ////
+////                                                                                                               ////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                                   //
-// Declarations															                                             //
+// Application Attributes												                                             //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void ApplicationPropertyDeclaration() :
+{}
+{
+    (
+        LOOKAHEAD( AnnotationDeclaration() ( <PUBLIC> | <PROTECTED> | <PRIVATE> ) <COMPONENT> )
+	    ComponentDeclaration()
+	  |
+        LOOKAHEAD( AnnotationDeclaration() ( <PUBLIC> | <PRIVATE> ) <CONNECTOR> )
+	    ConnectorStatement()
+	)
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Component Attributes												    	                                         //
 //                                                                                                                   //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void ComponentPropertyDeclaration() :
@@ -509,6 +578,11 @@ void ComponentPropertyDeclaration() :
 	)
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Service Attributes												    	                                         //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void ServicePropertyDeclaration() :
 {}
 {
@@ -523,6 +597,28 @@ void ServicePropertyDeclaration() :
 	    MethodDeclaration()	)
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Connector Attributes												    	                                         //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void ConnectorPropertyDeclaration() :
+{}
+{
+    (
+		LOOKAHEAD( AnnotationDeclaration() ( <PUBLIC> | <PROTECTED> | <PRIVATE> ) [ <TRANSIENT> ] <DATATYPE> )
+    	DatatypeDeclaration() 
+	  |
+	    LOOKAHEAD( AnnotationDeclaration() ( <PUBLIC> | <PROTECTED> | <PRIVATE> ) <SERVICELINK> )
+    	ServiceLinkDeclaration()
+	)
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Default Attributes (Datatype, Message, etc.)						    	                                         //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void PropertyDeclaration() :
 {}
 {
@@ -534,18 +630,25 @@ void PropertyDeclaration() :
 	  |
         LOOKAHEAD( AnnotationDeclaration() ( <PUBLIC> | <PROTECTED> | <PRIVATE> ) <ENUMERATION> )
 	    EnumerationDeclaration()
-	  |
-	    LOOKAHEAD( AnnotationDeclaration() ( <PUBLIC> | <PROTECTED> | <PRIVATE> ) <MAP> )
-	    MapDeclaration()
 	)
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Custom Declaration (e.g. Entity Manager)							    	                                         //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void CustomDeclaration() :{}{
     AnnotationDeclaration() 
   ( <PUBLIC> | <PROTECTED> | <PRIVATE> )
     <UNQUALIFIED_TYPE_NAME> <MULTIPLICITY> <NAME_IDENTIFIER>
     <SEMICOLON_CHAR>}
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Basetype Declaration												    	                                         //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void BasetypeDeclaration() : 
 {}
 {
@@ -555,7 +658,11 @@ void BasetypeDeclaration() :
     <SEMICOLON_CHAR>
 }
 
-
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Datatype Declaration	(in Components)								    	                                         //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void ComponentDatatypeDeclaration() : 
 {}
 {
@@ -565,6 +672,40 @@ void ComponentDatatypeDeclaration() :
     <SEMICOLON_CHAR>
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Connector Declaration											    	                                         //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void ConnectorDeclaration() : 
+{}
+{
+    AnnotationDeclaration() 
+  ( <PUBLIC> | <PROTECTED> | <PRIVATE> ) <CONNECTOR>
+    <UNQUALIFIED_TYPE_NAME> <NAME_IDENTIFIER>
+    <SEMICOLON_CHAR>
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// ServiceLink Declaration											    	                                         //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void ServiceLinkDeclaration() : 
+{}
+{
+    AnnotationDeclaration() 
+    <PRIVATE> <SERVICELINK>
+    <QUALIFIED_TYPE_NAME> <DOT_CHAR>
+    <NAME_IDENTIFIER> <LPAREN_CHAR> <RPAREN_CHAR>
+    <SEMICOLON_CHAR>
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Datatype Declaration	(Default)									    	                                         //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DatatypeDeclaration() : 
 {}
 {
@@ -574,6 +715,11 @@ void DatatypeDeclaration() :
     <SEMICOLON_CHAR>
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Enumeration Declaration											    	                                         //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void EnumerationDeclaration() : 
 {}
 {
@@ -583,6 +729,11 @@ void EnumerationDeclaration() :
     <SEMICOLON_CHAR>
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Enumeration Literal Declaration									    	                                         //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void EnumerationLiteralDeclaration() : 
 {}
 {
@@ -590,6 +741,11 @@ void EnumerationLiteralDeclaration() :
   	<CONSTANT_IDENTIFIER>
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Exception Parameter Declaration									    	                                         //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void ExceptionParameterDeclaration() : 
 {}
 {
@@ -597,13 +753,23 @@ void ExceptionParameterDeclaration() :
   	<PRIVATE> <PARAMETER> <NAME_IDENTIFIER> <SEMICOLON_CHAR>
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Component Declaration											    	                                         //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void ComponentDeclaration() : 
 {}
 {
     AnnotationDeclaration() 
-  ( <PUBLIC> | <PROTECTED> | <PRIVATE> ) <COMPONENT> <UNQUALIFIED_TYPE_NAME> <SEMICOLON_CHAR>
+  ( <PUBLIC> | <PROTECTED> | <PRIVATE> ) <COMPONENT> <UNQUALIFIED_TYPE_NAME> <NAME_IDENTIFIER> <SEMICOLON_CHAR>
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Service Declaration												    	                                         //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void ServiceDeclaration() : 
 {}
 {
@@ -611,6 +777,11 @@ void ServiceDeclaration() :
   ( <PUBLIC> | <PROTECTED> | <PRIVATE> ) <SERVICE> <UNQUALIFIED_TYPE_NAME> <SEMICOLON_CHAR>
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Method Declaration												    	                                         //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void MethodDeclaration() :
 {}
 {
@@ -619,19 +790,69 @@ void MethodDeclaration() :
 
 	ParameterList()
 
-    <RPAREN_CHAR> [ <THROWS> <UNQUALIFIED_TYPE_NAME> ] <SEMICOLON_CHAR>
+    <RPAREN_CHAR> [ <THROWS> <UNQUALIFIED_TYPE_NAME> ] ( <SEMICOLON_CHAR> | <LBRACE_CHAR> MethodBody() <RBRACE_CHAR> )
 }
 
-void MapDeclaration() :
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Method Parameters												    	                                         //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void ParameterList() : 
 {}
-{    AnnotationDeclaration()
-	( <PUBLIC> | <PROTECTED> | <PRIVATE> ) <MAP> <LBRACKET_CHAR>
-
-	<UNQUALIFIED_TYPE_NAME> <COMMA_CHAR> <UNQUALIFIED_TYPE_NAME>
-
-	<RBRACKET_CHAR> <NAME_IDENTIFIER> <SEMICOLON_CHAR>
+{
+  ( Parameter() ) *
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Single Parameter													    	                                         //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Parameter() : 
+{}
+{
+	[ <COMMA_CHAR> ] <UNQUALIFIED_TYPE_NAME>  <NAME_IDENTIFIER> 
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Method Body														    	                                         //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void MethodBody() :
+{}
+{
+    Block()
+}
+
+JAVACODE
+Block Block()
+{
+	Token tok;
+	StringBuffer buffer = new StringBuffer();
+
+	while (getToken(1) != null) {
+		tok = getToken(1);
+    	if (tok.kind == RBRACE_CHAR) {
+			break;
+		}
+
+		if (buffer.length() != 0) {
+		    buffer.append(' ');		}
+		buffer.append(tok.image);
+		    
+    	getNextToken();
+	}
+
+	return new Block(buffer.toString());
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// View Declaration												    	                                         //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void ViewDeclaration() :
 {}
 {
@@ -642,7 +863,7 @@ void ViewDeclaration() :
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                                   //
-// UI Widget Declarations												                                             //
+// Widget Declarations	(Deprecated)									                                             //
 //                                                                                                                   //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -743,15 +964,4 @@ void ColumnDeclaration() :
 	<SEMICOLON_CHAR>
 }
 
-void ParameterList() : 
-{}
-{
-  ( Parameter() ) *
-}
-
-void Parameter() : 
-{}
-{
-	[ <COMMA_CHAR> ] <UNQUALIFIED_TYPE_NAME>  <NAME_IDENTIFIER> 
-}
 

@@ -17,6 +17,8 @@
 
 package org.nabucco.framework.common.authorization.ui.rcp.list.user.view;
 
+import java.util.Map;
+import java.io.Serializable;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.widgets.Form;
 
@@ -33,6 +35,8 @@ import org.nabucco.framework.plugin.base.component.list.view.NabuccoTableViewer;
 public class ListViewTemplate extends NabuccoComponentListView {
 
     public static final String TITLE = ID + ".title";
+    
+    public static final String TAB_TITLE = ID + ".tabTitle";
 
     public ListViewTemplate() {
         model = new ListViewModel();
@@ -53,6 +57,15 @@ public class ListViewTemplate extends NabuccoComponentListView {
 
     @Override
     public void setFocus() {
+    }
+    
+    public Map<String, Serializable> getValues() { 
+        return model.getValues(); 
+    } 
+    
+    @Override 
+    public String getNewPartName() { 
+        return I18N.i18n(TAB_TITLE, getValues()); 
     }
 
     @Override

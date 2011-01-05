@@ -67,7 +67,7 @@ class NabuccoToJavaServiceInterfaceVisitor extends NabuccoToJavaVisitorSupport i
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
         String componentName = super
-                .getComponentName(NabuccoModelType.SERVICE, NabuccoModifierComponentMapper
+                .getProjectName(NabuccoModelType.SERVICE, NabuccoModifierComponentMapper
                         .getModifierType(nabuccoService.nodeToken.tokenImage));
 
         try {

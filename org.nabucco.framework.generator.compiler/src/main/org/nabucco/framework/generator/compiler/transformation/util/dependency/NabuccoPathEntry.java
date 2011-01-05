@@ -16,7 +16,7 @@
 */
 package org.nabucco.framework.generator.compiler.transformation.util.dependency;
 
-import org.nabucco.framework.generator.parser.model.NabuccoPathEntryType;
+import org.nabucco.framework.generator.parser.model.NabuccoModelResourceType;
 
 /**
  * NabuccoPathEntry
@@ -25,7 +25,7 @@ import org.nabucco.framework.generator.parser.model.NabuccoPathEntryType;
  */
 public class NabuccoPathEntry {
 
-    private NabuccoPathEntryType type;
+    private NabuccoModelResourceType type;
 
     private String location;
 
@@ -37,7 +37,7 @@ public class NabuccoPathEntry {
      * @param location
      *            concrete path of the entry
      */
-    public NabuccoPathEntry(NabuccoPathEntryType type, String location) {
+    public NabuccoPathEntry(NabuccoModelResourceType type, String location) {
         this.type = type;
         this.location = location;
     }
@@ -47,7 +47,7 @@ public class NabuccoPathEntry {
      * 
      * @return type of the entry.
      */
-    public NabuccoPathEntryType getType() {
+    public NabuccoModelResourceType getType() {
         return type;
     }
 

@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2010 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco-source.org/nabucco-license.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.parser.model.serializer;
 
 import java.io.BufferedInputStream;
@@ -27,21 +27,16 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.channels.FileLock;
 
+import org.nabucco.framework.generator.parser.file.NabuccoFileConstants;
 import org.nabucco.framework.generator.parser.model.NabuccoModel;
 import org.nabucco.framework.generator.parser.model.NabuccoModelException;
-
-import org.nabucco.framework.mda.logger.MdaLogger;
-import org.nabucco.framework.mda.logger.MdaLoggingFactory;
 
 /**
  * NabuccoModelSerializer
  * 
  * @author Nicolas Moser, PRODYNA AG
  */
-public class NabuccoModelSerializer {
-
-    private static MdaLogger logger = MdaLoggingFactory.getInstance().getLogger(
-            NabuccoModelSerializer.class);
+public class NabuccoModelSerializer implements NabuccoFileConstants {
 
     /**
      * Singleton instance.
@@ -92,10 +87,8 @@ public class NabuccoModelSerializer {
 
             objectOutput.writeObject(model);
             objectOutput.flush();
-
-            logger.trace("NabuccoModel successfully serialized.");
         } catch (IOException e) {
-            throw new NabuccoModelException("Error serializing NABUCCO model.", e);
+            throw new NabuccoSerializationException(model.getName(), e);
         } finally {
             try {
                 if (lock != null) {
@@ -111,7 +104,7 @@ public class NabuccoModelSerializer {
                     objectOutput.close();
                 }
             } catch (IOException e) {
-                throw new NabuccoModelException("Error serializing NABUCCO model.", e);
+                throw new NabuccoSerializationException(model.getName(), e);
             }
         }
     }
@@ -119,8 +112,8 @@ public class NabuccoModelSerializer {
     /**
      * Deserializes a <b>.nbcc</b> file into an appropriate NABUCCO model file.
      * 
-     * @param path
-     *            path of the <b>.nbcc</b> file
+     * @param file
+     *            the <b>.nbcc</b> file
      * 
      * @return the deserialized NABUCCO model
      * 
@@ -130,19 +123,21 @@ public class NabuccoModelSerializer {
 
         FileInputStream fileInput = null;
 
+        String fileName = file.getName().replace(NBC_SUFFIX, "");
+
         try {
             fileInput = new FileInputStream(file);
-            return deserializeNabucco(fileInput);
+            return deserializeNabucco(fileName, fileInput);
 
         } catch (IOException e) {
-            throw new NabuccoModelException("Error deserializing NABUCCO model.", e);
+            throw new NabuccoDeserializationException(fileName, e);
         } finally {
             try {
                 if (fileInput != null) {
                     fileInput.close();
                 }
             } catch (IOException e) {
-                throw new NabuccoModelException("Error deserializing NABUCCO model.", e);
+                throw new NabuccoDeserializationException(fileName, e);
             }
         }
     }
@@ -150,6 +145,8 @@ public class NabuccoModelSerializer {
     /**
      * Deserializes a InputStream into an appropriate NABUCCO model file.
      * 
+     * @param fileName
+     *            name of the file
      * @param inputStream
      *            inputStream of the <b>.nbcc</b> file
      * 
@@ -157,7 +154,7 @@ public class NabuccoModelSerializer {
      * 
      * @throws NabuccoModelException
      */
-    public synchronized NabuccoModel deserializeNabucco(InputStream inputStream)
+    public synchronized NabuccoModel deserializeNabucco(String fileName, InputStream inputStream)
             throws NabuccoModelException {
 
         BufferedInputStream bufferedInput = null;
@@ -168,13 +165,12 @@ public class NabuccoModelSerializer {
             objectInput = new ObjectInputStream(bufferedInput);
 
             NabuccoModel model = (NabuccoModel) objectInput.readObject();
-            logger.trace("NabuccoModel successfully deserialized.");
             return model;
 
         } catch (ClassNotFoundException e) {
-            throw new NabuccoModelException("Error deserializing NABUCCO model.", e);
+            throw new NabuccoDeserializationException(fileName, e);
         } catch (IOException e) {
-            throw new NabuccoModelException("Error deserializing NABUCCO model.", e);
+            throw new NabuccoDeserializationException(fileName, e);
         } finally {
             try {
                 if (bufferedInput != null) {
@@ -184,7 +180,7 @@ public class NabuccoModelSerializer {
                     objectInput.close();
                 }
             } catch (IOException e) {
-                throw new NabuccoModelException("Error deserializing NABUCCO model.", e);
+                throw new NabuccoDeserializationException(fileName, e);
             }
         }
     }

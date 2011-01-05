@@ -28,6 +28,7 @@ import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotation;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationMapper;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationType;
+import org.nabucco.framework.generator.compiler.transformation.java.common.basetype.BasetypeFacade;
 import org.nabucco.framework.generator.compiler.visitor.NabuccoVisitorException;
 import org.nabucco.framework.generator.parser.syntaxtree.AnnotationDeclaration;
 
@@ -88,7 +89,7 @@ class NabuccoToJavaBasetypeVisitorSupport {
 
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
         JavaAstModelProducer jamp = JavaAstModelProducer.getInstance();
-        String baseTypeType = NabuccoToJavaBasetypeReferences.mapToJavaType(superType);
+        String baseTypeType = BasetypeFacade.mapToPrimitiveType(superType);
 
         try {
             String typeName = javaFactory.getJavaAstType().getTypeName(type);
@@ -127,7 +128,7 @@ class NabuccoToJavaBasetypeVisitorSupport {
 
             if (arguments.size() == 1) {
                 arguments.get(0).type = JavaAstModelProducer.getInstance().createTypeReference(
-                        NabuccoToJavaBasetypeReferences.mapToJavaType(superType), false);
+                        BasetypeFacade.mapToPrimitiveType(superType), false);
             }
             
         } catch (JavaModelException e) {

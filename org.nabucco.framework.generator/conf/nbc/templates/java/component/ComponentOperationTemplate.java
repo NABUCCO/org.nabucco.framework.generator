@@ -30,14 +30,16 @@ public class ComponentOperationTemplate {
         return this.componentField;
     }
     
-    public ServiceDelegateTemplate getServiceDelegateTemplate() throws ServiceException {
+    public ServiceDelegateTemplate getServiceDelegateTemplate() throws ClientException {
         try {
             if (this.delegate == null) {
                 this.delegate = new ServiceDelegateTemplate(getComponent().getServiceTemplate());
             }
             return this.delegate;
         } catch (ConnectionException e) {
-            throw new ServiceException("Cannot locate service: ServiceDelegateTemplate");
+            throw new ClientException("Cannot locate service: ServiceDelegateTemplate",e);
+        } catch (ServiceException e) {
+        throw new ClientException("Cannot locate service: ServiceDelegateTemplate",e);
         }
     }
     

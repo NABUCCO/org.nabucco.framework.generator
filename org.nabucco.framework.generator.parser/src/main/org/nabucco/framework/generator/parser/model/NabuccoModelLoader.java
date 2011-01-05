@@ -21,14 +21,16 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
+import org.nabucco.framework.generator.parser.NabuccoParseException;
 import org.nabucco.framework.generator.parser.NabuccoParser;
 import org.nabucco.framework.generator.parser.ParseException;
-import org.nabucco.framework.generator.parser.ParseExceptionMapper;
+import org.nabucco.framework.generator.parser.TokenMgrError;
 import org.nabucco.framework.generator.parser.file.NabuccoFile;
 import org.nabucco.framework.generator.parser.model.serializer.NabuccoModelSerializer;
 import org.nabucco.framework.generator.parser.syntaxtree.NabuccoStatement;
 import org.nabucco.framework.generator.parser.syntaxtree.NabuccoUnit;
-
+import org.nabucco.framework.mda.logger.MdaLogger;
+import org.nabucco.framework.mda.logger.MdaLoggingFactory;
 import org.nabucco.framework.mda.model.ModelLoader;
 
 /**
@@ -38,6 +40,10 @@ import org.nabucco.framework.mda.model.ModelLoader;
  */
 public class NabuccoModelLoader extends ModelLoader<NabuccoModel, NabuccoFile> {
 
+    /** The logger */
+    private static MdaLogger logger = MdaLoggingFactory.getInstance().getLogger(
+            NabuccoModelLoader.class);
+    
     /** Source folder */
     private static final String SOURCE_DIR = "src" + File.separator + "nbc";
 
@@ -58,7 +64,7 @@ public class NabuccoModelLoader extends ModelLoader<NabuccoModel, NabuccoFile> {
 
     @Override
     public NabuccoModel loadModel(NabuccoFile modelFile) throws NabuccoModelException {
-        return loadModel(modelFile, this.outDir);
+        return this.loadModel(modelFile, this.outDir);
     }
 
     /**
@@ -76,9 +82,14 @@ public class NabuccoModelLoader extends ModelLoader<NabuccoModel, NabuccoFile> {
     private NabuccoModel loadModel(NabuccoFile nbcFile, String outDir)
             throws NabuccoModelException {
 
+        String fileName = (nbcFile == null) ? "null" : nbcFile.getFileName();
+        
         try {
             if (outDir == null) {
                 throw new IllegalArgumentException("Target directory is not defined.");
+            }
+            if (nbcFile == null) {
+                throw new IllegalArgumentException("Cannot load .nbc file [null].");
             }
 
             String srcPath = nbcFile.getCanonicalPath();
@@ -101,47 +112,60 @@ public class NabuccoModelLoader extends ModelLoader<NabuccoModel, NabuccoFile> {
             reader.close();
 
             NabuccoModel model = new NabuccoModel(unit, srcPath, modelType,
-                    NabuccoPathEntryType.PROJECT);
+                    NabuccoModelResourceType.PROJECT);
             serializer.serializeNabucco(model, outFile);
             return model;
 
         } catch (FileNotFoundException fnfe) {
-            // TODO: Logger
+            logger.debug("Cannot find file '", fileName, ".nbc' in project.");
             return null;
         } catch (IOException ioe) {
-            String name = (nbcFile == null) ? "null" : nbcFile.getFileName() + "'.";
-            throw new NabuccoModelException("Cannot parse file '" + name + "'.");
+            throw new NabuccoModelException(fileName);
         } catch (ParseException pe) {
-            throw ParseExceptionMapper.mapParseException(pe, nbcFile);
+            throw new NabuccoParseException(fileName, pe);
+        } catch (TokenMgrError te) {
+            throw new NabuccoParseException(fileName, te);
         }
     }
 
+    /**
+     * Resolve the NABUCCO model type.
+     * 
+     * @param statement
+     *            the statement
+     * 
+     * @return the model type
+     * 
+     * @throws NabuccoModelException
+     */
     private NabuccoModelType resolveModelType(NabuccoStatement statement)
             throws NabuccoModelException {
 
         switch (statement.nodeChoice.which) {
-
+        
         case 0:
-            return NabuccoModelType.COMPONENT;
+            return NabuccoModelType.APPLICATION;
         case 1:
-            return NabuccoModelType.DATATYPE;
+            return NabuccoModelType.COMPONENT;
         case 2:
-            return NabuccoModelType.BASETYPE;
+            return NabuccoModelType.DATATYPE;
         case 3:
-            return NabuccoModelType.ENUMERATION;
+            return NabuccoModelType.BASETYPE;
         case 4:
-            return NabuccoModelType.EXCEPTION;
+            return NabuccoModelType.ENUMERATION;
         case 5:
-            return NabuccoModelType.SERVICE;
+            return NabuccoModelType.EXCEPTION;
         case 6:
-            return NabuccoModelType.MESSAGE;
+            return NabuccoModelType.SERVICE;
         case 7:
-            return NabuccoModelType.EDIT_VIEW;
+            return NabuccoModelType.MESSAGE;
         case 8:
-            return NabuccoModelType.LIST_VIEW;
+            return NabuccoModelType.EDIT_VIEW;
         case 9:
-            return NabuccoModelType.SEARCH_VIEW;
+            return NabuccoModelType.LIST_VIEW;
         case 10:
+            return NabuccoModelType.SEARCH_VIEW;
+        case 11:
             return NabuccoModelType.COMMAND;
         }
 

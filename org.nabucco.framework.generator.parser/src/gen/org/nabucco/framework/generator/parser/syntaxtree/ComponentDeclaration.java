@@ -11,7 +11,8 @@ package org.nabucco.framework.generator.parser.syntaxtree;
  * nodeChoice -> ( &lt;PUBLIC&gt; | &lt;PROTECTED&gt; | &lt;PRIVATE&gt; )
  * nodeToken -> &lt;COMPONENT&gt;
  * nodeToken1 -> &lt;UNQUALIFIED_TYPE_NAME&gt;
- * nodeToken2 -> &lt;SEMICOLON_CHAR&gt;
+ * nodeToken2 -> &lt;NAME_IDENTIFIER&gt;
+ * nodeToken3 -> &lt;SEMICOLON_CHAR&gt;
  * </PRE>
  */
 public class ComponentDeclaration implements Node {
@@ -21,8 +22,9 @@ public class ComponentDeclaration implements Node {
    public NodeToken nodeToken;
    public NodeToken nodeToken1;
    public NodeToken nodeToken2;
+   public NodeToken nodeToken3;
 
-   public ComponentDeclaration(AnnotationDeclaration n0, NodeChoice n1, NodeToken n2, NodeToken n3, NodeToken n4) {
+   public ComponentDeclaration(AnnotationDeclaration n0, NodeChoice n1, NodeToken n2, NodeToken n3, NodeToken n4, NodeToken n5) {
       annotationDeclaration = n0;
       if ( annotationDeclaration != null ) annotationDeclaration.setParent(this);
       nodeChoice = n1;
@@ -33,9 +35,11 @@ public class ComponentDeclaration implements Node {
       if ( nodeToken1 != null ) nodeToken1.setParent(this);
       nodeToken2 = n4;
       if ( nodeToken2 != null ) nodeToken2.setParent(this);
+      nodeToken3 = n5;
+      if ( nodeToken3 != null ) nodeToken3.setParent(this);
    }
 
-   public ComponentDeclaration(AnnotationDeclaration n0, NodeChoice n1, NodeToken n2) {
+   public ComponentDeclaration(AnnotationDeclaration n0, NodeChoice n1, NodeToken n2, NodeToken n3) {
       annotationDeclaration = n0;
       if ( annotationDeclaration != null ) annotationDeclaration.setParent(this);
       nodeChoice = n1;
@@ -44,8 +48,10 @@ public class ComponentDeclaration implements Node {
       if ( nodeToken != null ) nodeToken.setParent(this);
       nodeToken1 = n2;
       if ( nodeToken1 != null ) nodeToken1.setParent(this);
-      nodeToken2 = new NodeToken(";");
+      nodeToken2 = n3;
       if ( nodeToken2 != null ) nodeToken2.setParent(this);
+      nodeToken3 = new NodeToken(";");
+      if ( nodeToken3 != null ) nodeToken3.setParent(this);
    }
 
    public void accept(org.nabucco.framework.generator.parser.visitor.Visitor v) {

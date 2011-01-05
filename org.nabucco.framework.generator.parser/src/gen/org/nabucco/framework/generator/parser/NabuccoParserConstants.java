@@ -75,103 +75,107 @@ public interface NabuccoParserConstants {
   /** RegularExpression Id. */
   int UMLAUTE = 32;
   /** RegularExpression Id. */
-  int COMPONENT = 33;
+  int APPLICATION = 33;
   /** RegularExpression Id. */
-  int BASETYPE = 34;
+  int COMPONENT = 34;
   /** RegularExpression Id. */
-  int DATATYPE = 35;
+  int BASETYPE = 35;
   /** RegularExpression Id. */
-  int ENUMERATION = 36;
+  int DATATYPE = 36;
   /** RegularExpression Id. */
-  int SERVICE = 37;
+  int ENUMERATION = 37;
   /** RegularExpression Id. */
-  int EXCEPTION = 38;
+  int SERVICE = 38;
   /** RegularExpression Id. */
-  int MESSAGE = 39;
+  int EXCEPTION = 39;
   /** RegularExpression Id. */
-  int EDITVIEW = 40;
+  int MESSAGE = 40;
   /** RegularExpression Id. */
-  int LISTVIEW = 41;
+  int CONNECTOR = 41;
   /** RegularExpression Id. */
-  int SEARCHVIEW = 42;
+  int SERVICELINK = 42;
   /** RegularExpression Id. */
-  int COMMAND = 43;
+  int EDITVIEW = 43;
   /** RegularExpression Id. */
-  int MAP = 44;
+  int LISTVIEW = 44;
   /** RegularExpression Id. */
-  int PACKAGE = 45;
+  int SEARCHVIEW = 45;
   /** RegularExpression Id. */
-  int IMPORT = 46;
+  int COMMAND = 46;
   /** RegularExpression Id. */
-  int EXTENDS = 47;
+  int PACKAGE = 47;
   /** RegularExpression Id. */
-  int VOID = 48;
+  int IMPORT = 48;
   /** RegularExpression Id. */
-  int THROWS = 49;
+  int EXTENDS = 49;
   /** RegularExpression Id. */
-  int PUBLIC = 50;
+  int VOID = 50;
   /** RegularExpression Id. */
-  int PROTECTED = 51;
+  int THROWS = 51;
   /** RegularExpression Id. */
-  int PRIVATE = 52;
+  int PUBLIC = 52;
   /** RegularExpression Id. */
-  int ABSTRACT = 53;
+  int PROTECTED = 53;
   /** RegularExpression Id. */
-  int PERSISTENT = 54;
+  int PRIVATE = 54;
   /** RegularExpression Id. */
-  int TRANSIENT = 55;
+  int ABSTRACT = 55;
   /** RegularExpression Id. */
-  int PARAMETER = 56;
+  int PERSISTENT = 56;
   /** RegularExpression Id. */
-  int LABELED_INPUT_FIELD = 57;
+  int TRANSIENT = 57;
   /** RegularExpression Id. */
-  int LABELED_COMBO_BOX = 58;
+  int PARAMETER = 58;
   /** RegularExpression Id. */
-  int LABELED_PICKER = 59;
+  int LABELED_INPUT_FIELD = 59;
   /** RegularExpression Id. */
-  int LABELED_LIST_PICKER = 60;
+  int LABELED_COMBO_BOX = 60;
   /** RegularExpression Id. */
-  int INPUT_FIELD = 61;
+  int LABELED_PICKER = 61;
   /** RegularExpression Id. */
-  int COMBO_BOX = 62;
+  int LABELED_LIST_PICKER = 62;
   /** RegularExpression Id. */
-  int PICKER = 63;
+  int INPUT_FIELD = 63;
   /** RegularExpression Id. */
-  int LIST_PICKER = 64;
+  int COMBO_BOX = 64;
   /** RegularExpression Id. */
-  int COLUMN = 65;
+  int PICKER = 65;
   /** RegularExpression Id. */
-  int SIMPLE_DATA_TYPE = 66;
+  int LIST_PICKER = 66;
   /** RegularExpression Id. */
-  int DIGIT = 67;
+  int COLUMN = 67;
   /** RegularExpression Id. */
-  int LC_SEQUENCE = 68;
+  int SIMPLE_DATA_TYPE = 68;
   /** RegularExpression Id. */
-  int HC_SEQUENCE = 69;
+  int DIGIT = 69;
   /** RegularExpression Id. */
-  int LCUC_SEQUENCE = 70;
+  int LC_SEQUENCE = 70;
   /** RegularExpression Id. */
-  int UCLC_SEQUENCE = 71;
+  int HC_SEQUENCE = 71;
   /** RegularExpression Id. */
-  int NAME_IDENTIFIER = 72;
+  int LCUC_SEQUENCE = 72;
   /** RegularExpression Id. */
-  int CONSTANT_IDENTIFIER = 73;
+  int UCLC_SEQUENCE = 73;
   /** RegularExpression Id. */
-  int PACKAGE_IDENTIFIER = 74;
+  int NAME_IDENTIFIER = 74;
   /** RegularExpression Id. */
-  int UNQUALIFIED_TYPE_NAME = 75;
+  int CONSTANT_IDENTIFIER = 75;
   /** RegularExpression Id. */
-  int QUALIFIED_TYPE_NAME = 76;
+  int PACKAGE_IDENTIFIER = 76;
   /** RegularExpression Id. */
-  int MULTIPLICITY = 77;
+  int UNQUALIFIED_TYPE_NAME = 77;
   /** RegularExpression Id. */
-  int START_ANNOTATION = 81;
+  int QUALIFIED_TYPE_NAME = 78;
   /** RegularExpression Id. */
-  int ANNOTATION_PARAM = 85;
+  int MULTIPLICITY = 79;
   /** RegularExpression Id. */
-  int ANNOTATION = 86;
+  int START_ANNOTATION = 83;
   /** RegularExpression Id. */
-  int END_ANNOTATION = 87;
+  int ANNOTATION_PARAM = 87;
+  /** RegularExpression Id. */
+  int ANNOTATION = 88;
+  /** RegularExpression Id. */
+  int END_ANNOTATION = 89;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -215,6 +219,7 @@ public interface NabuccoParserConstants {
     "\"$\"",
     "\"&\"",
     "<UMLAUTE>",
+    "\"Application\"",
     "\"Component\"",
     "\"Basetype\"",
     "\"Datatype\"",
@@ -222,11 +227,12 @@ public interface NabuccoParserConstants {
     "\"Service\"",
     "\"Exception\"",
     "\"Message\"",
+    "\"Connector\"",
+    "\"ServiceLink\"",
     "\"EditView\"",
     "\"ListView\"",
     "\"SearchView\"",
     "\"Command\"",
-    "\"Map\"",
     "\"package\"",
     "\"import\"",
     "\"extends\"",
@@ -261,7 +267,7 @@ public interface NabuccoParserConstants {
     "<QUALIFIED_TYPE_NAME>",
     "<MULTIPLICITY>",
     "\"/*\"",
-    "<token of kind 79>",
+    "<token of kind 81>",
     "\"*/\"",
     "\"@\"",
     "\" \"",

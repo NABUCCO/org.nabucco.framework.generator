@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2010 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco-source.org/nabucco-license.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.verifier.type;
 
 import java.util.HashSet;
@@ -23,11 +23,10 @@ import org.nabucco.framework.generator.compiler.transformation.common.annotation
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationMapper;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationType;
 import org.nabucco.framework.generator.compiler.verifier.NabuccoModelVerificationVisitor;
-import org.nabucco.framework.generator.parser.model.NabuccoModel;
+import org.nabucco.framework.generator.compiler.verifier.error.VerificationErrorCriticality;
+import org.nabucco.framework.generator.compiler.verifier.error.VerificationResult;
 import org.nabucco.framework.generator.parser.syntaxtree.EnumerationLiteralDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.EnumerationStatement;
-
-import org.nabucco.framework.mda.model.MdaModel;
 
 /**
  * EnumerationVerification
@@ -36,55 +35,103 @@ import org.nabucco.framework.mda.model.MdaModel;
  */
 public class NabuccoEnumerationVerification extends NabuccoModelVerificationVisitor {
 
-    private Set<String> literalNames = new HashSet<String>();
+    /** The current enumeration. */
+    private EnumerationStatement enumStatement;
 
+    /** The enumeration literal ids. */
     private Set<String> literalIds = new HashSet<String>();
 
-    private EnumerationStatement currentEnumerationStatement = null;
+    /** The enumeration literal names. */
+    private Set<String> literalNames = new HashSet<String>();
 
     @Override
-    public void visit(EnumerationStatement nabuccoEnum, MdaModel<NabuccoModel> target) {
-        currentEnumerationStatement = nabuccoEnum;
-        super.visit(nabuccoEnum, target);
+    public void visit(EnumerationStatement nabuccoEnum, VerificationResult result) {
+        enumStatement = nabuccoEnum;
+        super.visit(nabuccoEnum, result);
     }
 
     @Override
-    public void visit(EnumerationLiteralDeclaration nabuccoLiteral, MdaModel<NabuccoModel> target) {
-        super.visit(nabuccoLiteral, target);
-        if (!literalNames.add(nabuccoLiteral.nodeToken.tokenImage)) {
-            duplicateLiteralName(nabuccoLiteral, nabuccoLiteral.nodeToken.tokenImage);
+    public void visit(EnumerationLiteralDeclaration nabuccoLiteral, VerificationResult result) {
+
+        super.visit(nabuccoLiteral, result);
+
+        String literalName = nabuccoLiteral.nodeToken.tokenImage;
+
+        if (!literalNames.add(literalName)) {
+            duplicateLiteralName(nabuccoLiteral, literalName, result);
         }
+
         NabuccoAnnotation literalId = NabuccoAnnotationMapper.getInstance().mapToAnnotation(
                 nabuccoLiteral.annotationDeclaration, NabuccoAnnotationType.LITERAL_ID);
+
         if (literalId == null) {
-            noValidLiteralId(nabuccoLiteral);
-        } else if (literalId.getValue() == null) {
-            noValidLiteralId(nabuccoLiteral);
+            noValidLiteralId(nabuccoLiteral, result);
+        } else if (literalId.getValue() == null || literalId.getValue().isEmpty()) {
+            noValidLiteralId(nabuccoLiteral, result);
         } else if (!literalIds.add(literalId.getValue())) {
-            duplicateLiteralId(nabuccoLiteral, literalId.getValue());
+            duplicateLiteralId(nabuccoLiteral, literalId.getValue(), result);
         }
     }
 
-    private final void noValidLiteralId(EnumerationLiteralDeclaration nabuccoLiteral) {
-        logger.warning("Enumeration "
-                + currentEnumerationStatement.nodeToken2.tokenImage
-                + ", Enumeration Literal Declaration : " + nabuccoLiteral.nodeToken.tokenImage
-                + " does not define a literalId Annotation");
+    /**
+     * Warn for missing LiteralId annotation.
+     * 
+     * @param nabuccoLiteral
+     *            the enum literal
+     * @param result
+     *            the verification result
+     */
+    private void noValidLiteralId(EnumerationLiteralDeclaration nabuccoLiteral,
+            VerificationResult result) {
+        String name = enumStatement.nodeToken2.tokenImage;
+        String literal = nabuccoLiteral.nodeToken.tokenImage;
+
+        result.addError(VerificationErrorCriticality.ERROR, "Enumeration ", name,
+                ", Enumeration Literal Declaration : ", literal,
+                " does not define a @LiteralId Annotation.");
     }
 
-    private final void duplicateLiteralId(EnumerationLiteralDeclaration nabuccoLiteral,
-            String literalId) {
-        logger.warning("Enumeration "
-                + currentEnumerationStatement.nodeToken2.tokenImage
-                + " Enumeration Literal Declaration : " + nabuccoLiteral.nodeToken.tokenImage
-                + " defines duplicated a literalId: " + literalId);
+    /**
+     * Warn for duplicate LitearalId annotation.
+     * 
+     * @param nabuccoLiteral
+     *            the enum literal
+     * @param literalId
+     *            the literal id
+     * @param result
+     *            the verification result
+     */
+    private void duplicateLiteralId(EnumerationLiteralDeclaration nabuccoLiteral, String literalId,
+            VerificationResult result) {
+        String name = enumStatement.nodeToken2.tokenImage;
+        String literal = nabuccoLiteral.nodeToken.tokenImage;
+        int row = nabuccoLiteral.nodeToken.beginLine;
+        int col = nabuccoLiteral.nodeToken.beginColumn;
+
+        result.addError(VerificationErrorCriticality.ERROR, row, col, "Enumeration ", name,
+                " Enumeration Literal Declaration : ", literal,
+                " defines duplicated a @LiteralId: ", literalId);
     }
 
-    private final void duplicateLiteralName(EnumerationLiteralDeclaration nabuccoLiteral,
-            String literalName) {
-        logger.warning("Enumeration "
-                + currentEnumerationStatement.nodeToken2.tokenImage
-                + " Enumeration Literal Declaration : " + nabuccoLiteral.nodeToken.tokenImage
-                + " defines duplicated a literal name: " + literalName);
+    /**
+     * Warn for duplicate literal name.
+     * 
+     * @param nabuccoLiteral
+     *            the enum literal
+     * @param literalName
+     *            the literal name
+     * @param result
+     *            the verification result
+     */
+    private void duplicateLiteralName(EnumerationLiteralDeclaration nabuccoLiteral,
+            String literalName, VerificationResult result) {
+        String name = enumStatement.nodeToken2.tokenImage;
+        String literal = nabuccoLiteral.nodeToken.tokenImage;
+        int row = nabuccoLiteral.nodeToken.beginLine;
+        int col = nabuccoLiteral.nodeToken.beginColumn;
+
+        result.addError(VerificationErrorCriticality.ERROR, row, col, "Enumeration ", name,
+                " Enumeration Literal Declaration : ", literal,
+                " defines duplicated a literal name: ", literalName);
     }
 }

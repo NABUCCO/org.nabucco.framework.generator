@@ -71,19 +71,31 @@ public class NabuccoToXmlComponentTransformation extends NabuccoToXmlTransformat
         // visitor = new NabuccoToXmlComponentPersistenceVisitor(visitorContext);
         // source.getModel().getUnit().accept(visitor, target);
 
-        // ejb-jar.xml (fragments)
+        // ejb-jar.xml (compoent fragment)
         visitorContext = super.createVisitorContext(context);
         visitor = new NabuccoToXmlComponentEjbJarVisitor(visitorContext);
 
         source.getModel().getUnit().accept(visitor, target);
 
-        // jboss.xml
+        // ejb-jar.xml (compoent relation service fragment)
+        visitorContext = super.createVisitorContext(context);
+        visitor = new NabuccoToXmlComponentRelationEjbJarVisitor(visitorContext);
+
+        source.getModel().getUnit().accept(visitor, target);
+
+        // jboss.xml (component fragment)
         visitorContext = super.createVisitorContext(context);
         visitor = new NabuccoToXmlComponentJBossVisitor(visitorContext);
 
         source.getModel().getUnit().accept(visitor, target);
 
-        // orm.xml (fragments)
+        // jboss.xml.xml (compoent relation service fragment)
+        visitorContext = super.createVisitorContext(context);
+        visitor = new NabuccoToXmlComponentRelationJBossVisitor(visitorContext);
+
+        source.getModel().getUnit().accept(visitor, target);
+
+        // orm.xml (datatype fragments)
         visitorContext = super.createVisitorContext(context);
         NabuccoToXmlDatatypeFacade.getInstance().createOrmFragments(source, target, visitorContext);
     }

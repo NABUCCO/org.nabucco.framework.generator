@@ -36,14 +36,14 @@ import org.nabucco.framework.generator.compiler.transformation.common.annotation
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationMapper;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationType;
 import org.nabucco.framework.generator.compiler.transformation.common.collection.CollectionType;
-import org.nabucco.framework.generator.compiler.transformation.java.basetype.NabuccoToJavaBasetypeMapping;
-import org.nabucco.framework.generator.compiler.transformation.java.basetype.NabuccoToJavaBasetypeReferences;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.container.JavaAstContainter;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.container.JavaAstMethodStatementContainer;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.container.JavaAstType;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.util.GetterSetterOptions;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.util.JavaAstGetterSetterProducer;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.util.equals.JavaAstObjectMethodFactory;
+import org.nabucco.framework.generator.compiler.transformation.java.common.basetype.BasetypeMapping;
+import org.nabucco.framework.generator.compiler.transformation.java.common.basetype.BasetypeFacade;
 import org.nabucco.framework.generator.compiler.transformation.java.common.javadoc.NabuccoJavadocTransformationException;
 import org.nabucco.framework.generator.compiler.transformation.java.common.javadoc.NabuccoToJavaJavadocCreator;
 import org.nabucco.framework.generator.compiler.transformation.java.constants.CollectionConstants;
@@ -344,9 +344,9 @@ public final class JavaAstSupport implements CollectionConstants {
         JavaAstContainter<TypeReference> container = new JavaAstContainter<TypeReference>(
                 superClass, JavaAstType.SUPER_CLASS);
 
-        if (NabuccoToJavaBasetypeReferences.isBasetypeReference(className)) {
+        if (BasetypeFacade.isBasetype(className)) {
             container.getImports().add(
-                    NabuccoToJavaBasetypeReferences.getBasetypeReference(className));
+                    BasetypeFacade.getBasetype(className));
         } else {
             container.getImports().add(className);
         }
@@ -430,8 +430,8 @@ public final class JavaAstSupport implements CollectionConstants {
             TypeReference typeRef = JavaAstModelProducer.getInstance().createTypeReference(type,
                     false);
 
-            if (NabuccoToJavaBasetypeMapping.N_TYPE.getName().equals(type)) {
-                container.getImports().add(NabuccoToJavaBasetypeMapping.N_TYPE.getJavaClass());
+            if (BasetypeMapping.N_TYPE.getName().equals(type)) {
+                container.getImports().add(BasetypeMapping.N_TYPE.getPrimitiveType());
             } else {
                 container.getImports().add(type);
             }
@@ -572,24 +572,9 @@ public final class JavaAstSupport implements CollectionConstants {
      * @return the setter method declaration
      */
     public static JavaAstContainter<MethodDeclaration> createSetter(FieldDeclaration field) {
-        return JavaAstSupport.createSetter(field, new GetterSetterOptions());
-    }
-
-    /**
-     * Creates a setter for a field declaration.
-     * 
-     * @param field
-     *            the field declaration
-     * @param options
-     *            additional options
-     * 
-     * @return the setter method declaration
-     */
-    public static JavaAstContainter<MethodDeclaration> createSetter(FieldDeclaration field,
-            GetterSetterOptions options) {
         try {
             return new JavaAstContainter<MethodDeclaration>(JavaAstGetterSetterProducer
-                    .getInstance().produceSetter(field, options), JavaAstType.METHOD);
+                    .getInstance().produceSetter(field), JavaAstType.METHOD);
         } catch (JavaModelException jme) {
             throw new NabuccoVisitorException("Error creating Java AST Setter.", jme);
         }
@@ -713,6 +698,8 @@ public final class JavaAstSupport implements CollectionConstants {
         }
     }
 
+    // TODO: Move NabuccoAnnotation methods to another class!
+    
     /**
      * Converts all annotations of a basetype declaration to a list of {@link NabuccoAnnotation}.
      * 

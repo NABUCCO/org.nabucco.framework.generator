@@ -71,6 +71,8 @@ class NabuccoToJavaServiceHandlerVisitor extends NabuccoToJavaVisitorSupport imp
     private static final String IMPORT_VALIDATIONEXCEPTION = "org.nabucco.framework.base.facade.exception.validation.ValidationException";
 
     private static final String IMPORT_VALIDATIONRESULT = "org.nabucco.framework.base.facade.datatype.validation.ValidationResult";
+    
+    private static final String IMPORT_VALIDATIONTYPE = "org.nabucco.framework.base.facade.datatype.validation.ValidationType";
 
     private static final String DEFAULT_SERVICE_EXCEPTION = "org.nabucco.framework.base.facade.exception.service.ServiceException";
 
@@ -99,7 +101,7 @@ class NabuccoToJavaServiceHandlerVisitor extends NabuccoToJavaVisitorSupport imp
         String methodName = nabuccoMethod.nodeToken1.tokenImage;
         String servicePackage = this.getVisitorContext().getPackage().replace(PKG_FACADE, PKG_IMPL);
         String handlerName = NabuccoToJavaServiceVisitorSupport.convertMethodToHandler(methodName);
-        String componentName = super.getComponentName(NabuccoModelType.SERVICE,
+        String componentName = super.getProjectName(NabuccoModelType.SERVICE,
                 NabuccoModifierType.PRIVATE);
 
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
@@ -292,6 +294,7 @@ class NabuccoToJavaServiceHandlerVisitor extends NabuccoToJavaVisitorSupport imp
 
         super.removeImport(unit, IMPORT_VALIDATIONRESULT);
         super.removeImport(unit, IMPORT_VALIDATIONEXCEPTION);
+        super.removeImport(unit, IMPORT_VALIDATIONTYPE);
     }
 
     /**

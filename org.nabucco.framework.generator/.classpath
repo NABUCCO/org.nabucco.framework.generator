@@ -7,7 +7,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/org.nabucco.framework.generator.parser"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="lib" path="lib/ant.jar"/>
-	<classpathentry kind="lib" path="lib/org.nabucco.framework.mda.jar"/>
+	<classpathentry kind="lib" path="lib/org.nabucco.framework.mda.jar" sourcepath="/org.nabucco.framework.mda.model.java"/>
 	<classpathentry kind="lib" path="lib/ant-launcher.jar"/>
 	<classpathentry kind="output" path="out/ide"/>
 </classpath>

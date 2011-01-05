@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2010 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco-source.org/nabucco-license.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.xml.datatype;
 
 import java.io.File;
@@ -30,14 +30,13 @@ import org.nabucco.framework.generator.parser.syntaxtree.DatatypeDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.DatatypeStatement;
 import org.nabucco.framework.generator.parser.syntaxtree.EnumerationDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.ExtensionDeclaration;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
 import org.nabucco.framework.mda.model.MdaModel;
 import org.nabucco.framework.mda.model.xml.XmlDocument;
 import org.nabucco.framework.mda.model.xml.XmlModel;
 import org.nabucco.framework.mda.template.xml.XmlTemplate;
 import org.nabucco.framework.mda.template.xml.XmlTemplateException;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
  * NabuccoToXmlDatatypeEntityVisitor
@@ -51,6 +50,8 @@ class NabuccoToXmlDatatypeEntityVisitor extends NabuccoToXmlDatatypeVisitor impl
 
     private List<Node> attributeList = new ArrayList<Node>();
 
+    private String componentPrefix;
+
     /**
      * Creates a new {@link NabuccoToXmlDatatypeEntityVisitor} instance.
      * 
@@ -60,22 +61,25 @@ class NabuccoToXmlDatatypeEntityVisitor extends NabuccoToXmlDatatypeVisitor impl
      *            the visitor collector (must be closed after visitation)
      * @param rootPackage
      *            the root package of the XML transformation (the starting element)
+     * @param componentPrefix
+     *            the component prefix
      */
     public NabuccoToXmlDatatypeEntityVisitor(NabuccoToXmlVisitorContext visitorContext,
-            NabuccoToXmlDatatypeCollector collector, String rootPackage) {
+            NabuccoToXmlDatatypeCollector collector, String rootPackage, String componentPrefix) {
         super(visitorContext, collector, rootPackage);
+        this.componentPrefix = componentPrefix;
     }
 
     @Override
     public void visit(ExtensionDeclaration nabuccoExtension, MdaModel<XmlModel> target) {
-        
+
         // Set the component name to the current component.
-        String currentComponent = super.getComponentName(null, null);
+        String currentComponent = super.getProjectName(null, null);
         super.setComponentName(currentComponent);
-        
+
         super.visit(nabuccoExtension, target);
     }
-    
+
     @Override
     public void visit(DatatypeStatement nabuccoDatatype, MdaModel<XmlModel> target) {
 
@@ -84,7 +88,7 @@ class NabuccoToXmlDatatypeEntityVisitor extends NabuccoToXmlDatatypeVisitor impl
         // Visit sub-nodes first!
         super.visit(nabuccoDatatype, target);
 
-        String componentName = super.getComponentName(null, null);
+        String componentName = super.getProjectName(null, null);
 
         try {
             XmlDocument document = super
@@ -93,10 +97,10 @@ class NabuccoToXmlDatatypeEntityVisitor extends NabuccoToXmlDatatypeVisitor impl
             document.getDocument().getDocumentElement().setAttribute(NAME, this.entityName);
             document.getDocument().getDocumentElement().setAttribute(ORDER, FRAGMENT_ORDER_ENTITY);
 
-            Element entityElement = this.createEntity();
+            Element datatypeEntity = this.createEntity();
 
-            document.getDocument().getDocumentElement().appendChild(
-                    document.getDocument().importNode(entityElement, true));
+            document.getDocument().getDocumentElement()
+                    .appendChild(document.getDocument().importNode(datatypeEntity, true));
 
             // File creation
             document.setProjectName(componentName);
@@ -104,7 +108,7 @@ class NabuccoToXmlDatatypeEntityVisitor extends NabuccoToXmlDatatypeVisitor impl
 
             String entityImport = super.getVisitorContext().getPackage()
                     + PKG_SEPARATOR + this.entityName;
-            
+
             super.collector.addMappedSuperclass(entityImport, document);
 
         } catch (XmlTemplateException te) {
@@ -113,7 +117,7 @@ class NabuccoToXmlDatatypeEntityVisitor extends NabuccoToXmlDatatypeVisitor impl
     }
 
     /**
-     * Create an entity XML tag for the current class.
+     * Create an entity XML tag for the currently visited datatype.
      * 
      * @return the XML element
      * 
@@ -128,8 +132,10 @@ class NabuccoToXmlDatatypeEntityVisitor extends NabuccoToXmlDatatypeVisitor impl
         Element entity = (Element) ormTemplate.copyNodesByXPath(XPATH_ENTITY).get(0);
         entity.setAttribute(CLASS, pkg + PKG_SEPARATOR + this.entityName);
 
-        ((Element) entity.getElementsByTagName(TABLE).item(0)).setAttribute(NAME,
-                NabuccoTransformationUtility.toTableName(this.entityName));
+        String tableName = this.componentPrefix
+                + TABLE_SEPARATOR + NabuccoTransformationUtility.toTableName(this.entityName);
+
+        ((Element) entity.getElementsByTagName(TABLE).item(0)).setAttribute(NAME, tableName);
 
         Element attributes = (Element) entity.getElementsByTagName(ATTRIBUTES).item(0);
 
@@ -140,7 +146,8 @@ class NabuccoToXmlDatatypeEntityVisitor extends NabuccoToXmlDatatypeVisitor impl
 
     @Override
     public void visit(DatatypeDeclaration nabuccoDatatype, MdaModel<XmlModel> target) {
-        super.createEntityRelation(nabuccoDatatype, this.attributeList, this.entityName);
+        super.createEntityRelation(nabuccoDatatype, this.attributeList, this.entityName,
+                this.componentPrefix);
     }
 
     @Override

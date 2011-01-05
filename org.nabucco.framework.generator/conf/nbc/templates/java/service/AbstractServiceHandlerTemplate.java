@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+import org.nabucco.framework.base.facade.datatype.validation.ValidationType;
 import org.nabucco.framework.base.facade.datatype.validation.ValidationResult;
 import org.nabucco.framework.base.facade.exception.NabuccoException;
 import org.nabucco.framework.base.impl.service.handler.ServiceHandler;
@@ -91,7 +92,7 @@ public abstract class AbstractServiceHandlerTemplate extends ServiceHandlerSuppo
 
         try {
             ValidationResult result = new ValidationResult();
-            rq.getRequestMessage().validate(result);
+            rq.getRequestMessage().validate(result, ValidationType.DEEP);
 
             if (!result.isEmpty()) {
                 throw new ValidationException("Error validating {0}() request.", result);

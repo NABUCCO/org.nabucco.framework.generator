@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2010 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco-source.org/nabucco-license.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.util.file;
 
 import java.io.File;
@@ -28,9 +28,7 @@ import org.nabucco.framework.generator.compiler.transformation.NabuccoTransforma
 import org.nabucco.framework.generator.compiler.transformation.xml.constants.EjbJarConstants;
 import org.nabucco.framework.generator.compiler.transformation.xml.constants.JBossConstants;
 import org.nabucco.framework.generator.compiler.transformation.xml.constants.PersistenceConstants;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
+import org.nabucco.framework.generator.compiler.transformation.xml.service.comparator.EjbAssemblyDescriptorComparator;
 import org.nabucco.framework.mda.model.MdaModel;
 import org.nabucco.framework.mda.model.ModelException;
 import org.nabucco.framework.mda.model.xml.XmlDocument;
@@ -40,6 +38,9 @@ import org.nabucco.framework.mda.template.MdaTemplateException;
 import org.nabucco.framework.mda.template.xml.XmlTemplateException;
 import org.nabucco.framework.mda.template.xml.XmlTemplateLoader;
 import org.nabucco.framework.mda.transformation.TransformationException;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * NabuccoXmlFragmentMerger
@@ -128,7 +129,7 @@ public class NabuccoXmlFragmentMerger implements EjbJarConstants, JBossConstants
      * @return the loaded models
      * 
      * @throws ModelException
-     * @throws IOException 
+     * @throws IOException
      */
     private List<XmlModel> collectFragments(File dir) throws ModelException, IOException {
 
@@ -167,22 +168,25 @@ public class NabuccoXmlFragmentMerger implements EjbJarConstants, JBossConstants
 
         List<XmlDocument> documentList = new ArrayList<XmlDocument>();
 
-        XmlDocument ejbJarDocument = XmlTemplateLoader.getInstance().loadTemplate(
-                NabuccoXmlTemplateConstants.EJB_JAR_EMPTY_TEMPLATE).extractModel().getDocuments().get(0);
+        XmlDocument ejbJarDocument = XmlTemplateLoader.getInstance()
+                .loadTemplate(NabuccoXmlTemplateConstants.EJB_JAR_EMPTY_TEMPLATE).extractModel()
+                .getDocuments().get(0);
 
         String ejbFolder = CONF + File.separatorChar + EJB + File.separatorChar;
 
         ejbJarDocument.setProjectName(path);
         ejbJarDocument.setConfFolder(ejbFolder);
 
-        XmlDocument ormDocument = XmlTemplateLoader.getInstance().loadTemplate(
-                NabuccoXmlTemplateConstants.ORM_EMPTY_TEMPLATE).extractModel().getDocuments().get(0);
+        XmlDocument ormDocument = XmlTemplateLoader.getInstance()
+                .loadTemplate(NabuccoXmlTemplateConstants.ORM_EMPTY_TEMPLATE).extractModel()
+                .getDocuments().get(0);
 
         ormDocument.setProjectName(path);
         ormDocument.setConfFolder(ejbFolder);
 
-        XmlDocument jbossDocument = XmlTemplateLoader.getInstance().loadTemplate(
-                NabuccoXmlTemplateConstants.JBOSS_EMPTY_TEMPLATE).extractModel().getDocuments().get(0);
+        XmlDocument jbossDocument = XmlTemplateLoader.getInstance()
+                .loadTemplate(NabuccoXmlTemplateConstants.JBOSS_EMPTY_TEMPLATE).extractModel()
+                .getDocuments().get(0);
 
         jbossDocument.setProjectName(path);
         jbossDocument.setConfFolder(ejbFolder + JBOSS + File.separatorChar);
@@ -232,14 +236,41 @@ public class NabuccoXmlFragmentMerger implements EjbJarConstants, JBossConstants
 
         tags = fragmentElement.getElementsByTagName(CONTAINER_TRANSACTION);
 
+        List<Node> attributeList = new ArrayList<Node>();
+
         for (int i = 0; i < tags.getLength(); i++) {
-            assembly.appendChild(ejbJarDocument.getDocument().importNode(tags.item(i), true));
+            attributeList.add(ejbJarDocument.getDocument().importNode(tags.item(i), true));
         }
 
         tags = fragmentElement.getElementsByTagName(APPLICATION_EXCEPTION);
 
         for (int i = 0; i < tags.getLength(); i++) {
-            assembly.appendChild(ejbJarDocument.getDocument().importNode(tags.item(i), true));
+            attributeList.add(ejbJarDocument.getDocument().importNode(tags.item(i), true));
+        }
+
+        this.mergeAssemblyDescriptors(assembly, attributeList);
+    }
+
+    /**
+     * Merges the assebly descriptors in the appropriate schema order.
+     * 
+     * @param assembly
+     *            the assembly element
+     * @param attributeList
+     *            the attributes
+     */
+    private void mergeAssemblyDescriptors(Element assembly, List<Node> attributeList) {
+
+        while (assembly.hasChildNodes()) {
+            Node oldChild = assembly.getFirstChild();
+            attributeList.add(assembly.removeChild(oldChild));
+        }
+
+        Collections.sort(attributeList, EjbAssemblyDescriptorComparator.getInstance());
+
+        // Add new nodes
+        for (Node attribute : attributeList) {
+            assembly.appendChild(attribute);
         }
     }
 

@@ -68,7 +68,7 @@ class NabuccoToJavaComponentInterfaceVisitor extends NabuccoToJavaVisitorSupport
 
         String name = nabuccoComponent.nodeToken2.tokenImage;
         String pkg = this.getVisitorContext().getPackage();
-        String projectName = super.getComponentName(NabuccoModelType.COMPONENT,
+        String projectName = super.getProjectName(NabuccoModelType.COMPONENT,
                 NabuccoModifierComponentMapper
                         .getModifierType(nabuccoComponent.nodeToken.tokenImage));
 

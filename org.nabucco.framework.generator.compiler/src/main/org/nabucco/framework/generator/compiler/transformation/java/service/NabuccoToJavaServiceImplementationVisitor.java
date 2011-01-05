@@ -28,6 +28,7 @@ import org.nabucco.framework.generator.compiler.transformation.java.common.ast.c
 import org.nabucco.framework.generator.compiler.transformation.java.constants.ServerConstants;
 import org.nabucco.framework.generator.compiler.transformation.java.visitor.NabuccoToJavaVisitorContext;
 import org.nabucco.framework.generator.compiler.transformation.java.visitor.NabuccoToJavaVisitorSupport;
+import org.nabucco.framework.generator.compiler.transformation.util.dependency.NabuccoCustomDependencies;
 import org.nabucco.framework.generator.compiler.visitor.NabuccoVisitorException;
 import org.nabucco.framework.generator.parser.model.NabuccoModelType;
 import org.nabucco.framework.generator.parser.model.modifier.NabuccoModifierType;
@@ -85,7 +86,7 @@ class NabuccoToJavaServiceImplementationVisitor extends NabuccoToJavaVisitorSupp
 
         String interfacePackage = this.getVisitorContext().getPackage();
         String name = interfaceName + IMPLEMENTATION;
-        String componentName = super.getComponentName(NabuccoModelType.SERVICE,
+        String componentName = super.getProjectName(NabuccoModelType.SERVICE,
                 NabuccoModifierType.PRIVATE);
 
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
@@ -153,8 +154,8 @@ class NabuccoToJavaServiceImplementationVisitor extends NabuccoToJavaVisitorSupp
         JavaAstContainter<? extends ASTNode> container = JavaAstSupport.createField(type, name,
                 modifier, isList);
 
-        if (NabuccoToJavaServiceReferences.isServiceReference(type)) {
-            container.getImports().add(NabuccoToJavaServiceReferences.getServiceReference(type));
+        if (NabuccoCustomDependencies.isCustomDeclaration(type)) {
+            container.getImports().add(NabuccoCustomDependencies.getServiceReference(type));
         }
 
         this.entityManager = name;

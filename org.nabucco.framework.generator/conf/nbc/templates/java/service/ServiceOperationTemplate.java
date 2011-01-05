@@ -46,7 +46,7 @@ public class ServiceOperationTemplate {
     }
 
     public ServiceMsgTemplate serviceDelegateOperationRcpTemplate(ServiceMsgTemplate rq)
-            throws ServiceException {
+            throws ClientException {
 
         ServiceRequest<ServiceMsgTemplate> request = new ServiceRequest<ServiceMsgTemplate>(
                 super.createServiceContext());
@@ -56,19 +56,21 @@ public class ServiceOperationTemplate {
         ServiceResponse<ServiceMsgTemplate> rs;
         if (service != null) {
             long start = System.currentTimeMillis();
-            rs = service.serviceOperationTemplate(request);
-            long end = System.currentTimeMillis();
-
-            Activator.getDefault().logDebug(
-                    new NabuccoLogMessage(LoginServiceDelegate.class, "Service: ",
-                            "ServiceTemplate.serviceOperationTemplate", " Time: ", String
-                                    .valueOf(end - start), "ms."));
-        } else {
-            throw new ServiceException(
-                    "Cannot execute service operation: ServiceTemplate.serviceOperationTemplate");
+            try {
+                rs = service.serviceOperationTemplate(request);
+                return rs.getResponseMessage();
+            } catch (Exception exception){
+                    super.processException(exception);
+            } finally {
+                long end = System.currentTimeMillis();
+                
+                Activator.getDefault().logDebug(
+                        new NabuccoLogMessage(LoginServiceDelegate.class, "Service: ",
+                                "ServiceTemplate.serviceOperationTemplate", " Time: ", String
+                                .valueOf(end - start), "ms."));                
+            }
         }
-
-        return rs.getResponseMessage();
+        throw new ClientException("Unable to invoke ServiceTemplate.serviceOperationTemplate");
     }
 
     public ServiceMsgTemplate serviceDelegateOperationWebTemplate(ServiceMsgTemplate rq)

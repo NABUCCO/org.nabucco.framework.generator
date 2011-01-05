@@ -16,23 +16,20 @@
 */
 package org.nabucco.framework.generator.parser;
 
-import org.nabucco.framework.generator.parser.ParseException;
-import org.nabucco.framework.generator.parser.Token;
-import org.nabucco.framework.generator.parser.file.NabuccoFile;
 import org.nabucco.framework.generator.parser.model.NabuccoModelException;
 
 
 /**
- * ParseExceptionMapper
+ * NabuccoParseExceptionMapper
  * 
  * @author Nicolas Moser, PRODYNA AG
  */
-public class ParseExceptionMapper {
+class NabuccoParseExceptionMapper {
 
     /**
      * Private constructor must not be invoked.
      */
-    private ParseExceptionMapper() {
+    private NabuccoParseExceptionMapper() {
     }
 
     /**
@@ -40,27 +37,23 @@ public class ParseExceptionMapper {
      * 
      * @param pe
      *            the parse exception
-     * @param nbcFile
-     *            the NABUCCO file
      * 
      * @return the mapped NabuccoModelException
      */
-    public static NabuccoModelException mapParseException(ParseException pe, NabuccoFile nbcFile) {
+    public static String createErrorMessage(ParseException pe) {
 
-        String fileName = (nbcFile == null) ? "null" : nbcFile.getFileName();
-
-        StringBuilder message = new StringBuilder();
-        message.append("Error parsing file '");
-        message.append(fileName);
-        message.append(NabuccoFile.NABUCCO_SUFFIX);
-        message.append("'. Error at line ");
-        message.append(pe.currentToken.next.beginLine);
-        message.append(", column ");
-        message.append(pe.currentToken.next.beginColumn);
-        message.append(". Encountered: [");
+        int line = pe.currentToken.next.beginLine;
+        int column = pe.currentToken.next.beginColumn;
 
         String expected = getExpectedToken(pe);
         String encountered = getEncounteredToken(pe);
+        
+        StringBuilder message = new StringBuilder();
+        message.append("Error at line ");
+        message.append(line);
+        message.append(", column ");
+        message.append(column);
+        message.append(". Encountered: [");
 
         message.append(encountered);
         message.append("]");
@@ -74,8 +67,7 @@ public class ParseExceptionMapper {
         message.append(expected);
         message.append(" ].");
         
-        NabuccoModelException exception = new NabuccoModelException(message.toString());
-        return exception;
+        return message.toString();
     }
 
     /**

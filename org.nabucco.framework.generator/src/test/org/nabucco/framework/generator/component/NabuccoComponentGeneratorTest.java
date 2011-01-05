@@ -19,6 +19,7 @@ package org.nabucco.framework.generator.component;
 import java.io.File;
 
 import org.junit.Test;
+import org.nabucco.framework.generator.AbstractNabuccoGeneratorTest;
 import org.nabucco.framework.generator.NabuccoGenerator;
 import org.nabucco.framework.generator.parser.file.NabuccoFile;
 
@@ -28,13 +29,13 @@ import org.nabucco.framework.generator.parser.file.NabuccoFile;
  * 
  * @author Nicolas Moser, PRODYNA AG
  */
-public class NabuccoComponentGeneratorTest {
+public class NabuccoComponentGeneratorTest extends AbstractNabuccoGeneratorTest {
 
     private static final File BASE_COMPONENT = new File(
-            "../org.nabucco.framework.base/src/nbc/org/nabucco/framework/base/");
+            "../../org.nabucco.framework.base/org.nabucco.framework.base/src/nbc/org/nabucco/framework/base/");
     
     private static final File AUTHORIZATION_COMPONENT = new File(
-            "../org.nabucco.framework.common.authorization/src/nbc/org/nabucco/framework/common/authorization/");
+            "../../org.nabucco.framework.common.authorization/org.nabucco.framework.common.authorization/src/nbc/org/nabucco/framework/common/authorization/");
 
     private static final File DYNAMICCODE_COMPONENT = new File(
             "../org.nabucco.framework.common.dynamiccode/src/nbc/org/nabucco/framework/common/dynamiccode/");
@@ -63,12 +64,9 @@ public class NabuccoComponentGeneratorTest {
     private static final File TEST_CONFIG_COMPONENT = new File(
             "../org.nabucco.framework.testautomation.config/src/nbc/org/nabucco/framework/testautomation/config/");
 
-    private static final File SKM_BASE_COMPONENT = new File(
-            "../org.nabucco.framework.skm.base/src/nbc/org/nabucco/framework/skm/base/");
+    private static final File PERSON_COMPONENT = new File(
+            "../../org.nabucco.hr.person/org.nabucco.hr.person/src/nbc/org/nabucco/hr/person/");
 
-    private static final File SKM_PERSON_COMPONENT = new File(
-            "../org.nabucco.framework.skm.person/src/nbc/org/nabucco/framework/skm/person/");
-    
     @Test
     public void generateBaseComponent() throws Exception {
         NabuccoFile dir = new NabuccoFile(BASE_COMPONENT);
@@ -156,16 +154,8 @@ public class NabuccoComponentGeneratorTest {
     }
 
     @Test
-    public void generateSkmBaseComponent() throws Exception {
-        NabuccoFile dir = new NabuccoFile(SKM_BASE_COMPONENT);
-
-        NabuccoGenerator generator = new NabuccoGenerator(dir);
-        generator.generate();
-    }
-
-    @Test
-    public void generateSkmPersonComponent() throws Exception {
-        NabuccoFile dir = new NabuccoFile(SKM_PERSON_COMPONENT);
+    public void generatePersonComponent() throws Exception {
+        NabuccoFile dir = new NabuccoFile(PERSON_COMPONENT);
 
         NabuccoGenerator generator = new NabuccoGenerator(dir);
         generator.generate();

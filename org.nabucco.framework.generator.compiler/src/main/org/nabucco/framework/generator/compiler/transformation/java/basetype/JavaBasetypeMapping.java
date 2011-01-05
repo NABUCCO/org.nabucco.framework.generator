@@ -42,6 +42,6 @@ public interface JavaBasetypeMapping {
      * 
      * @return Returns the javaType.
      */
-    public String getJavaClass();
+    public String getPrimitiveType();
 
 }

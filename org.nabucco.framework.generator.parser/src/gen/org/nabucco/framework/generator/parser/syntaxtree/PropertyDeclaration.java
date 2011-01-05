@@ -7,7 +7,7 @@ package org.nabucco.framework.generator.parser.syntaxtree;
 /**
  * Grammar production:
  * <PRE>
- * nodeChoice -> ( BasetypeDeclaration() | DatatypeDeclaration() | EnumerationDeclaration() | MapDeclaration() )
+ * nodeChoice -> ( BasetypeDeclaration() | DatatypeDeclaration() | EnumerationDeclaration() )
  * </PRE>
  */
 public class PropertyDeclaration implements Node {

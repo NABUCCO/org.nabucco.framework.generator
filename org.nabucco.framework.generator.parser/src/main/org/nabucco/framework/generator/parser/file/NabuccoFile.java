@@ -58,7 +58,7 @@ public class NabuccoFile implements Serializable, NabuccoFileConstants {
         if (file == null || !file.exists()) {
             throw new IllegalArgumentException("Source file does not exist [" + file + "].");
         }
-        if (file.isFile() && !file.getName().endsWith(NABUCCO_SUFFIX)) {
+        if (file.isFile() && !file.getName().endsWith(NBC_SUFFIX)) {
             throw new IllegalArgumentException("Source file is no valid NABUCCO file ["
                     + file + "].");
         }
@@ -104,7 +104,7 @@ public class NabuccoFile implements Serializable, NabuccoFileConstants {
      * @return Returns the fileName.
      */
     public String getFileName() {
-        return this.sourceFile.getName().replace(NABUCCO_SUFFIX, "");
+        return this.sourceFile.getName().replace(NBC_SUFFIX, "");
     }
 
     /**

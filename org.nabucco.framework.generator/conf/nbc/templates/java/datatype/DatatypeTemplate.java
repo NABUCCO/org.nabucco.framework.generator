@@ -15,9 +15,11 @@
  * limitations under the License.
  */
 
+import java.util.List;
+
 import org.nabucco.framework.base.facade.datatype.Datatype;
 import org.nabucco.framework.base.facade.datatype.DatatypeSupport;
-import org.nabucco.framework.base.facade.datatype.visitor.VisitorUtility;
+import org.nabucco.framework.base.facade.datatype.property.NabuccoProperty;
 
 /**
  * DatatypeTemplate
@@ -28,8 +30,13 @@ public class DatatypeTemplate extends DatatypeSupport implements Datatype {
 
     private static final long serialVersionUID = 1L;
 
-    private static final String[] CONSTRAINTS = {};
+    private static final String[] PROPERTY_NAMES = {};
+
+    private static final String[] PROPERTY_CONSTRAINTS = {};
     
+    /**
+     * Creates a new {@link DatatypeTemplate} instance.
+     */
     public DatatypeTemplate(){
         super();
         initDefaults();
@@ -41,22 +48,16 @@ public class DatatypeTemplate extends DatatypeSupport implements Datatype {
     }
     
     private void initDefaults() {
-        // default values  
+        // Init default values here! 
     }
     
     @Override
-    public String[] getConstraints() {
-        return VisitorUtility.merge(super.getConstraints(), CONSTRAINTS);
-    }
-
-    @Override
-    public Object[] getProperties() {
-        return VisitorUtility.merge(super.getProperties(), new Object[] {});
-    }
-
-    @Override
-    public String[] getPropertyNames() {
-        return VisitorUtility.merge(super.getPropertyNames(), new String[] {});
+    public List<NabuccoProperty<?>> getProperties() {
+        List<NabuccoProperty<?>> properties = super.getProperties();
+        
+        // Insert properties here!
+        
+        return properties;
     }
 
     @Override

@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2010 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco-source.org/nabucco-license.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java.view.search;
 
 import java.util.ArrayList;
@@ -55,7 +55,6 @@ import org.nabucco.framework.generator.parser.syntaxtree.LabeledPickerDeclaratio
 import org.nabucco.framework.generator.parser.syntaxtree.NodeToken;
 import org.nabucco.framework.generator.parser.syntaxtree.PickerDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.SearchViewStatement;
-
 import org.nabucco.framework.mda.model.MdaModel;
 import org.nabucco.framework.mda.model.java.JavaCompilationUnit;
 import org.nabucco.framework.mda.model.java.JavaModel;
@@ -77,6 +76,10 @@ class NabuccoToJavaRcpViewSearchViewModelVisitor extends NabuccoToJavaVisitorSup
     private NabuccoToJavaRcpViewVisitorSupport util;
 
     private List<Statement> constructorStatements = new ArrayList<Statement>();
+
+    private String fieldType;
+
+    private String fieldName;
 
     /**
      * Creates a new {@link NabuccoToJavaRcpViewSearchViewModelVisitor} instance.
@@ -104,7 +107,8 @@ class NabuccoToJavaRcpViewSearchViewModelVisitor extends NabuccoToJavaVisitorSup
 
         String originalPkg = super.getVisitorContext().getPackage();
         String pkg = originalPkg.replace(PKG_SEPARATOR + UI, PKG_SEPARATOR + UI_RCP)
-                + PKG_SEPARATOR + MODEL_PACKAGE;
+                + PKG_SEPARATOR
+                + MODEL_PACKAGE;
 
         try {
             // Load Template
@@ -115,6 +119,15 @@ class NabuccoToJavaRcpViewSearchViewModelVisitor extends NabuccoToJavaVisitorSup
 
             javaFactory.getJavaAstType().setTypeName(type, modelName);
             javaFactory.getJavaAstUnit().setPackage(unit.getUnitDeclaration(), pkg);
+
+            // TODO: fix this! taking the last found datatype is unacceptable
+            TypeReference typeReference = JavaAstModelProducer.getInstance().createTypeReference(
+                    fieldType, false);
+
+            TypeReference superClass = javaFactory.getJavaAstType().getSuperClass(type);
+            superClass = javaFactory.getJavaAstReference().getAsParameterized(superClass,
+                    new TypeReference[] { typeReference });
+            javaFactory.getJavaAstType().setSuperClass(type, superClass);
 
             for (ImportReference importRef : this.util.getCollectedImports()) {
                 javaFactory.getJavaAstUnit().addImport(unit.getUnitDeclaration(), importRef);
@@ -160,10 +173,10 @@ class NabuccoToJavaRcpViewSearchViewModelVisitor extends NabuccoToJavaVisitorSup
 
     @Override
     public void visit(DatatypeDeclaration datatypeDeclaration, MdaModel<JavaModel> target) {
-        String fieldType = ((NodeToken) datatypeDeclaration.nodeChoice1.choice).tokenImage;
-        String fieldName = datatypeDeclaration.nodeToken2.tokenImage;
-        Boolean isMultiple = NabuccoMultiplicityTypeMapper.getInstance().mapToMultiplicity(
-                datatypeDeclaration.nodeToken1.tokenImage).isMultiple();
+        fieldType = ((NodeToken) datatypeDeclaration.nodeChoice1.choice).tokenImage;
+        fieldName = datatypeDeclaration.nodeToken2.tokenImage;
+        Boolean isMultiple = NabuccoMultiplicityTypeMapper.getInstance()
+                .mapToMultiplicity(datatypeDeclaration.nodeToken1.tokenImage).isMultiple();
 
         JavaAstContainter<FieldDeclaration> field = JavaAstSupport.createField(fieldType,
                 fieldName, NabuccoModifierType.PRIVATE, isMultiple);
@@ -183,7 +196,7 @@ class NabuccoToJavaRcpViewSearchViewModelVisitor extends NabuccoToJavaVisitorSup
         containerList.add(field);
         containerList.add(getter);
 
-        this.addConstructorStatement(fieldName, fieldType);
+        this.addConstructorStatement();
     }
 
     /**
@@ -194,12 +207,12 @@ class NabuccoToJavaRcpViewSearchViewModelVisitor extends NabuccoToJavaVisitorSup
      * @param type
      *            the field type
      */
-    private void addConstructorStatement(String name, String type) {
+    private void addConstructorStatement() {
         JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
 
         try {
-            FieldReference fieldRef = producer.createFieldThisReference(name);
-            TypeReference typeRef = producer.createTypeReference(type, false);
+            FieldReference fieldRef = producer.createFieldThisReference(fieldName);
+            TypeReference typeRef = producer.createTypeReference(fieldType, false);
 
             AllocationExpression allocation = producer.createAllocationExpression(typeRef, null);
             Assignment assignment = producer.createAssignment(fieldRef, allocation);
@@ -239,9 +252,10 @@ class NabuccoToJavaRcpViewSearchViewModelVisitor extends NabuccoToJavaVisitorSup
                     .extractAst(NabuccoJavaTemplateConstants.COMMON_VIEW_MODEL_METHOD_TEMPLATE);
             List<NabuccoAnnotation> annotationDeclarationList = NabuccoAnnotationMapper
                     .getInstance().mapToAnnotations(inputField.annotationDeclaration);
-            super.getVisitorContext().getContainerList().addAll(
-                    NabuccoToJavaRcpViewModelSupport.createModelElement(annotationDeclarationList,
-                            unit, util, getVisitorContext()));
+            super.getVisitorContext()
+                    .getContainerList()
+                    .addAll(NabuccoToJavaRcpViewModelSupport.createModelElement(
+                            annotationDeclarationList, unit, util, getVisitorContext()));
         } catch (JavaTemplateException te) {
             throw new NabuccoVisitorException("Error during Java template search view processing.",
                     te);
@@ -256,9 +270,10 @@ class NabuccoToJavaRcpViewSearchViewModelVisitor extends NabuccoToJavaVisitorSup
                     .extractAst(NabuccoJavaTemplateConstants.COMMON_VIEW_MODEL_METHOD_TEMPLATE);
             List<NabuccoAnnotation> annotationDeclarationList = NabuccoAnnotationMapper
                     .getInstance().mapToAnnotations(labeledInputField.annotationDeclaration);
-            super.getVisitorContext().getContainerList().addAll(
-                    NabuccoToJavaRcpViewModelSupport.createModelElement(annotationDeclarationList,
-                            unit, util, getVisitorContext()));
+            super.getVisitorContext()
+                    .getContainerList()
+                    .addAll(NabuccoToJavaRcpViewModelSupport.createModelElement(
+                            annotationDeclarationList, unit, util, getVisitorContext()));
         } catch (JavaTemplateException te) {
             throw new NabuccoVisitorException("Error during Java template search view processing.",
                     te);
@@ -273,9 +288,10 @@ class NabuccoToJavaRcpViewSearchViewModelVisitor extends NabuccoToJavaVisitorSup
                     .extractAst(NabuccoJavaTemplateConstants.COMMON_VIEW_MODEL_METHOD_TEMPLATE);
             List<NabuccoAnnotation> annotationDeclarationList = NabuccoAnnotationMapper
                     .getInstance().mapToAnnotations(labeledPicker.annotationDeclaration);
-            super.getVisitorContext().getContainerList().addAll(
-                    NabuccoToJavaRcpViewModelSupport.createModelElement(annotationDeclarationList,
-                            unit, util, getVisitorContext()));
+            super.getVisitorContext()
+                    .getContainerList()
+                    .addAll(NabuccoToJavaRcpViewModelSupport.createModelElement(
+                            annotationDeclarationList, unit, util, getVisitorContext()));
         } catch (JavaTemplateException te) {
             throw new NabuccoVisitorException("Error during Java template search view processing.",
                     te);
@@ -290,9 +306,10 @@ class NabuccoToJavaRcpViewSearchViewModelVisitor extends NabuccoToJavaVisitorSup
                     .extractAst(NabuccoJavaTemplateConstants.COMMON_VIEW_MODEL_METHOD_TEMPLATE);
             List<NabuccoAnnotation> annotationDeclarationList = NabuccoAnnotationMapper
                     .getInstance().mapToAnnotations(picker.annotationDeclaration);
-            super.getVisitorContext().getContainerList().addAll(
-                    NabuccoToJavaRcpViewModelSupport.createModelElement(annotationDeclarationList,
-                            unit, util, getVisitorContext()));
+            super.getVisitorContext()
+                    .getContainerList()
+                    .addAll(NabuccoToJavaRcpViewModelSupport.createModelElement(
+                            annotationDeclarationList, unit, util, getVisitorContext()));
         } catch (JavaTemplateException te) {
             throw new NabuccoVisitorException("Error during Java template search view processing.",
                     te);
@@ -307,8 +324,9 @@ class NabuccoToJavaRcpViewSearchViewModelVisitor extends NabuccoToJavaVisitorSup
                     .extractAst(NabuccoJavaTemplateConstants.COMMON_VIEW_MODEL_METHOD_TEMPLATE);
             List<NabuccoAnnotation> annotationDeclarationList = NabuccoAnnotationMapper
                     .getInstance().mapToAnnotations(labeledComboBox.annotationDeclaration);
-            super.getVisitorContext().getContainerList().addAll(
-                    NabuccoToJavaRcpViewModelSupport.createModelElementComboBox(
+            super.getVisitorContext()
+                    .getContainerList()
+                    .addAll(NabuccoToJavaRcpViewModelSupport.createModelElementComboBox(
                             annotationDeclarationList, unit, util));
         } catch (JavaTemplateException te) {
             throw new NabuccoVisitorException("Error during Java template searchview processing.",
@@ -324,8 +342,9 @@ class NabuccoToJavaRcpViewSearchViewModelVisitor extends NabuccoToJavaVisitorSup
                     .extractAst(NabuccoJavaTemplateConstants.COMMON_VIEW_MODEL_METHOD_TEMPLATE);
             List<NabuccoAnnotation> annotationDeclarationList = NabuccoAnnotationMapper
                     .getInstance().mapToAnnotations(comboBox.annotationDeclaration);
-            super.getVisitorContext().getContainerList().addAll(
-                    NabuccoToJavaRcpViewModelSupport.createModelElementComboBox(
+            super.getVisitorContext()
+                    .getContainerList()
+                    .addAll(NabuccoToJavaRcpViewModelSupport.createModelElementComboBox(
                             annotationDeclarationList, unit, util));
         } catch (JavaTemplateException te) {
             throw new NabuccoVisitorException("Error during Java template searchview processing.",

@@ -84,8 +84,10 @@ public final class NabuccoCompiler {
         try {
             this.transformModel(modelList, rootDir, component);
         } catch (NabuccoTransformationException e) {
+            logger.debug(e, "Error transforming NABUCCO model.");
             throw new NabuccoCompilerException("Error transforming NABUCCO model.", e);
         } catch (Exception e) {
+            logger.debug(e, "Error transforming NABUCCO model.");
             throw new NabuccoCompilerException("Error compiling NABUCCO model.", e);
         }
     }

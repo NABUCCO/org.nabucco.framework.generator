@@ -16,6 +16,8 @@
  */
 
 import org.nabucco.framework.base.impl.component.ComponentSupport;
+import org.nabucco.framework.base.facade.service.componentrelation.ComponentRelationService;
+import org.nabucco.framework.base.facade.exception.service.ServiceException;
 
 /**
  * ComponentImplTemplate
@@ -26,4 +28,10 @@ public class ComponentImplTemplate extends ComponentSupport {
 
     private static final long serialVersionUID = 1L;
 
+    private ComponentRelationService componentRelationService;
+
+    @Override
+    public ComponentRelationService getComponentRelationService() throws ServiceException {
+        return this.componentRelationService;
+    }
 }

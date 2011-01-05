@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2010 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco-source.org/nabucco-license.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler;
 
 import java.io.File;
@@ -24,7 +24,6 @@ import java.util.regex.Pattern;
 
 import org.nabucco.framework.generator.compiler.component.NabuccoComponentConstants;
 
-
 /**
  * NabuccoCompilerSupport
  * 
@@ -32,7 +31,11 @@ import org.nabucco.framework.generator.compiler.component.NabuccoComponentConsta
  */
 public final class NabuccoCompilerSupport implements NabuccoComponentConstants {
 
-    private static final Pattern PATTERN = Pattern.compile("\\.(facade|impl|ui)");
+    /** Regex pattern to extract the root component name. */
+    private static final Pattern PATTERN = Pattern.compile("\\.(facade|impl|ui|server)");
+
+    /** FileFilter to filter for .metadata directories. */
+    private static final FileFilter METADATA_FILEFILTER = new MetadataFileFilter();
 
     /**
      * Private constructor.
@@ -40,18 +43,6 @@ public final class NabuccoCompilerSupport implements NabuccoComponentConstants {
     private NabuccoCompilerSupport() {
         throw new IllegalStateException("Private constructor must not be invoked.");
     }
-
-    // TODO: Remove anonymous-class!
-    private static final FileFilter MetadataFileFilter = new FileFilter() {
-
-        @Override
-        public boolean accept(File pathname) {
-            if (pathname.isDirectory() && pathname.getName().compareTo(".metadata") == 0) {
-                return true;
-            }
-            return false;
-        }
-    };
 
     /**
      * Returns all root component names.
@@ -74,19 +65,33 @@ public final class NabuccoCompilerSupport implements NabuccoComponentConstants {
         return result;
     }
 
-    public static File searchWorkspaceRoot(File f) {
-        File result = f.getParentFile();
+    /**
+     * Searches the workspace root directory starting at the given file.
+     * 
+     * @param file
+     *            the file to start search
+     * 
+     * @return the workspace root directory or null
+     */
+    public static File searchWorkspaceRoot(File file) {
+        File result = file.getParentFile();
         while (result != null && !isWorkspaceRoot(result)) {
             result = result.getParentFile();
         }
-
         return result;
-
     }
 
-    private static boolean isNbcDirectory(File f) {
-        f = new File(f.getAbsolutePath() + "/src/nbc");
-        return f.exists();
+    /**
+     * Checks whether a file is the src/nbc/ directory.
+     * 
+     * @param file
+     *            the file to validate.
+     * 
+     * @return <b>true</b> if the file is the NABUCCO source directory, <b>false</b> if not.
+     */
+    private static boolean isNbcDirectory(File file) {
+        file = new File(file.getAbsolutePath() + "/src/nbc");
+        return file.exists();
     }
 
     /**
@@ -98,12 +103,13 @@ public final class NabuccoCompilerSupport implements NabuccoComponentConstants {
      * @return <code>true</code> if .metadata folder exists as a child element.
      */
     private static boolean isWorkspaceRoot(File f) {
-        return (f.listFiles(MetadataFileFilter).length != 0);
+        return (f.listFiles(METADATA_FILEFILTER).length != 0);
     }
 
     /**
-     * Returns the name of the parent component. E.g. <code>org.nabucco.framework.base.facade.datatype</code>
-     * returns <code>org.nabucco.framework.base</code>.
+     * Returns the name of the parent component. E.g.
+     * <code>org.nabucco.framework.base.facade.datatype</code> returns
+     * <code>org.nabucco.framework.base</code>.
      * 
      * @param componentName
      *            the component name
@@ -111,6 +117,10 @@ public final class NabuccoCompilerSupport implements NabuccoComponentConstants {
      * @return the parent component
      */
     public static String getParentComponentName(String componentName) {
+        if (componentName == null) {
+            throw new IllegalArgumentException("Cannot resolve component name for [null].");
+        }
+        
         String[] tokens = PATTERN.split(componentName);
 
         if (tokens.length > 0) {
@@ -152,6 +162,14 @@ public final class NabuccoCompilerSupport implements NabuccoComponentConstants {
         return !firstComponent.equalsIgnoreCase(secondComponent);
     }
 
+    /**
+     * Validates the path and returns the appropriate file.
+     * 
+     * @param rootPath
+     *            the path to the root directory
+     * 
+     * @return the root directory
+     */
     private static File getRootDirectory(String rootPath) {
         if (rootPath == null) {
             throw new IllegalArgumentException("Root path must be defined.");

@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2010 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco-source.org/nabucco-license.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java.exception;
 
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
@@ -30,9 +30,6 @@ import org.nabucco.framework.generator.parser.model.NabuccoModelType;
 import org.nabucco.framework.generator.parser.model.modifier.NabuccoModifierType;
 import org.nabucco.framework.generator.parser.syntaxtree.ExceptionParameterDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.ExceptionStatement;
-
-import org.nabucco.framework.mda.logger.MdaLogger;
-import org.nabucco.framework.mda.logger.MdaLoggingFactory;
 import org.nabucco.framework.mda.model.MdaModel;
 import org.nabucco.framework.mda.model.java.JavaCompilationUnit;
 import org.nabucco.framework.mda.model.java.JavaModel;
@@ -47,12 +44,17 @@ import org.nabucco.framework.mda.template.java.JavaTemplateException;
  */
 class NabuccoToJavaExceptionVisitor extends NabuccoToJavaVisitorSupport {
 
+    private static final String IMPORT_EXCEPTION = "org.nabucco.framework.base.facade.exception.ExceptionSupport";
+
+    /**
+     * Creates a new {@link NabuccoToJavaExceptionVisitor} instance.
+     * 
+     * @param visitorContext
+     *            the visitor context
+     */
     public NabuccoToJavaExceptionVisitor(NabuccoToJavaVisitorContext visitorContext) {
         super(visitorContext);
     }
-
-    private static MdaLogger logger = MdaLoggingFactory.getInstance().getLogger(
-            NabuccoToJavaExceptionVisitor.class);
 
     @Override
     public void visit(ExceptionStatement nabuccoException, MdaModel<JavaModel> target) {
@@ -64,7 +66,7 @@ class NabuccoToJavaExceptionVisitor extends NabuccoToJavaVisitorSupport {
 
         String name = nabuccoException.nodeToken2.tokenImage;
         String pkg = this.getVisitorContext().getPackage();
-        String projectName = super.getComponentName(NabuccoModelType.EXCEPTION,
+        String projectName = super.getProjectName(NabuccoModelType.EXCEPTION,
                 NabuccoModifierComponentMapper
                         .getModifierType(nabuccoException.nodeToken.tokenImage));
 
@@ -78,7 +80,10 @@ class NabuccoToJavaExceptionVisitor extends NabuccoToJavaVisitorSupport {
             javaFactory.getJavaAstType().setTypeName(type, name);
             javaFactory.getJavaAstUnit().setPackage(unit.getUnitDeclaration(), pkg);
 
-            super.createSuperClass();
+            if (super.getVisitorContext().getNabuccoExtension() != null) {
+                super.createSuperClass();
+                super.removeImport(unit.getUnitDeclaration(), IMPORT_EXCEPTION);
+            }
 
             // Annotations
             JavaAstSupport.convertJavadocAnnotations(nabuccoException.annotationDeclaration, type);
@@ -93,12 +98,9 @@ class NabuccoToJavaExceptionVisitor extends NabuccoToJavaVisitorSupport {
             target.getModel().getUnitList().add(unit);
 
         } catch (JavaModelException jme) {
-            logger.error(jme, "Error during Java AST exception modification.");
-            throw new NabuccoVisitorException("Error during Java AST exception modification.", jme);
+            throw new NabuccoVisitorException("Error creating Java Exception.", jme);
         } catch (JavaTemplateException te) {
-            logger.error(te, "Error during Java template exception processing.");
-            throw new NabuccoVisitorException("Error during Java template exception processing.",
-                    te);
+            throw new NabuccoVisitorException("Error loading Java Exception Template.", te);
         }
     }
 
@@ -112,9 +114,11 @@ class NabuccoToJavaExceptionVisitor extends NabuccoToJavaVisitorSupport {
         JavaAstContainter<FieldDeclaration> field = JavaAstSupport.createField("String", name,
                 NabuccoModifierType.PRIVATE, false);
 
-        JavaAstContainter<MethodDeclaration> getter = JavaAstSupport.createGetter(field.getAstNode());
-        JavaAstContainter<MethodDeclaration> setter = JavaAstSupport.createSetter(field.getAstNode());
-        
+        JavaAstContainter<MethodDeclaration> getter = JavaAstSupport.createGetter(field
+                .getAstNode());
+        JavaAstContainter<MethodDeclaration> setter = JavaAstSupport.createSetter(field
+                .getAstNode());
+
         super.getVisitorContext().getContainerList().add(field);
         super.getVisitorContext().getContainerList().add(getter);
         super.getVisitorContext().getContainerList().add(setter);

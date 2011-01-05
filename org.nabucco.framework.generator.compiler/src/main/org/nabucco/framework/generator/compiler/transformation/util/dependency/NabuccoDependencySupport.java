@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2010 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco-source.org/nabucco-license.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.util.dependency;
 
 import java.io.File;
@@ -27,11 +27,11 @@ import org.nabucco.framework.generator.compiler.NabuccoCompilerSupport;
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationConstants;
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationException;
 import org.nabucco.framework.generator.parser.file.NabuccoFile;
+import org.nabucco.framework.generator.parser.file.NabuccoFileConstants;
 import org.nabucco.framework.generator.parser.model.NabuccoModel;
 import org.nabucco.framework.generator.parser.model.NabuccoModelLoader;
-import org.nabucco.framework.generator.parser.model.NabuccoPathEntryType;
+import org.nabucco.framework.generator.parser.model.NabuccoModelResourceType;
 import org.nabucco.framework.generator.parser.model.serializer.NabuccoModelSerializer;
-
 import org.nabucco.framework.mda.model.MdaModel;
 import org.nabucco.framework.mda.model.ModelException;
 
@@ -42,32 +42,14 @@ import org.nabucco.framework.mda.model.ModelException;
  */
 final class NabuccoDependencySupport implements NabuccoTransformationConstants {
 
-    /** The seperator character for packages. */
-    private static final String PKG_SEPARATOR = ".";
-
-    /** The JAR file separator character. */
-    private static final String JAR_SEPARATOR = "/";
-
     /** The backslash character. */
     private static final String BACK_SLASH = "\\";
 
-    /** The super package identifier. */
-    private static final String SUPER_PKG = "..";
-
-    /** String representing the name of the nabuccoPath-File. */
-    private static final String NBCPATH_XML = "nbcpath.xml";
-
-    /** File suffix for NABUCCO files (.nbc) */
-    private static final String NABUCCO_SUFFIX = ".nbc";
-
-    /** File suffix for NABUCCO output files (.nbcc) */
-    private static final String NBCC_SUFFIX = ".nbcc";
-
-    /** NabuccoPath for main .nbc-File */
-    private static NabuccoPath nabuccoPath;
-    
     /** Package of the initial generated component. */
-    private static String rootPackage = null;
+    private static String componentInFocus = null;
+
+    /** NabuccoPath of the current transformation (must be cleared after). */
+    private static NabuccoPath nabuccoPath = null;
 
     /**
      * Private constructor must not be invoked.
@@ -90,10 +72,10 @@ final class NabuccoDependencySupport implements NabuccoTransformationConstants {
      * @return the loaded model
      * 
      * @throws NabuccoTransformationException
-     *             if an error occurred transforming the model.
+     *             if the model cannot be loaded
      */
-    public static MdaModel<NabuccoModel> loadModel(String rootDir, String pkg, String importString,
-            String outDir) throws NabuccoTransformationException {
+    public static synchronized MdaModel<NabuccoModel> loadModel(String rootDir, String pkg,
+            String importString, String outDir) throws NabuccoTransformationException {
 
         MdaModel<NabuccoModel> model = NabuccoDependencyContainer.getInstance().getModel(
                 importString);
@@ -102,15 +84,23 @@ final class NabuccoDependencySupport implements NabuccoTransformationConstants {
             return model;
         }
 
-        if (nabuccoPath == null) {
-            String nbcpathString = rootDir.replace(SUPER_PKG, NBCPATH_XML);
-            nabuccoPath = NbcPathParser.getElementsByXPath(nbcpathString);
-        }
-        if (rootPackage == null) {
-            rootPackage = pkg;
+        if (componentInFocus == null) {
+            componentInFocus = NabuccoCompilerSupport.getParentComponentName(pkg);
         }
 
-        boolean otherComponent = NabuccoCompilerSupport.isOtherComponent(rootPackage, importString);
+        StringBuilder componentPath = new StringBuilder();
+        componentPath.append(rootDir);
+        componentPath.append(File.separatorChar);
+        componentPath.append(componentInFocus);
+        componentPath.append(File.separatorChar);
+
+        if (nabuccoPath == null) {
+            String nbcPath = componentPath + NabuccoFileConstants.NBCPATH_XML;
+            nabuccoPath = NbcPathParser.getElementsByXPath(nbcPath);
+        }
+
+        boolean otherComponent = NabuccoCompilerSupport.isOtherComponent(componentInFocus,
+                importString);
 
         if (otherComponent) {
 
@@ -118,8 +108,8 @@ final class NabuccoDependencySupport implements NabuccoTransformationConstants {
 
             for (NabuccoPathEntry pathEntry : pathEntries) {
 
-                NabuccoPathEntryType entryType = pathEntry.getType();
-                String location = rootDir.replace(SUPER_PKG, pathEntry.getLocation());
+                NabuccoModelResourceType entryType = pathEntry.getType();
+                String location = componentPath + pathEntry.getLocation();
 
                 switch (entryType) {
 
@@ -159,12 +149,12 @@ final class NabuccoDependencySupport implements NabuccoTransformationConstants {
     /**
      * Clears the dependency cache and NBC Path.
      */
-    public static void clearCache() {
+    public static synchronized void clearCache() {
         NabuccoDependencyContainer.getInstance().clear();
+        componentInFocus = null;
         nabuccoPath = null;
-        rootPackage = null;
     }
-    
+
     /**
      * Read from NABUCCO Archive (NAR) file (for project use
      * {@link NabuccoDependencySupport#readFromProject(String, String, String)} instead).
@@ -185,15 +175,16 @@ final class NabuccoDependencySupport implements NabuccoTransformationConstants {
         try {
             JarFile jarFile = new JarFile(location);
             String nbccPath = convertImportString(importString);
+            String modelName = importString.substring(importString.lastIndexOf('.'));
             JarEntry entry = jarFile.getJarEntry(nbccPath);
 
             if (entry != null) {
                 InputStream in = jarFile.getInputStream(entry);
 
                 NabuccoModel nabuccoModel = NabuccoModelSerializer.getInstance()
-                        .deserializeNabucco(in);
+                        .deserializeNabucco(modelName, in);
 
-                nabuccoModel.setResourceType(NabuccoPathEntryType.ARCHIVE);
+                nabuccoModel.setResourceType(NabuccoModelResourceType.ARCHIVE);
 
                 return new MdaModel<NabuccoModel>(nabuccoModel);
             }
@@ -216,7 +207,7 @@ final class NabuccoDependencySupport implements NabuccoTransformationConstants {
      */
     private static String convertImportString(String importString) {
         String nbccPath = importString.replace(PKG_SEPARATOR, JAR_SEPARATOR)
-                .replace(BACK_SLASH, JAR_SEPARATOR).concat(NBCC_SUFFIX);
+                .replace(BACK_SLASH, JAR_SEPARATOR).concat(NabuccoFileConstants.NBCC_SUFFIX);
         return nbccPath;
     }
 
@@ -253,8 +244,8 @@ final class NabuccoDependencySupport implements NabuccoTransformationConstants {
         try {
             NabuccoModelLoader nabuccoModelLoader = new NabuccoModelLoader(outDir);
             NabuccoModel referencedModel = nabuccoModelLoader.loadModel(referencedFile);
-            referencedModel.setResourceType(NabuccoPathEntryType.PROJECT);
-
+            referencedModel.setResourceType(NabuccoModelResourceType.PROJECT);
+            
             model = new MdaModel<NabuccoModel>(referencedModel);
 
             return model;
@@ -277,11 +268,11 @@ final class NabuccoDependencySupport implements NabuccoTransformationConstants {
      * @throws NabuccoTransformationException
      *             if the file cannot be found
      */
-    private static NabuccoFile getReferencedFile(String importString,
-            String location) throws NabuccoTransformationException {
-        
+    private static NabuccoFile getReferencedFile(String importString, String location)
+            throws NabuccoTransformationException {
+
         validatePath(location);
-        
+
         String path = createFilePath(location, importString);
         File file = new File(path);
 
@@ -344,12 +335,12 @@ final class NabuccoDependencySupport implements NabuccoTransformationConstants {
     private static String createFilePath(String location, String importString) {
         StringBuilder path = new StringBuilder(location);
         path.append(File.separatorChar);
-        path.append(SOURCE_SRC);
+        path.append(NabuccoFileConstants.SOURCE_SRC);
         path.append(File.separatorChar);
-        path.append(SOURCE_NBC);
+        path.append(NabuccoFileConstants.SOURCE_NBC);
         path.append(File.separatorChar);
         path.append(importString.replace('.', File.separatorChar));
-        path.append(NABUCCO_SUFFIX);
+        path.append(NabuccoFileConstants.NBC_SUFFIX);
         return path.toString();
     }
 

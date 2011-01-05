@@ -64,7 +64,7 @@ class NabuccoToXmlComponentApplicationVisitor extends NabuccoToXmlVisitorSupport
         // Visit sub-nodes first!
         super.visit(nabuccoComponent, target);
 
-        String componentName = super.getComponentName(null, null);
+        String componentName = super.getProjectName(null, null);
 
         try {
             XmlDocument document = super.extractDocument(NabuccoXmlTemplateConstants.APPLICATION_TEMPLATE);

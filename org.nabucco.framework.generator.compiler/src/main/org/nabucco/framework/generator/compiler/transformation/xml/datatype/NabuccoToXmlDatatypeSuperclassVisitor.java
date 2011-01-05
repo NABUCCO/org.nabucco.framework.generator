@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2010 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco-source.org/nabucco-license.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.xml.datatype;
 
 import java.io.File;
@@ -47,6 +47,8 @@ class NabuccoToXmlDatatypeSuperclassVisitor extends NabuccoToXmlDatatypeVisitor 
 
     private String superClassName;
 
+    private String componentPrefix;
+
     private List<Node> attributeList = new ArrayList<Node>();
 
     /**
@@ -60,23 +62,25 @@ class NabuccoToXmlDatatypeSuperclassVisitor extends NabuccoToXmlDatatypeVisitor 
      *            the root package of the XML transformation (the starting element)
      */
     public NabuccoToXmlDatatypeSuperclassVisitor(NabuccoToXmlVisitorContext visitorContext,
-            String componentName, NabuccoToXmlDatatypeCollector collector, String rootPackage) {
+            String componentName, NabuccoToXmlDatatypeCollector collector, String rootPackage,
+            String componentPrefix) {
         super(visitorContext, collector, rootPackage);
 
         super.setComponentName(componentName);
+        this.componentPrefix = componentPrefix;
     }
 
     @Override
     public void visit(DatatypeStatement nabuccoDatatype, MdaModel<XmlModel> target) {
 
         this.superClassName = nabuccoDatatype.nodeToken2.tokenImage;
-        
+
         // Visit sub-nodes first!
         super.visit(nabuccoDatatype, target);
 
         String componentName = super.getComponentName();
         if (componentName == null) {
-            componentName = super.getComponentName(null, null);
+            componentName = super.getProjectName(null, null);
         }
 
         try {
@@ -84,13 +88,13 @@ class NabuccoToXmlDatatypeSuperclassVisitor extends NabuccoToXmlDatatypeVisitor 
                     .extractDocument(NabuccoXmlTemplateConstants.ORM_FRAGMENT_TEMPLATE);
 
             document.getDocument().getDocumentElement().setAttribute(NAME, this.superClassName);
-            document.getDocument().getDocumentElement().setAttribute(ORDER,
-                    FRAGMENT_ORDER_SUPERCLASS);
+            document.getDocument().getDocumentElement()
+                    .setAttribute(ORDER, FRAGMENT_ORDER_SUPERCLASS);
 
             Element entityElement = this.createMappedSuperclass(this.superClassName);
 
-            document.getDocument().getDocumentElement().appendChild(
-                    document.getDocument().importNode(entityElement, true));
+            document.getDocument().getDocumentElement()
+                    .appendChild(document.getDocument().importNode(entityElement, true));
 
             // File creation
             document.setProjectName(componentName);
@@ -100,7 +104,7 @@ class NabuccoToXmlDatatypeSuperclassVisitor extends NabuccoToXmlDatatypeVisitor 
                     + PKG_SEPARATOR + this.superClassName;
 
             super.collector.addMappedSuperclass(superclassImport, document);
-            
+
         } catch (XmlTemplateException te) {
             throw new NabuccoVisitorException("Error during XML template datatype processing.", te);
         }
@@ -135,7 +139,8 @@ class NabuccoToXmlDatatypeSuperclassVisitor extends NabuccoToXmlDatatypeVisitor 
 
     @Override
     public void visit(DatatypeDeclaration nabuccoDatatype, MdaModel<XmlModel> target) {
-        super.createEntityRelation(nabuccoDatatype, this.attributeList, this.superClassName);
+        super.createEntityRelation(nabuccoDatatype, this.attributeList, this.superClassName,
+                this.componentPrefix);
     }
 
     @Override

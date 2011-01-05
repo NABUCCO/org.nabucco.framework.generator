@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2010 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco-source.org/nabucco-license.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java.view.list;
 
 import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
@@ -31,7 +31,6 @@ import org.nabucco.framework.generator.compiler.transformation.java.visitor.Nabu
 import org.nabucco.framework.generator.compiler.visitor.NabuccoVisitorException;
 import org.nabucco.framework.generator.parser.model.client.NabuccoClientType;
 import org.nabucco.framework.generator.parser.syntaxtree.ListViewStatement;
-
 import org.nabucco.framework.mda.logger.MdaLogger;
 import org.nabucco.framework.mda.logger.MdaLoggingFactory;
 import org.nabucco.framework.mda.model.MdaModel;
@@ -66,9 +65,10 @@ class NabuccoToJavaRcpViewListVisitor extends NabuccoToJavaVisitorSupport implem
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
         String name = nabuccoListView.nodeToken2.tokenImage;
-        String pkg = super.getVisitorContext().getPackage().replace(ViewConstants.UI,
-                ViewConstants.UI_RCP)
-                + ViewConstants.PKG_SEPARATOR + ViewConstants.VIEW_PACKAGE;
+        String pkg = super.getVisitorContext().getPackage()
+                .replace(ViewConstants.UI, ViewConstants.UI_RCP)
+                + ViewConstants.PKG_SEPARATOR
+                + ViewConstants.VIEW_PACKAGE;
 
         String projectName = super.getComponentName(NabuccoClientType.RCP);
         try {
@@ -88,6 +88,12 @@ class NabuccoToJavaRcpViewListVisitor extends NabuccoToJavaVisitorSupport implem
             ConstructorDeclaration constructor = javaFactory.getJavaAstType().getConstructor(type,
                     signature);
             TypeReference nameReference = jamp.createTypeReference(name + MODEL, false);
+
+            TypeReference superClass = javaFactory.getJavaAstType().getSuperClass(type);
+            superClass = javaFactory.getJavaAstReference().getAsParameterized(superClass,
+                    new TypeReference[] { nameReference });
+            javaFactory.getJavaAstType().setSuperClass(type, superClass);
+
             AllocationExpression expression = jamp.createAllocationExpression(nameReference, null);
 
             Assignment statement = (Assignment) constructor.statements[0];
@@ -95,7 +101,9 @@ class NabuccoToJavaRcpViewListVisitor extends NabuccoToJavaVisitorSupport implem
 
             // add import of editViewModel
             String importString = pkg.replace(VIEW_PACKAGE, MODEL_PACKAGE)
-                    + PKG_SEPARATOR + name + MODEL;
+                    + PKG_SEPARATOR
+                    + name
+                    + MODEL;
             BrowserElementSupport.addImport(importString, unit);
 
             // add Id as static final field and the getter for it
@@ -104,9 +112,10 @@ class NabuccoToJavaRcpViewListVisitor extends NabuccoToJavaVisitorSupport implem
                     .extractAst(NabuccoJavaTemplateConstants.COMMON_VIEW_VIEW_TEMPLATE);
             TypeDeclaration uIType = uIUnit
                     .getType(NabuccoJavaTemplateConstants.COMMON_VIEW_VIEW_TEMPLATE);
-            super.getVisitorContext().getContainerList().addAll(
-                    NabuccoToJavaRcpViewVisitorSupportUtil.getUiCommonElements(uIType, type,
-                            nabuccoListView.annotationDeclaration));
+            super.getVisitorContext()
+                    .getContainerList()
+                    .addAll(NabuccoToJavaRcpViewVisitorSupportUtil.getUiCommonElements(uIType,
+                            type, nabuccoListView.annotationDeclaration));
 
             JavaAstSupport.convertAstNodes(unit, getVisitorContext().getContainerList(),
                     getVisitorContext().getImportList());

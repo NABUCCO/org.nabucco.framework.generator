@@ -54,7 +54,7 @@ public class NabuccoFileFilter implements FileFilter, NabuccoFileConstants {
             return true;
         }
         String name = file.getName();
-        return name.endsWith(NABUCCO_SUFFIX) || name.toLowerCase().endsWith(NABUCCO_SUFFIX);
+        return name.endsWith(NBC_SUFFIX) || name.toLowerCase().endsWith(NBC_SUFFIX);
     }
 
 }

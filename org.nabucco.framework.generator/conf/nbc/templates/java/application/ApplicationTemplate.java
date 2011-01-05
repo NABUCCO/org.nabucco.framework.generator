@@ -14,27 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.nabucco.framework;
 
-import org.nabucco.framework.base.facade.datatype.Basetype;
-import org.nabucco.framework.base.facade.datatype.Datatype;
-import org.nabucco.framework.base.facade.datatype.visitor.DatatypeVisitor;
-import org.nabucco.framework.base.facade.datatype.visitor.DatatypeVisitorSupport;
+import org.nabucco.framework.base.facade.component.application.Application;
+import org.nabucco.framework.base.facade.component.application.ApplicationSupport;
 
 /**
- * DatatypeVisitorTemplate
+ * ApplicationTemplate
  * 
  * @author Nicolas Moser, PRODYNA AG
  */
-public class DatatypeVisitorTemplate extends DatatypeVisitorSupport implements DatatypeVisitor {
+public final class ApplicationTemplate extends ApplicationSupport implements Application {
 
     private static final long serialVersionUID = 1L;
 
-    @Override
-    public void visit(Datatype datatype) {
-    }
-
-    @Override
-    public void visit(Basetype basetype) {
-    }
-    
 }

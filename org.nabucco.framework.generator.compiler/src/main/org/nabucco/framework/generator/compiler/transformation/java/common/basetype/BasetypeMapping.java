@@ -1,30 +1,29 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
-package org.nabucco.framework.generator.compiler.transformation.java.basetype;
+ * Copyright 2010 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco-source.org/nabucco-license.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.nabucco.framework.generator.compiler.transformation.java.common.basetype;
 
-import java.util.HashSet;
-import java.util.Set;
+import org.nabucco.framework.generator.compiler.transformation.java.basetype.JavaBasetypeMapping;
 
 /**
  * BaseTypeMapping
  * 
  * @author Silas Schwarz PRODYNA AG
  */
-public enum NabuccoToJavaBasetypeMapping implements JavaBasetypeMapping {
+public enum BasetypeMapping implements JavaBasetypeMapping {
 
     N_BOOLEAN("NBoolean", "org.nabucco.framework.base.facade.datatype.NBoolean", "Boolean"),
 
@@ -53,8 +52,6 @@ public enum NabuccoToJavaBasetypeMapping implements JavaBasetypeMapping {
             "org.nabucco.framework.base.facade.datatype.NType",
             "org.nabucco.framework.base.facade.datatype.NType");
 
-    private static final Set<JavaBasetypeMapping> EXTENSIONS = new HashSet<JavaBasetypeMapping>();
-
     /**
      * Name of the type
      */
@@ -68,12 +65,22 @@ public enum NabuccoToJavaBasetypeMapping implements JavaBasetypeMapping {
     /**
      * The java class to use
      */
-    private String javaClass;
+    private String primitiveType;
 
-    NabuccoToJavaBasetypeMapping(String name, String javaClass, String javaType) {
+    /**
+     * Creates a new {@link BasetypeMapping} instance.
+     * 
+     * @param name
+     *            the type name
+     * @param wrapperClass
+     *            the fully qualified wrapper class
+     * @param primitiveType
+     *            the primitive java type
+     */
+    private BasetypeMapping(String name, String wrapperClass, String primitiveType) {
         this.name = name;
-        this.javaClass = javaType;
-        this.wrapperClass = javaClass;
+        this.wrapperClass = wrapperClass;
+        this.primitiveType = primitiveType;
     }
 
     /**
@@ -97,14 +104,14 @@ public enum NabuccoToJavaBasetypeMapping implements JavaBasetypeMapping {
     /**
      * Getter for the type's java type.
      * 
-     * @return Returns the javaClass.
+     * @return Returns the primitiveType.
      */
-    public String getJavaClass() {
-        return javaClass;
+    public String getPrimitiveType() {
+        return primitiveType;
     }
 
     /**
-     * Maps a simple basetype name to a {@link NabuccoToJavaBasetypeMapping}.
+     * Maps a simple basetype name to a {@link BasetypeMapping}.
      * 
      * @param name
      *            name of the mapping
@@ -112,27 +119,12 @@ public enum NabuccoToJavaBasetypeMapping implements JavaBasetypeMapping {
      * @return the mapping
      */
     public static JavaBasetypeMapping getByName(String name) {
-        // extensions first use-case -> overrule existing entry
-        for (JavaBasetypeMapping current : EXTENSIONS) {
-            if (name.compareTo(current.getName()) == 0) {
-                return current;
-            }
-        }
         for (JavaBasetypeMapping current : values()) {
             if (name.compareTo(current.getName()) == 0) {
                 return current;
             }
         }
         return null;
-    }
-
-    /**
-     * Outside access to add additional or overwrite existing entries
-     * 
-     * @param contribution
-     */
-    public static void addExtension(JavaBasetypeMapping contribution) {
-        EXTENSIONS.add(contribution);
     }
 
 }

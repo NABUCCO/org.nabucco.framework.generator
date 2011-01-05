@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2010 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco-source.org/nabucco-license.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.xml.component;
 
 import java.io.File;
@@ -25,16 +25,13 @@ import org.nabucco.framework.generator.compiler.transformation.xml.visitor.Nabuc
 import org.nabucco.framework.generator.compiler.transformation.xml.visitor.NabuccoToXmlVisitorSupport;
 import org.nabucco.framework.generator.compiler.visitor.NabuccoVisitorException;
 import org.nabucco.framework.generator.parser.syntaxtree.ComponentStatement;
-import org.w3c.dom.Element;
-
-import org.nabucco.framework.mda.logger.MdaLogger;
-import org.nabucco.framework.mda.logger.MdaLoggingFactory;
 import org.nabucco.framework.mda.model.MdaModel;
 import org.nabucco.framework.mda.model.xml.XmlDocument;
 import org.nabucco.framework.mda.model.xml.XmlModel;
 import org.nabucco.framework.mda.model.xml.XmlModelException;
 import org.nabucco.framework.mda.model.xml.util.XmlModelToolkit;
 import org.nabucco.framework.mda.template.xml.XmlTemplateException;
+import org.w3c.dom.Element;
 
 /**
  * NabuccoToXmlComponentApplicationVisitor
@@ -45,9 +42,6 @@ import org.nabucco.framework.mda.template.xml.XmlTemplateException;
  */
 class NabuccoToXmlComponentJBossVisitor extends NabuccoToXmlVisitorSupport implements
         JBossConstants {
-
-    private static MdaLogger logger = MdaLoggingFactory.getInstance().getLogger(
-            NabuccoToXmlComponentJBossVisitor.class);
 
     /**
      * Creates a new {@link NabuccoToXmlComponentJBossVisitor} instance.
@@ -64,7 +58,7 @@ class NabuccoToXmlComponentJBossVisitor extends NabuccoToXmlVisitorSupport imple
 
         String interfaceName = nabuccoComponent.nodeToken2.tokenImage;
 
-        String componentName = super.getComponentName(null, null);
+        String componentName = super.getProjectName(null, null);
 
         try {
             XmlDocument document = this.createJBossAppXml(componentName);
@@ -82,12 +76,9 @@ class NabuccoToXmlComponentJBossVisitor extends NabuccoToXmlVisitorSupport imple
             target.getModel().getDocuments().add(document);
 
         } catch (XmlModelException me) {
-            logger.error(me, "Error during XML document component modification.");
-            throw new NabuccoVisitorException("Error during XML document component modification.",
-                    me);
+            throw new NabuccoVisitorException("Error during jboss.xml modification.", me);
         } catch (XmlTemplateException te) {
-            logger.error(te, "Error during XML template component processing.");
-            throw new NabuccoVisitorException("Error during XML template component processing.", te);
+            throw new NabuccoVisitorException("Error during jboss.xml template processing.", te);
         }
     }
 
@@ -112,8 +103,8 @@ class NabuccoToXmlComponentJBossVisitor extends NabuccoToXmlVisitorSupport imple
                 document.getDocument().getDocumentElement(), LOADER_REPOSITORY).get(0);
 
         String loaderRepository = element.getTextContent();
-        String component = NabuccoCompilerSupport.getParentComponentName(this
-                .getVisitorContext().getPackage());
+        String component = NabuccoCompilerSupport.getParentComponentName(this.getVisitorContext()
+                .getPackage());
 
         element.setTextContent(loaderRepository.replace(COMPONENT_NAME, component));
 
@@ -138,13 +129,14 @@ class NabuccoToXmlComponentJBossVisitor extends NabuccoToXmlVisitorSupport imple
 
         String interfacePackage = this.getVisitorContext().getPackage();
 
-        XmlDocument document = super.extractDocument(NabuccoXmlTemplateConstants.JBOSS_FRAGMENT_TEMPLATE);
+        XmlDocument document = super
+                .extractDocument(NabuccoXmlTemplateConstants.JBOSS_FRAGMENT_TEMPLATE);
 
         document.getDocument().getDocumentElement().setAttribute(NAME, interfaceName);
 
         String ejbName = interfacePackage + PKG_SEPARATOR + interfaceName;
-        String component = NabuccoCompilerSupport.getParentComponentName(this
-                .getVisitorContext().getPackage());
+        String component = NabuccoCompilerSupport.getParentComponentName(this.getVisitorContext()
+                .getPackage());
 
         StringBuilder jndiName = new StringBuilder();
         jndiName.append(JNDI_ROOT);
@@ -155,9 +147,10 @@ class NabuccoToXmlComponentJBossVisitor extends NabuccoToXmlVisitorSupport imple
         jndiName.append(interfaceName);
 
         document.getElementsByXPath(XPATH_JBOSS_EJB_NAME).get(0).setTextContent(ejbName);
-        document.getElementsByXPath(XPATH_JBOSS_JNDI_NAME).get(0).setTextContent(
-                jndiName.toString());
+        document.getElementsByXPath(XPATH_JBOSS_JNDI_NAME).get(0)
+                .setTextContent(jndiName.toString());
 
         return document;
     }
+    
 }

@@ -3,9 +3,8 @@
 //
 
 package org.nabucco.framework.generator.parser.visitor;
-import java.util.*;
-
 import org.nabucco.framework.generator.parser.syntaxtree.*;
+import java.util.*;
 
 /**
  * All GJ visitors must implement this interface.
@@ -72,10 +71,23 @@ public interface GJVisitor<R,A> {
 
    /**
     * <PRE>
-    * nodeChoice -> ( ComponentStatement() | DatatypeStatement() | BasetypeStatement() | EnumerationStatement() | ExceptionStatement() | ServiceStatement() | MessageStatement() | EditViewStatement() | ListViewStatement() | SearchViewStatement() | CommandStatement() )
+    * nodeChoice -> ( ApplicationStatement() | ComponentStatement() | DatatypeStatement() | BasetypeStatement() | EnumerationStatement() | ExceptionStatement() | ServiceStatement() | MessageStatement() | EditViewStatement() | ListViewStatement() | SearchViewStatement() | CommandStatement() )
     * </PRE>
     */
    public R visit(NabuccoStatement n, A argu);
+
+   /**
+    * <PRE>
+    * annotationDeclaration -> AnnotationDeclaration()
+    * nodeToken -> &lt;PUBLIC&gt;
+    * nodeToken1 -> &lt;APPLICATION&gt;
+    * nodeToken2 -> &lt;UNQUALIFIED_TYPE_NAME&gt;
+    * nodeToken3 -> &lt;LBRACE_CHAR&gt;
+    * nodeListOptional -> ( ApplicationPropertyDeclaration() )*
+    * nodeToken4 -> &lt;RBRACE_CHAR&gt;
+    * </PRE>
+    */
+   public R visit(ApplicationStatement n, A argu);
 
    /**
     * <PRE>
@@ -174,6 +186,19 @@ public interface GJVisitor<R,A> {
    /**
     * <PRE>
     * annotationDeclaration -> AnnotationDeclaration()
+    * nodeToken -> &lt;PRIVATE&gt;
+    * nodeToken1 -> &lt;CONNECTOR&gt;
+    * nodeToken2 -> &lt;UNQUALIFIED_TYPE_NAME&gt;
+    * nodeToken3 -> &lt;LBRACE_CHAR&gt;
+    * nodeListOptional -> ( ConnectorPropertyDeclaration() )*
+    * nodeToken4 -> &lt;RBRACE_CHAR&gt;
+    * </PRE>
+    */
+   public R visit(ConnectorStatement n, A argu);
+
+   /**
+    * <PRE>
+    * annotationDeclaration -> AnnotationDeclaration()
     * nodeToken -> &lt;PUBLIC&gt;
     * nodeToken1 -> &lt;EDITVIEW&gt;
     * nodeToken2 -> &lt;UNQUALIFIED_TYPE_NAME&gt;
@@ -226,6 +251,13 @@ public interface GJVisitor<R,A> {
 
    /**
     * <PRE>
+    * nodeChoice -> ( ComponentDeclaration() | ConnectorStatement() )
+    * </PRE>
+    */
+   public R visit(ApplicationPropertyDeclaration n, A argu);
+
+   /**
+    * <PRE>
     * nodeChoice -> ( ComponentDatatypeDeclaration() | EnumerationDeclaration() | ServiceDeclaration() | ComponentDeclaration() )
     * </PRE>
     */
@@ -240,7 +272,14 @@ public interface GJVisitor<R,A> {
 
    /**
     * <PRE>
-    * nodeChoice -> ( BasetypeDeclaration() | DatatypeDeclaration() | EnumerationDeclaration() | MapDeclaration() )
+    * nodeChoice -> ( DatatypeDeclaration() | ServiceLinkDeclaration() )
+    * </PRE>
+    */
+   public R visit(ConnectorPropertyDeclaration n, A argu);
+
+   /**
+    * <PRE>
+    * nodeChoice -> ( BasetypeDeclaration() | DatatypeDeclaration() | EnumerationDeclaration() )
     * </PRE>
     */
    public R visit(PropertyDeclaration n, A argu);
@@ -284,6 +323,33 @@ public interface GJVisitor<R,A> {
     * </PRE>
     */
    public R visit(ComponentDatatypeDeclaration n, A argu);
+
+   /**
+    * <PRE>
+    * annotationDeclaration -> AnnotationDeclaration()
+    * nodeChoice -> ( &lt;PUBLIC&gt; | &lt;PROTECTED&gt; | &lt;PRIVATE&gt; )
+    * nodeToken -> &lt;CONNECTOR&gt;
+    * nodeToken1 -> &lt;UNQUALIFIED_TYPE_NAME&gt;
+    * nodeToken2 -> &lt;NAME_IDENTIFIER&gt;
+    * nodeToken3 -> &lt;SEMICOLON_CHAR&gt;
+    * </PRE>
+    */
+   public R visit(ConnectorDeclaration n, A argu);
+
+   /**
+    * <PRE>
+    * annotationDeclaration -> AnnotationDeclaration()
+    * nodeToken -> &lt;PRIVATE&gt;
+    * nodeToken1 -> &lt;SERVICELINK&gt;
+    * nodeToken2 -> &lt;QUALIFIED_TYPE_NAME&gt;
+    * nodeToken3 -> &lt;DOT_CHAR&gt;
+    * nodeToken4 -> &lt;NAME_IDENTIFIER&gt;
+    * nodeToken5 -> &lt;LPAREN_CHAR&gt;
+    * nodeToken6 -> &lt;RPAREN_CHAR&gt;
+    * nodeToken7 -> &lt;SEMICOLON_CHAR&gt;
+    * </PRE>
+    */
+   public R visit(ServiceLinkDeclaration n, A argu);
 
    /**
     * <PRE>
@@ -337,7 +403,8 @@ public interface GJVisitor<R,A> {
     * nodeChoice -> ( &lt;PUBLIC&gt; | &lt;PROTECTED&gt; | &lt;PRIVATE&gt; )
     * nodeToken -> &lt;COMPONENT&gt;
     * nodeToken1 -> &lt;UNQUALIFIED_TYPE_NAME&gt;
-    * nodeToken2 -> &lt;SEMICOLON_CHAR&gt;
+    * nodeToken2 -> &lt;NAME_IDENTIFIER&gt;
+    * nodeToken3 -> &lt;SEMICOLON_CHAR&gt;
     * </PRE>
     */
    public R visit(ComponentDeclaration n, A argu);
@@ -363,26 +430,33 @@ public interface GJVisitor<R,A> {
     * parameterList -> ParameterList()
     * nodeToken3 -> &lt;RPAREN_CHAR&gt;
     * nodeOptional -> [ &lt;THROWS&gt; &lt;UNQUALIFIED_TYPE_NAME&gt; ]
-    * nodeToken4 -> &lt;SEMICOLON_CHAR&gt;
+    * nodeChoice1 -> ( &lt;SEMICOLON_CHAR&gt; | &lt;LBRACE_CHAR&gt; MethodBody() &lt;RBRACE_CHAR&gt; )
     * </PRE>
     */
    public R visit(MethodDeclaration n, A argu);
 
    /**
     * <PRE>
-    * annotationDeclaration -> AnnotationDeclaration()
-    * nodeChoice -> ( &lt;PUBLIC&gt; | &lt;PROTECTED&gt; | &lt;PRIVATE&gt; )
-    * nodeToken -> &lt;MAP&gt;
-    * nodeToken1 -> &lt;LBRACKET_CHAR&gt;
-    * nodeToken2 -> &lt;UNQUALIFIED_TYPE_NAME&gt;
-    * nodeToken3 -> &lt;COMMA_CHAR&gt;
-    * nodeToken4 -> &lt;UNQUALIFIED_TYPE_NAME&gt;
-    * nodeToken5 -> &lt;RBRACKET_CHAR&gt;
-    * nodeToken6 -> &lt;NAME_IDENTIFIER&gt;
-    * nodeToken7 -> &lt;SEMICOLON_CHAR&gt;
+    * nodeListOptional -> ( Parameter() )*
     * </PRE>
     */
-   public R visit(MapDeclaration n, A argu);
+   public R visit(ParameterList n, A argu);
+
+   /**
+    * <PRE>
+    * nodeOptional -> [ &lt;COMMA_CHAR&gt; ]
+    * nodeToken -> &lt;UNQUALIFIED_TYPE_NAME&gt;
+    * nodeToken1 -> &lt;NAME_IDENTIFIER&gt;
+    * </PRE>
+    */
+   public R visit(Parameter n, A argu);
+
+   /**
+    * <PRE>
+    * block -> Block()
+    * </PRE>
+    */
+   public R visit(MethodBody n, A argu);
 
    /**
     * <PRE>
@@ -508,21 +582,5 @@ public interface GJVisitor<R,A> {
     * </PRE>
     */
    public R visit(ColumnDeclaration n, A argu);
-
-   /**
-    * <PRE>
-    * nodeListOptional -> ( Parameter() )*
-    * </PRE>
-    */
-   public R visit(ParameterList n, A argu);
-
-   /**
-    * <PRE>
-    * nodeOptional -> [ &lt;COMMA_CHAR&gt; ]
-    * nodeToken -> &lt;UNQUALIFIED_TYPE_NAME&gt;
-    * nodeToken1 -> &lt;NAME_IDENTIFIER&gt;
-    * </PRE>
-    */
-   public R visit(Parameter n, A argu);
 
 }

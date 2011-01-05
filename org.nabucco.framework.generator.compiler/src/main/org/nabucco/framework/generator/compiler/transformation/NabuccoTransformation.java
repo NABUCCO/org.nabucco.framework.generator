@@ -1,29 +1,29 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2010 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco-source.org/nabucco-license.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation;
 
 import java.io.File;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 
 import org.nabucco.framework.generator.compiler.transformation.java.NabuccoToJavaTransformation;
 import org.nabucco.framework.generator.compiler.visitor.NabuccoVisitorException;
 import org.nabucco.framework.generator.parser.model.NabuccoModel;
-
 import org.nabucco.framework.mda.logger.MdaLogger;
 import org.nabucco.framework.mda.logger.MdaLoggingFactory;
 import org.nabucco.framework.mda.model.MdaModel;
@@ -45,12 +45,19 @@ public abstract class NabuccoTransformation<T extends ModelImplementation> exten
         TransformationComponent<NabuccoModel, T, NabuccoTransformationContext> implements
         Callable<NabuccoTransformationResult>, NabuccoTransformationConstants {
 
+    /** The transformation ID. */
+    private long id = Math.abs(UUID.randomUUID().getMostSignificantBits());
+    
+    /** The source model. */
     private MdaModel<NabuccoModel> source;
 
+    /** The target model. */
     private MdaModel<T> target;
 
+    /** The transformation context. */
     private NabuccoTransformationContext context;
 
+    /** The logger. */
     private static MdaLogger logger = MdaLoggingFactory.getInstance().getLogger(
             NabuccoTransformation.class);
 
@@ -86,23 +93,30 @@ public abstract class NabuccoTransformation<T extends ModelImplementation> exten
     }
 
     @Override
-    public NabuccoTransformationResult call() throws Exception {
+    public final NabuccoTransformationResult call() throws Exception {
 
-        logger.debug("Transforming NABUCCO '", source.getModel().getNabuccoType().name(), "' to ",
-                target.getModel().getType().name());
+        String name = this.source.getModel().getName();
+        String type = this.source.getModel().getNabuccoType().name();
+        String sourceType = this.source.getModel().getType().name();
+        String targetType = this.target.getModel().getType().name();
+
+        logger.debug("Transformation [" + this.id + "]: Start transforming ", type, " '", name,
+                "' from '", sourceType, "' to '", targetType, "'.");
 
         try {
-
-            this.transformModel(source, target, context);
+            this.transformModel(this.source, this.target, this.context);
 
         } catch (NabuccoTransformationException te) {
             raiseException(te.getMessage(), this.source, te);
         } catch (NabuccoVisitorException ve) {
             raiseException(ve.getMessage(), this.source, ve.getCause());
-        } catch (Throwable t) {
-            raiseException("Unexpected error during NABUCCO transformation.", this.source, t);
+        } catch (Exception e) {
+            raiseException("Unexpected error during NABUCCO transformation.", this.source, e);
+        } finally {
+            logger.debug("Transformation [" + this.id + "]: Finish transforming ", type, " '", name,
+                    "' from '", sourceType, "' to '", targetType, "'.");
         }
-        
+
         return null;
     }
 
@@ -122,13 +136,15 @@ public abstract class NabuccoTransformation<T extends ModelImplementation> exten
      * 
      * @throws NabuccoTransformationException
      */
-    private void raiseException(String msg, MdaModel<NabuccoModel> currentModel, Throwable cause)
+    private void raiseException(String msg, MdaModel<NabuccoModel> currentModel, Exception cause)
             throws NabuccoTransformationException {
 
         if (msg != null) {
             logger.error(msg);
         }
-        
+
+        logger.debug(cause);
+
         NabuccoTransformationException exception;
         if (cause instanceof NabuccoTransformationException) {
             exception = (NabuccoTransformationException) cause;
@@ -141,7 +157,7 @@ public abstract class NabuccoTransformation<T extends ModelImplementation> exten
 
             String path = model.getPath();
             String type = model.getNabuccoType() != null ? model.getNabuccoType().getId() : null;
-            
+
             if (path.contains(NBC_SOURCE_FOLDER)) {
                 path = path.substring(path.indexOf(NBC_SOURCE_FOLDER) + NBC_SOURCE_FOLDER.length())
                         .replace(File.separatorChar, '.').replace(".nbc", "");
@@ -152,5 +168,5 @@ public abstract class NabuccoTransformation<T extends ModelImplementation> exten
 
         throw exception;
     }
-    
+
 }

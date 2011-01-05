@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2010 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco-source.org/nabucco-license.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.xml.datatype;
 
 import java.util.Collections;
@@ -61,8 +61,33 @@ class NabuccoToXmlDatatypeVisitorSupport implements PersistenceConstants {
             NabuccoToXmlDatatypeVisitorSupport.class);
 
     /**
-     * Copies <code>one-to-one</code> or <code>one-to-many</code> tags from the template depending
-     * on the multiplicity.
+     * Copies <code>one-to-one</code>, <code>one-to-many</code>, <code>many-to-one</code> or
+     * <code>many-to-many</code> tags from the template depending on multiplicity and association
+     * type.</p>
+     * 
+     * <table border=true>
+     * <col width="10%"/> <col width="30%"/> <col width="30%"/> <thead>
+     * <tr>
+     * <th>&nbsp;</th>
+     * <th>COMPOSITION</th>
+     * <th>AGGREGATION</th>
+     * </tr>
+     * </thead> <tbody>
+     * <tr>
+     * <td>1</td>
+     * <td>1:1</td>
+     * <td>M:1</td>
+     * </tr>
+     * <tr>
+     * <td>*</td>
+     * <td>1:N</td>
+     * <td>M:N</td>
+     * </tr>
+     * <tr>
+     * </tr>
+     * </tbody>
+     * </table>
+     * <p/>
      * 
      * @param multiplicity
      *            the multiplicity
@@ -82,17 +107,40 @@ class NabuccoToXmlDatatypeVisitorSupport implements PersistenceConstants {
             throw new NabuccoVisitorException("Multiplicity is not valid " + multiplicity + ".");
         }
 
+        // TODO: Optional/Mandatory Annotations
+
         if (association == AssociationStrategyType.AGGREGATION) {
+
             if (multiplicity.isMultiple()) {
-                return (Element) template.copyNodesByXPath(XPATH_MANY_TO_MANY).get(0);
+                if (multiplicity.isOptional()) {
+                    // Optional M:M Relation Template (ManyToMany)
+                    return (Element) template.copyNodesByXPath(XPATH_MANY_TO_MANY).get(0);
+                }
+                // Mandatory M:M Relation Template (ManyToMany)
+                return (Element) template.copyNodesByXPath(XPATH_MANY_TO_MANY).get(1);
             }
-            return (Element) template.copyNodesByXPath(XPATH_MANY_TO_ONE).get(0);
+            if (multiplicity.isOptional()) {
+                // Optional M:1 Relation Template (ManyToOne)
+                return (Element) template.copyNodesByXPath(XPATH_MANY_TO_ONE).get(0);
+            }
+            // Mandatory M:1 Relation Template (ManyToOne)
+            return (Element) template.copyNodesByXPath(XPATH_MANY_TO_ONE).get(1);
         }
 
         if (multiplicity.isMultiple()) {
+            if (multiplicity.isOptional()) {
+                // Optional 1:M Relation Template (OneToMany)
+                return (Element) template.copyNodesByXPath(XPATH_ONE_TO_MANY).get(0);
+            }
+            // Mandatory 1:M Relation Template (OneToMany)
             return (Element) template.copyNodesByXPath(XPATH_ONE_TO_MANY).get(0);
         }
-        return (Element) template.copyNodesByXPath(XPATH_ONE_TO_ONE).get(0);
+        if (multiplicity.isOptional()) {
+            // Optional 1:1 Relation Template (OneToOne)
+            return (Element) template.copyNodesByXPath(XPATH_ONE_TO_ONE).get(0);
+        }
+        // Mandatory 1:1 Relation Template (OneToOne)
+        return (Element) template.copyNodesByXPath(XPATH_ONE_TO_ONE).get(1);
     }
 
     /**
@@ -104,13 +152,15 @@ class NabuccoToXmlDatatypeVisitorSupport implements PersistenceConstants {
      *            the template containing the tags
      * @param name
      *            the column declaration name
-     * @param name
+     * @param length
      *            the column length
+     * @param immutable
+     *            whether the basetype is updatable or not
      * 
      * @return the extracted {@link Element} instance.
      */
     public static Element resolveElementType(AnnotationDeclaration annotationDeclaration,
-            XmlTemplate ormTemplate, String name, String length) {
+            XmlTemplate ormTemplate, String name, String length, boolean immutable) {
 
         try {
             Element element = null;
@@ -145,6 +195,10 @@ class NabuccoToXmlDatatypeVisitorSupport implements PersistenceConstants {
                 Element column = (Element) attributeOverride.getElementsByTagName(COLUMN).item(0);
                 column.setAttribute(NAME, name);
                 column.setAttribute(LENGTH, length);
+
+                if (immutable) {
+                    column.setAttribute(UPDATABLE, Boolean.FALSE.toString());
+                }
             }
 
             element.setAttribute(NAME, name);

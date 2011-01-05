@@ -27,15 +27,14 @@ public interface NabuccoCompilerDefaults {
     
     final String TEMPLATE_PATH = "../org.nabucco.framework.generator/conf/nbc/templates";
 
-    // TODO: Refactor to generic location
     final String NBC_FORMATTER = "../org.nabucco.framework.generator/conf/nbc/formatter.properties";
 
     final String NBC_ENGINE = "NBC";
 
     final String NBC_ROOTDIR = "src/gen/";
     
-    final String NBC_OUT_DIR = "out/ide/nbc";
+    final String NBC_OUT_DIR = "out/nbc";
 
-    final String SKM_ENGINE = "SKM";
+    final String LOG_LEVEL = "INFO";
 
 }

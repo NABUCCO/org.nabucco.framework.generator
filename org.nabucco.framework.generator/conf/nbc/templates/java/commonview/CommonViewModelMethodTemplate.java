@@ -26,7 +26,7 @@ import org.nabucco.framework.base.facade.datatype.Name;
 public class CommonViewModelMethodTemplate {
 
     public void setField(String fieldValue) {
-        if (datatype != null || datatype.getField() == null) {
+        if (datatype != null && datatype.getField() == null) {
             FieldType field = new FieldType();
             datatype.setField(field);
         }
@@ -122,7 +122,10 @@ public class CommonViewModelMethodTemplate {
     }
 
     public void setFieldCombo(final String fieldValue) {
-        String oldVal = this.datatype.getField().name();
+        String oldVal = "";
+        if (this.importConfig.getImportType() != null) { 
+            oldVal = this.importConfig.getImportType().name(); 
+        }
         this.datatype.setField(fieldValue);
         this.updateProperty(PROPERTY, oldVal, fieldValue);
         if (((!oldVal.equals(fieldValue)) && datatype.getDatatypeState().equals(

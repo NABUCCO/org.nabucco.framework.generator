@@ -95,7 +95,7 @@ public class EditWidgetFactoryWidgetDeclarationTemplate extends WidgetFactory {
     // ComboBox
     public void createElementCombo(Composite parent, ElementPickerComboParameter params) {
         ElementPickerCombo elementCombo = new ElementPickerCombo(parent, SWT.NONE, params
-                .getContentProvider(), params.getTableLabelProvider(), "");
+                .getContentProvider(), params.getTableLabelProvider(), "",false);
         DataBindingContext bindingContext = new DataBindingContext();
         IObservableValue uiElement;
         IObservableValue modelElement;

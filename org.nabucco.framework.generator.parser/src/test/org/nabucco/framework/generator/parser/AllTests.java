@@ -23,6 +23,7 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses( { 
     
     org.nabucco.framework.generator.parser.ParserTest.class,
+    org.nabucco.framework.generator.parser.GrammarTest.class,
     org.nabucco.framework.generator.parser.model.AllTests.class
     
 })

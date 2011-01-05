@@ -20,12 +20,10 @@ import java.io.File;
 
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
-import org.nabucco.framework.generator.compiler.transformation.java.common.NabuccoToJavaDatatypeReflectionSupport;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.JavaAstSupport;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.container.JavaAstContainter;
 import org.nabucco.framework.generator.compiler.transformation.java.constants.JavaConstants;
 import org.nabucco.framework.generator.compiler.visitor.NabuccoVisitorException;
-
 import org.nabucco.framework.mda.model.java.JavaCompilationUnit;
 import org.nabucco.framework.mda.model.java.JavaModelException;
 import org.nabucco.framework.mda.model.java.ast.element.JavaAstElementFactory;
@@ -33,7 +31,7 @@ import org.nabucco.framework.mda.model.java.ast.produce.JavaAstModelProducer;
 import org.nabucco.framework.mda.template.java.JavaTemplateException;
 
 /**
- * NabuccoToJavaDatatypeReflectionSupport
+ * NabuccoToJavaDatatypeReflectionVisitor
  * 
  * @author Nicolas Moser, PRODYNA AG
  */
@@ -41,7 +39,7 @@ public abstract class NabuccoToJavaVisitorSupport extends NabuccoToJavaModelVisi
         JavaConstants {
 
     /**
-     * Creates a new {@link NabuccoToJavaDatatypeReflectionSupport} with an appropriate visitor context.
+     * Creates a new {@link NabuccoToJavaDatatypeReflectionVisitor} with an appropriate visitor context.
      * 
      * @param visitorContext
      *            the visitor context

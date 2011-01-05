@@ -34,9 +34,9 @@ limitations under the License.
 	<property name="gen.parser.path" value="${compile.src.path}/gen/org/nabucco/framework/generator/parser"/>
 	<property name="gen.parser.package" value="org.nabucco.framework.generator.parser"/>
 	<property name="gen.grammar.file.jj.name" value="nabucco.jj"/>
-	<property name="gen.grammar.file.jjt.path" value="../../../../../../../conf/grammar/nabucco.jjt"/>
+	<property name="gen.grammar.file.jjt" value="../../../../../../../conf/grammar/nabucco.jjt"/>
 
-	<property name="compile.lib" value="../org.nabucco.framework.generator/${dir.lib}"/>
+	<property name="compile.lib" value="../org.nabucco.framework.generator/lib"/>
 	
 	<!-- 
 	##################################################################################
@@ -55,6 +55,7 @@ limitations under the License.
 			<include name="jtb.jar" />
 		</fileset>
 	</path>
+	
 	<!-- 
 	##################################################################################
 	##
@@ -67,6 +68,7 @@ limitations under the License.
 			<fileset dir="${gen.parser.path}" excludes="**/CVS/*"/>
 		</delete>
 	</target>
+	
 	<!-- 
 	##################################################################################
 	##
@@ -74,24 +76,40 @@ limitations under the License.
 	##
 	##################################################################################
 	-->
-	<target name="javatreebuilder" depends="clean">
+	<target name="jtb" depends="clean">
+		
 		<java fork="true" dir="${gen.parser.path}" classname="EDU.purdue.jtb.JTB" classpathref="jtb.classpath">
-			<!-- Specifies the filename JTB should use to output the annotated grammar rather than use the default jtb.out.jj. -->
+			
+			<!-- Specifies the filename JTB should use to output the annotated grammar rather than use the 
+				default jtb.out.jj. -->
 			<arg line="-o ${gen.grammar.file.jj.name}" />
-			<!-- the folder structure, needed for package statement; the jtb expects to be in this folder an generate sources accordingly -->
+			
+			<!-- the folder structure, needed for package statement; the jtb expects to be in this folder
+				 an generate sources accordingly -->
 			<arg line="-p ${gen.parser.package}" />
+			
 			<!-- java doc friendly comments -->
 			<arg line="-jd" />
-			<!-- Generates descrpitive node class child field names such as whileStatement and nodeToken2 rather than f0, f1, etc. -->
+			
+			<!-- Generates descrpitive node class child field names such as whileStatement and nodeToken2
+				 rather than f0, f1, etc. -->
 			<arg line="-f" />
-			<!-- Generates parent pointers in all node classes as well as getParent() and setParent() methods.   The parent reference of a given node will automatically be set when the node is passed to the constructor of another node.  The root node's parent will be null.-->
+			
+			<!-- Generates parent pointers in all node classes as well as getParent() and setParent() methods.
+				 The parent reference of a given node will automatically be set when the node is passed to the
+				 constructor of another node.  The root node's parent will be null.-->
 			<arg line="-pp" />
-			<!-- The -printer option causes JTB to generate two additional visitors for aid in printing and formatting your syntax trees -->
+			
+			<!-- The -printer option causes JTB to generate two additional visitors for aid in printing and
+				 formatting your syntax trees -->
 			<arg line="-printer" />
+			
 			<!-- The grammar file to read -->
-			<arg line="${gen.grammar.file.jjt.path}" />
+			<arg line="${gen.grammar.file.jjt}" />
+			
 		</java>
 	</target>
+	
 	<!-- 
 	##################################################################################
 	##
@@ -99,7 +117,7 @@ limitations under the License.
 	##
 	##################################################################################
 	-->
-	<target name="javacc" depends="javatreebuilder">
+	<target name="javacc" depends="jtb">
 		<java fork="true" dir="${gen.parser.path}" classname="javacc" classpathref="javacc.classpath">
 			<arg line="-STATIC=false" />
 			<arg line="-IGNORE_CASE=false" />

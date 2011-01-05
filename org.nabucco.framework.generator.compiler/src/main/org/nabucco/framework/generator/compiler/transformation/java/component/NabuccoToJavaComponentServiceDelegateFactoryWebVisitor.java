@@ -153,7 +153,7 @@ class NabuccoToJavaComponentServiceDelegateFactoryWebVisitor extends NabuccoToJa
         TypeReference componentType = JavaAstModelProducer.getInstance().createTypeReference(
                 componentName, false);
         javaFactory.getJavaAstMethod().setReturnType(method, componentType);
-        String componentPackage = super.getComponentName(NabuccoModelType.COMPONENT,
+        String componentPackage = super.getProjectName(NabuccoModelType.COMPONENT,
                 NabuccoModifierType.PUBLIC);
         return JavaAstModelProducer.getInstance().createImportReference(
                 componentPackage + PKG_SEPARATOR + componentName);
@@ -168,7 +168,7 @@ class NabuccoToJavaComponentServiceDelegateFactoryWebVisitor extends NabuccoToJa
                 .createTypeReference(
                         nabuccoComponent.nodeToken2.tokenImage + LOCATOR, false);
         ((MessageSend) ((MessageSend) ((Assignment) method.statements[2]).expression).receiver).receiver = locatorTypeReference;
-        String locatorPackage = super.getComponentName(NabuccoModelType.COMPONENT,
+        String locatorPackage = super.getProjectName(NabuccoModelType.COMPONENT,
                 NabuccoModifierType.PUBLIC);
 
         return JavaAstModelProducer.getInstance().createImportReference(

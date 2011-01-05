@@ -22,7 +22,7 @@ package org.nabucco.framework.generator.compiler.transformation.java.constants;
  * @author Nicolas Moser, PRODYNA AG
  */
 public interface ServerConstants extends JavaConstants {
-
+    
     final String JNDI_NAME = "JNDI_NAME";
 
     final String SINGLETON_INSTANCE = "instance";
@@ -35,6 +35,8 @@ public interface ServerConstants extends JavaConstants {
 
     final String COMPONENT_IMPLEMENTATION_OPERATION = "componentImplementationOperation";
 
+    final String CONNECTOR = "Connector";
+    
     final String SERVICE_DELEGATE = SERVICE + DELEGATE;
 
     final String SERVICE_DELEGATE_FACTORY = SERVICE_DELEGATE + FACTORY;

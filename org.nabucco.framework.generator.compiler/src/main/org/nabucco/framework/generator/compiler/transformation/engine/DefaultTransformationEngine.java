@@ -22,6 +22,7 @@ import org.nabucco.framework.generator.compiler.NabuccoCompilerOptions;
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformation;
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationContext;
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationException;
+import org.nabucco.framework.generator.compiler.transformation.java.application.NabuccoToJavaApplicationTransformation;
 import org.nabucco.framework.generator.compiler.transformation.java.basetype.NabuccoToJavaBasetypeTransformation;
 import org.nabucco.framework.generator.compiler.transformation.java.component.NabuccoToJavaComponentTransformation;
 import org.nabucco.framework.generator.compiler.transformation.java.datatype.NabuccoToJavaDatatypeTransformation;
@@ -76,67 +77,57 @@ class DefaultTransformationEngine extends NabuccoTransformationEngine {
 
         switch (source.getModel().getNabuccoType()) {
 
+        case APPLICATION:
+            transformationList.add(new NabuccoToJavaApplicationTransformation(source, javaTarget, context));
+            break;
+            
         case BASETYPE:
-            transformationList.add(new NabuccoToJavaBasetypeTransformation(source, javaTarget,
-                    context));
+            transformationList.add(new NabuccoToJavaBasetypeTransformation(source, javaTarget, context));
+            break;
+            
+        case COMPONENT:
+            transformationList.add(new NabuccoToJavaComponentTransformation(source, javaTarget, context));
+            transformationList.add(new NabuccoToXmlComponentTransformation(source, xmlTarget, context));
             break;
 
         case DATATYPE:
-            transformationList.add(new NabuccoToJavaDatatypeTransformation(source, javaTarget,
-                    context));
-            break;
-
-        case COMPONENT:
-            transformationList.add(new NabuccoToJavaComponentTransformation(source, javaTarget,
-                    context));
-            transformationList.add(new NabuccoToXmlComponentTransformation(source, xmlTarget,
-                    context));
+            transformationList.add(new NabuccoToJavaDatatypeTransformation(source, javaTarget, context));
             break;
 
         case ENUMERATION:
-            transformationList.add(new NabuccoToJavaEnumerationTransformation(source, javaTarget,
-                    context));
+            transformationList.add(new NabuccoToJavaEnumerationTransformation(source, javaTarget, context));
             break;
 
         case EXCEPTION:
-            transformationList.add(new NabuccoToJavaExceptionTransformation(source, javaTarget,
-                    context));
+            transformationList.add(new NabuccoToJavaExceptionTransformation(source, javaTarget, context));
             break;
 
         case MESSAGE:
-            transformationList.add(new NabuccoToJavaMessageTransformation(source, javaTarget,
-                    context));
+            transformationList.add(new NabuccoToJavaMessageTransformation(source, javaTarget, context));
             break;
 
         case SERVICE:
-            transformationList.add(new NabuccoToJavaServiceTransformation(source, javaTarget,
-                    context));
-            transformationList
-                    .add(new NabuccoToXmlServiceTransformation(source, xmlTarget, context));
-            transformationList.add(new NabuccoToXmlServiceExceptionTransformation(source,
-                    xmlTarget, context));
+            transformationList.add(new NabuccoToJavaServiceTransformation(source, javaTarget, context));
+            transformationList.add(new NabuccoToXmlServiceTransformation(source, xmlTarget, context));
+            transformationList.add(new NabuccoToXmlServiceExceptionTransformation(source, xmlTarget, context));
             break;
 
-        // UI Transformations
+        // RCP Transformations
 
         case EDIT_VIEW:
-            transformationList.add(new NabuccoToJavaViewEditTransformation(source, javaTarget,
-                    context));
+            transformationList.add(new NabuccoToJavaViewEditTransformation(source, javaTarget, context));
             break;
 
         case LIST_VIEW:
-            transformationList.add(new NabuccoToJavaViewListTransformation(source, javaTarget,
-                    context));
+            transformationList.add(new NabuccoToJavaViewListTransformation(source, javaTarget, context));
             break;
 
         case SEARCH_VIEW:
-            transformationList.add(new NabuccoToJavaRcpViewSearchTransformation(source, javaTarget,
-                    context));
+            transformationList.add(new NabuccoToJavaRcpViewSearchTransformation(source, javaTarget, context));
             break;
 
         case COMMAND:
-            transformationList.add(new NabuccoToJavaRcpViewCommandTransformation(source,
-                    javaTarget, context));
+            transformationList.add(new NabuccoToJavaRcpViewCommandTransformation(source, javaTarget, context));
             break;
 
         // Add other transformations here.

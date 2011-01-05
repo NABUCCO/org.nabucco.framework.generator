@@ -14,30 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.nabucco.framework.generator.compiler.verifier;
+
+import org.nabucco.framework.generator.compiler.verifier.error.VerificationResult;
 
 /**
- * PropertyTemplate
+ * NabuccoModelVerification
  * 
- * @author Nicolas Moser, PRODYNA AG
+ * @author Silas Schwarz PRODYNA AG
  */
-public class PropertyTemplate {
-	
-    Boolean booleanTemplate;
-    
-	String stringTemplate = null;
-	
-	Integer integerTemplate;
-	
-	Double decimalTemplate;
+public interface NabuccoModelVerification {
 
-	PropertyTemplate  propertyTemplate = null;
-
-    PropertyTemplate getProperty() {
-        return propertyTemplate;
-    }
-
-    void setProperty(PropertyTemplate propertyTemplate) {
-        this.propertyTemplate = propertyTemplate;
-    }
-	
+    /**
+     * Verifies the given NABUCCO model.
+     * 
+     * @param result
+     *            the verification result
+     * 
+     * @throws NabuccoVerificationException
+     */
+    public void verify(VerificationResult result) throws NabuccoVerificationException;
 }

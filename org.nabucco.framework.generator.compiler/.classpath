@@ -8,7 +8,7 @@
 	<classpathentry kind="lib" path="/org.nabucco.framework.generator/lib/org.nabucco.framework.mda.jar"/>
 	<classpathentry kind="lib" path="/org.nabucco.framework.generator/lib/log4j.jar"/>
 	<classpathentry kind="lib" path="/org.nabucco.framework.generator/lib/org.eclipse.equinox.common.jar"/>
-	<classpathentry kind="lib" path="/org.nabucco.framework.generator/lib/org.eclipse.jdt.core.jar"/>
+	<classpathentry kind="lib" path="/org.nabucco.framework.generator/lib/org.eclipse.jdt.core.jar" sourcepath="D:/Downloads/org.eclipse.jdt.core.source_3.6.0.v_A58.jar"/>
 	<classpathentry kind="lib" path="/org.nabucco.framework.generator/lib/org.eclipse.text.jar"/>
 	<classpathentry kind="output" path="out/ide"/>
 </classpath>

@@ -18,12 +18,14 @@
 import java.util.HashMap;
 import java.util.Map;
 
+import org.nabucco.framework.base.facade.exception.ExceptionSupport;
+
 /**
  * ExceptionTemplate
  * 
  * @author Nicolas Moser, PRODYNA AG
  */
-public class ExceptionTemplate extends Exception {
+public class ExceptionTemplate extends ExceptionSupport {
 
     private static final long serialVersionUID = 1L;
 

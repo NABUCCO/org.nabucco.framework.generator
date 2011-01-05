@@ -34,6 +34,8 @@ public abstract class NabuccoToXmlVisitorSupport extends NabuccoToXmlModelVisito
     private static final String FOLDER_CONF = "conf";
 
     private static final String FOLDER_EJB = "ejb";
+    
+    private static final String PERSISTENCE_UNIT = "PU_";
 
     /**
      * Creates a new {@link NabuccoToXmlVisitorSupport} instance.
@@ -84,12 +86,13 @@ public abstract class NabuccoToXmlVisitorSupport extends NabuccoToXmlModelVisito
      * @return the datasource name
      */
     protected String getDatasourceName() {
-        
         String pkg = super.getVisitorContext().getPackage();
         String componentName = NabuccoCompilerSupport.getParentComponentName(pkg);
 
-        return componentName.replace("org.nabucco.framework", "NABUCCO_DS").replace(".", "_")
-                .toUpperCase();
+        StringBuilder result = new StringBuilder(PERSISTENCE_UNIT);
+        result.append(componentName.replace('.', '_'));
+
+        return result.toString().toUpperCase();
     }
     
 }

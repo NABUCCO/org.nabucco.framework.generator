@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2010 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco-source.org/nabucco-license.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java.common.clone;
 
 import java.util.ArrayList;
@@ -34,13 +34,19 @@ import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
+import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
+import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
+import org.nabucco.framework.generator.compiler.NabuccoCompilerSupport;
+import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationMapper;
+import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationType;
 import org.nabucco.framework.generator.compiler.transformation.java.constants.CollectionConstants;
 import org.nabucco.framework.generator.compiler.transformation.java.visitor.NabuccoToJavaVisitorContext;
 import org.nabucco.framework.generator.compiler.transformation.java.visitor.NabuccoToJavaVisitorSupport;
+import org.nabucco.framework.generator.compiler.transformation.util.NabuccoTransformationUtility;
 import org.nabucco.framework.generator.compiler.visitor.NabuccoVisitorException;
 import org.nabucco.framework.generator.parser.model.multiplicity.NabuccoMultiplicityType;
 import org.nabucco.framework.generator.parser.model.multiplicity.NabuccoMultiplicityTypeMapper;
@@ -184,7 +190,17 @@ public class NabuccoToJavaCloneVisitor extends NabuccoToJavaVisitorSupport imple
 
         try {
             if (!multiplicity.isMultiple()) {
-                this.addAssignment(name);
+
+                if (NabuccoAnnotationMapper.getInstance().hasAnnotation(
+                        nabuccoBasetype.annotationDeclaration, NabuccoAnnotationType.PRIMARY,
+                        NabuccoAnnotationType.OPTIMISTIC_LOCK)) {
+
+                    this.addAssignmentWithoutClone(name);
+
+                } else {
+                    this.addAssignment(name);
+                }
+
             }
         } catch (JavaModelException e) {
             throw new NabuccoVisitorException("Error creating cloneObject() assignment.", e);
@@ -197,12 +213,7 @@ public class NabuccoToJavaCloneVisitor extends NabuccoToJavaVisitorSupport imple
         String name = nabuccoEnum.nodeToken2.tokenImage;
 
         try {
-            QualifiedNameReference left = producer.createQualifiedNameReference("clone", name);
-            FieldReference right = producer.createFieldThisReference(name);
-
-            Assignment assignment = producer.createAssignment(left, right);
-
-            cloneStatements.add(assignment);
+            this.addAssignmentWithoutClone(name);
 
         } catch (JavaModelException e) {
             throw new NabuccoVisitorException("Error creating cloneObject() assignment.", e);
@@ -223,6 +234,13 @@ public class NabuccoToJavaCloneVisitor extends NabuccoToJavaVisitorSupport imple
                 this.addListAssignment(name, type);
             } else {
                 this.addAssignment(name);
+
+                String importString = super.resolveImport(type);
+                String pkg = super.getVisitorContext().getPackage();
+
+                if (NabuccoCompilerSupport.isOtherComponent(pkg, importString)) {
+                    this.addRefIdAssignment(name);
+                }
             }
         } catch (JavaModelException e) {
             throw new NabuccoVisitorException("Error creating cloneObject() assignment.", e);
@@ -239,27 +257,57 @@ public class NabuccoToJavaCloneVisitor extends NabuccoToJavaVisitorSupport imple
      */
     private void addAssignment(String fieldName) throws JavaModelException {
 
-        FieldReference field = producer.createFieldThisReference(fieldName);
-        QualifiedNameReference clone = producer.createQualifiedNameReference(CLONE, fieldName);
+        String getterName = PREFIX_GETTER + NabuccoTransformationUtility.firstToUpper(fieldName);
+        String setterName = PREFIX_SETTER + NabuccoTransformationUtility.firstToUpper(fieldName);
 
+        ThisReference thisReference = producer.createThisReference();
         Literal literal = producer.createLiteral(null, LiteralType.NULL_LITERAL);
+
+        SingleNameReference clone = producer.createSingleNameReference(CLONE);
+
+        MessageSend getter = producer.createMessageSend(getterName, thisReference, null);
+        MessageSend cloneObject = producer.createMessageSend(CLONE_OBJECT_METHOD, getter, null);
+        MessageSend setter = producer.createMessageSend(setterName, clone,
+                Arrays.asList(cloneObject));
+
         BinaryExpression condition = producer.createBinaryExpression(
-                BinaryExpressionType.EQUAL_EXPRESSION, field, literal, BinaryExpression.NOT_EQUAL);
+                BinaryExpressionType.EQUAL_EXPRESSION, getter, literal, BinaryExpression.NOT_EQUAL);
 
-        MessageSend right = producer.createMessageSend(CLONE_OBJECT_METHOD, field, null);
-        Assignment assignment = producer.createAssignment(clone, right);
-
-        Block then = producer.createBlock(assignment);
+        Block then = producer.createBlock(setter);
         IfStatement ifStatement = producer.createIfStatement(condition, then);
 
         this.cloneStatements.add(ifStatement);
     }
 
     /**
-     * Adds an assignment to the collected list.
+     * Adds an assignment without cloning the elment (for enumerations and primitive types).
+     * 
+     * @param fieldName
+     *            name of the field
+     * 
+     * @throws JavaModelException
+     */
+    private void addAssignmentWithoutClone(String fieldName) throws JavaModelException {
+
+        String getterName = PREFIX_GETTER + NabuccoTransformationUtility.firstToUpper(fieldName);
+        String setterName = PREFIX_SETTER + NabuccoTransformationUtility.firstToUpper(fieldName);
+
+        ThisReference thisReference = producer.createThisReference();
+        SingleNameReference clone = producer.createSingleNameReference(CLONE);
+
+        MessageSend getter = producer.createMessageSend(getterName, thisReference, null);
+        MessageSend setter = producer.createMessageSend(setterName, clone, Arrays.asList(getter));
+
+        cloneStatements.add(setter);
+    }
+
+    /**
+     * Adds a list assignment to the collected list.
      * 
      * @param fieldName
      *            the field to create the assignment for.
+     * @param type
+     *            the list type
      * 
      * @throws JavaModelException
      */
@@ -270,8 +318,8 @@ public class NabuccoToJavaCloneVisitor extends NabuccoToJavaVisitorSupport imple
         QualifiedNameReference clone = producer.createQualifiedNameReference(CLONE, fieldName);
 
         TypeReference wildcard = producer.createWildcard();
-        TypeReference list = producer.createParameterizedTypeReference(NABUCCO_LIST, false, Arrays
-                .asList(wildcard));
+        TypeReference list = producer.createParameterizedTypeReference(NABUCCO_LIST, false,
+                Arrays.asList(wildcard));
 
         TypeReference typeRef = producer.createTypeReference(type, false);
         TypeReference listType = producer.createParameterizedTypeReference(NABUCCO_LIST, false,
@@ -291,5 +339,37 @@ public class NabuccoToJavaCloneVisitor extends NabuccoToJavaVisitorSupport imple
         IfStatement listAssignment = producer.createIfStatement(condition, then);
 
         this.cloneStatements.add(listAssignment);
+    }
+
+    /**
+     * Adds an assignment to the inter-component reference id.
+     * 
+     * @param fieldName
+     *            the field having defining an inter-component relation
+     * 
+     * @throws JavaModelException
+     */
+    private void addRefIdAssignment(String fieldName) throws JavaModelException {
+        
+        fieldName = fieldName + REF_ID;
+        
+        String getterName = PREFIX_GETTER + NabuccoTransformationUtility.firstToUpper(fieldName);
+        String setterName = PREFIX_SETTER + NabuccoTransformationUtility.firstToUpper(fieldName);
+
+        ThisReference thisReference = producer.createThisReference();
+        Literal literal = producer.createLiteral(null, LiteralType.NULL_LITERAL);
+
+        SingleNameReference clone = producer.createSingleNameReference(CLONE);
+
+        MessageSend getter = producer.createMessageSend(getterName, thisReference, null);
+        MessageSend setter = producer.createMessageSend(setterName, clone, Arrays.asList(getter));
+
+        BinaryExpression condition = producer.createBinaryExpression(
+                BinaryExpressionType.EQUAL_EXPRESSION, getter, literal, BinaryExpression.NOT_EQUAL);
+
+        Block then = producer.createBlock(setter);
+        IfStatement ifStatement = producer.createIfStatement(condition, then);
+
+        this.cloneStatements.add(ifStatement);
     }
 }

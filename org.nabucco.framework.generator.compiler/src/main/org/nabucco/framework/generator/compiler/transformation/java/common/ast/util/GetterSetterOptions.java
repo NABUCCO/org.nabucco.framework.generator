@@ -21,7 +21,7 @@ import org.nabucco.framework.generator.compiler.transformation.common.collection
 import org.nabucco.framework.generator.compiler.transformation.common.collection.CollectionType;
 
 /**
- * JavaAstInformation
+ * GetterSetterOptions
  * 
  * @author Nicolas Moser, PRODYNA AG
  */

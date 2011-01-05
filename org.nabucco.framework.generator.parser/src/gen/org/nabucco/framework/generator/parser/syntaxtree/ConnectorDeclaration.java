@@ -9,17 +9,13 @@ package org.nabucco.framework.generator.parser.syntaxtree;
  * <PRE>
  * annotationDeclaration -> AnnotationDeclaration()
  * nodeChoice -> ( &lt;PUBLIC&gt; | &lt;PROTECTED&gt; | &lt;PRIVATE&gt; )
- * nodeToken -> &lt;MAP&gt;
- * nodeToken1 -> &lt;LBRACKET_CHAR&gt;
- * nodeToken2 -> &lt;UNQUALIFIED_TYPE_NAME&gt;
- * nodeToken3 -> &lt;COMMA_CHAR&gt;
- * nodeToken4 -> &lt;UNQUALIFIED_TYPE_NAME&gt;
- * nodeToken5 -> &lt;RBRACKET_CHAR&gt;
- * nodeToken6 -> &lt;NAME_IDENTIFIER&gt;
- * nodeToken7 -> &lt;SEMICOLON_CHAR&gt;
+ * nodeToken -> &lt;CONNECTOR&gt;
+ * nodeToken1 -> &lt;UNQUALIFIED_TYPE_NAME&gt;
+ * nodeToken2 -> &lt;NAME_IDENTIFIER&gt;
+ * nodeToken3 -> &lt;SEMICOLON_CHAR&gt;
  * </PRE>
  */
-public class MapDeclaration implements Node {
+public class ConnectorDeclaration implements Node {
    private Node parent;
    public AnnotationDeclaration annotationDeclaration;
    public NodeChoice nodeChoice;
@@ -27,12 +23,8 @@ public class MapDeclaration implements Node {
    public NodeToken nodeToken1;
    public NodeToken nodeToken2;
    public NodeToken nodeToken3;
-   public NodeToken nodeToken4;
-   public NodeToken nodeToken5;
-   public NodeToken nodeToken6;
-   public NodeToken nodeToken7;
 
-   public MapDeclaration(AnnotationDeclaration n0, NodeChoice n1, NodeToken n2, NodeToken n3, NodeToken n4, NodeToken n5, NodeToken n6, NodeToken n7, NodeToken n8, NodeToken n9) {
+   public ConnectorDeclaration(AnnotationDeclaration n0, NodeChoice n1, NodeToken n2, NodeToken n3, NodeToken n4, NodeToken n5) {
       annotationDeclaration = n0;
       if ( annotationDeclaration != null ) annotationDeclaration.setParent(this);
       nodeChoice = n1;
@@ -45,37 +37,21 @@ public class MapDeclaration implements Node {
       if ( nodeToken2 != null ) nodeToken2.setParent(this);
       nodeToken3 = n5;
       if ( nodeToken3 != null ) nodeToken3.setParent(this);
-      nodeToken4 = n6;
-      if ( nodeToken4 != null ) nodeToken4.setParent(this);
-      nodeToken5 = n7;
-      if ( nodeToken5 != null ) nodeToken5.setParent(this);
-      nodeToken6 = n8;
-      if ( nodeToken6 != null ) nodeToken6.setParent(this);
-      nodeToken7 = n9;
-      if ( nodeToken7 != null ) nodeToken7.setParent(this);
    }
 
-   public MapDeclaration(AnnotationDeclaration n0, NodeChoice n1, NodeToken n2, NodeToken n3, NodeToken n4) {
+   public ConnectorDeclaration(AnnotationDeclaration n0, NodeChoice n1, NodeToken n2, NodeToken n3) {
       annotationDeclaration = n0;
       if ( annotationDeclaration != null ) annotationDeclaration.setParent(this);
       nodeChoice = n1;
       if ( nodeChoice != null ) nodeChoice.setParent(this);
-      nodeToken = new NodeToken("Map");
+      nodeToken = new NodeToken("Connector");
       if ( nodeToken != null ) nodeToken.setParent(this);
-      nodeToken1 = new NodeToken("[");
+      nodeToken1 = n2;
       if ( nodeToken1 != null ) nodeToken1.setParent(this);
-      nodeToken2 = n2;
+      nodeToken2 = n3;
       if ( nodeToken2 != null ) nodeToken2.setParent(this);
-      nodeToken3 = new NodeToken(",");
+      nodeToken3 = new NodeToken(";");
       if ( nodeToken3 != null ) nodeToken3.setParent(this);
-      nodeToken4 = n3;
-      if ( nodeToken4 != null ) nodeToken4.setParent(this);
-      nodeToken5 = new NodeToken("]");
-      if ( nodeToken5 != null ) nodeToken5.setParent(this);
-      nodeToken6 = n4;
-      if ( nodeToken6 != null ) nodeToken6.setParent(this);
-      nodeToken7 = new NodeToken(";");
-      if ( nodeToken7 != null ) nodeToken7.setParent(this);
    }
 
    public void accept(org.nabucco.framework.generator.parser.visitor.Visitor v) {

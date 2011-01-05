@@ -53,6 +53,10 @@ public interface PersistenceConstants extends XmlConstants {
 
     final String TARGET_ENTITY = "target-entity";
 
+    final String INSERTABLE = "insertable";
+    
+    final String UPDATABLE = "updatable";
+    
     final String XPATH_ENTITY = "/entity-mappings/entity";
 
     final String XPATH_SUPERCLASS = "/entity-mappings/mapped-superclass";

@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2010 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco-source.org/nabucco-license.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java.view.common.picker;
 
 import java.util.HashMap;
@@ -71,7 +71,7 @@ import org.nabucco.framework.mda.template.java.JavaTemplateException;
  * @author Stefanie Feld, PRODYNA AG
  */
 class NabuccoToJavaRcpViewPickerContentProviderVisitor extends NabuccoToJavaVisitorSupport
-        implements NabuccoJavaTemplateConstants, ViewConstants {
+        implements ViewConstants {
 
     /**
      * the annotation declaration of the view.
@@ -191,8 +191,8 @@ class NabuccoToJavaRcpViewPickerContentProviderVisitor extends NabuccoToJavaVisi
 
         try {
 
-            JavaCompilationUnit unit = super.extractAst(EDIT_VIEW_PICKER_CONTENT_PROVIDER_TEMPLATE);
-            TypeDeclaration type = unit.getType(EDIT_VIEW_PICKER_CONTENT_PROVIDER_TEMPLATE);
+            JavaCompilationUnit unit = super.extractAst(NabuccoJavaTemplateConstants.EDIT_VIEW_PICKER_CONTENT_PROVIDER_TEMPLATE);
+            TypeDeclaration type = unit.getType(NabuccoJavaTemplateConstants.EDIT_VIEW_PICKER_CONTENT_PROVIDER_TEMPLATE);
 
             javaFactory.getJavaAstType().setTypeName(type, name);
             javaFactory.getJavaAstUnit().setPackage(unit.getUnitDeclaration(), pkg);

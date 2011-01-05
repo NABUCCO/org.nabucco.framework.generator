@@ -3,9 +3,8 @@
 //
 
 package org.nabucco.framework.generator.parser.visitor;
-import java.util.*;
-
 import org.nabucco.framework.generator.parser.syntaxtree.*;
+import java.util.*;
 
 /**
  * Provides default methods which visit each node in the tree in depth-first
@@ -115,11 +114,32 @@ public class GJVoidDepthFirst<A> implements GJVoidVisitor<A> {
 
    /**
     * <PRE>
-    * nodeChoice -> ( ComponentStatement() | DatatypeStatement() | BasetypeStatement() | EnumerationStatement() | ExceptionStatement() | ServiceStatement() | MessageStatement() | EditViewStatement() | ListViewStatement() | SearchViewStatement() | CommandStatement() )
+    * nodeChoice -> ( ApplicationStatement() | ComponentStatement() | DatatypeStatement() | BasetypeStatement() | EnumerationStatement() | ExceptionStatement() | ServiceStatement() | MessageStatement() | EditViewStatement() | ListViewStatement() | SearchViewStatement() | CommandStatement() )
     * </PRE>
     */
    public void visit(NabuccoStatement n, A argu) {
       n.nodeChoice.accept(this, argu);
+   }
+
+   /**
+    * <PRE>
+    * annotationDeclaration -> AnnotationDeclaration()
+    * nodeToken -> &lt;PUBLIC&gt;
+    * nodeToken1 -> &lt;APPLICATION&gt;
+    * nodeToken2 -> &lt;UNQUALIFIED_TYPE_NAME&gt;
+    * nodeToken3 -> &lt;LBRACE_CHAR&gt;
+    * nodeListOptional -> ( ApplicationPropertyDeclaration() )*
+    * nodeToken4 -> &lt;RBRACE_CHAR&gt;
+    * </PRE>
+    */
+   public void visit(ApplicationStatement n, A argu) {
+      n.annotationDeclaration.accept(this, argu);
+      n.nodeToken.accept(this, argu);
+      n.nodeToken1.accept(this, argu);
+      n.nodeToken2.accept(this, argu);
+      n.nodeToken3.accept(this, argu);
+      n.nodeListOptional.accept(this, argu);
+      n.nodeToken4.accept(this, argu);
    }
 
    /**
@@ -278,6 +298,27 @@ public class GJVoidDepthFirst<A> implements GJVoidVisitor<A> {
    /**
     * <PRE>
     * annotationDeclaration -> AnnotationDeclaration()
+    * nodeToken -> &lt;PRIVATE&gt;
+    * nodeToken1 -> &lt;CONNECTOR&gt;
+    * nodeToken2 -> &lt;UNQUALIFIED_TYPE_NAME&gt;
+    * nodeToken3 -> &lt;LBRACE_CHAR&gt;
+    * nodeListOptional -> ( ConnectorPropertyDeclaration() )*
+    * nodeToken4 -> &lt;RBRACE_CHAR&gt;
+    * </PRE>
+    */
+   public void visit(ConnectorStatement n, A argu) {
+      n.annotationDeclaration.accept(this, argu);
+      n.nodeToken.accept(this, argu);
+      n.nodeToken1.accept(this, argu);
+      n.nodeToken2.accept(this, argu);
+      n.nodeToken3.accept(this, argu);
+      n.nodeListOptional.accept(this, argu);
+      n.nodeToken4.accept(this, argu);
+   }
+
+   /**
+    * <PRE>
+    * annotationDeclaration -> AnnotationDeclaration()
     * nodeToken -> &lt;PUBLIC&gt;
     * nodeToken1 -> &lt;EDITVIEW&gt;
     * nodeToken2 -> &lt;UNQUALIFIED_TYPE_NAME&gt;
@@ -363,6 +404,15 @@ public class GJVoidDepthFirst<A> implements GJVoidVisitor<A> {
 
    /**
     * <PRE>
+    * nodeChoice -> ( ComponentDeclaration() | ConnectorStatement() )
+    * </PRE>
+    */
+   public void visit(ApplicationPropertyDeclaration n, A argu) {
+      n.nodeChoice.accept(this, argu);
+   }
+
+   /**
+    * <PRE>
     * nodeChoice -> ( ComponentDatatypeDeclaration() | EnumerationDeclaration() | ServiceDeclaration() | ComponentDeclaration() )
     * </PRE>
     */
@@ -381,7 +431,16 @@ public class GJVoidDepthFirst<A> implements GJVoidVisitor<A> {
 
    /**
     * <PRE>
-    * nodeChoice -> ( BasetypeDeclaration() | DatatypeDeclaration() | EnumerationDeclaration() | MapDeclaration() )
+    * nodeChoice -> ( DatatypeDeclaration() | ServiceLinkDeclaration() )
+    * </PRE>
+    */
+   public void visit(ConnectorPropertyDeclaration n, A argu) {
+      n.nodeChoice.accept(this, argu);
+   }
+
+   /**
+    * <PRE>
+    * nodeChoice -> ( BasetypeDeclaration() | DatatypeDeclaration() | EnumerationDeclaration() )
     * </PRE>
     */
    public void visit(PropertyDeclaration n, A argu) {
@@ -451,6 +510,50 @@ public class GJVoidDepthFirst<A> implements GJVoidVisitor<A> {
       n.nodeToken1.accept(this, argu);
       n.nodeToken2.accept(this, argu);
       n.nodeToken3.accept(this, argu);
+   }
+
+   /**
+    * <PRE>
+    * annotationDeclaration -> AnnotationDeclaration()
+    * nodeChoice -> ( &lt;PUBLIC&gt; | &lt;PROTECTED&gt; | &lt;PRIVATE&gt; )
+    * nodeToken -> &lt;CONNECTOR&gt;
+    * nodeToken1 -> &lt;UNQUALIFIED_TYPE_NAME&gt;
+    * nodeToken2 -> &lt;NAME_IDENTIFIER&gt;
+    * nodeToken3 -> &lt;SEMICOLON_CHAR&gt;
+    * </PRE>
+    */
+   public void visit(ConnectorDeclaration n, A argu) {
+      n.annotationDeclaration.accept(this, argu);
+      n.nodeChoice.accept(this, argu);
+      n.nodeToken.accept(this, argu);
+      n.nodeToken1.accept(this, argu);
+      n.nodeToken2.accept(this, argu);
+      n.nodeToken3.accept(this, argu);
+   }
+
+   /**
+    * <PRE>
+    * annotationDeclaration -> AnnotationDeclaration()
+    * nodeToken -> &lt;PRIVATE&gt;
+    * nodeToken1 -> &lt;SERVICELINK&gt;
+    * nodeToken2 -> &lt;QUALIFIED_TYPE_NAME&gt;
+    * nodeToken3 -> &lt;DOT_CHAR&gt;
+    * nodeToken4 -> &lt;NAME_IDENTIFIER&gt;
+    * nodeToken5 -> &lt;LPAREN_CHAR&gt;
+    * nodeToken6 -> &lt;RPAREN_CHAR&gt;
+    * nodeToken7 -> &lt;SEMICOLON_CHAR&gt;
+    * </PRE>
+    */
+   public void visit(ServiceLinkDeclaration n, A argu) {
+      n.annotationDeclaration.accept(this, argu);
+      n.nodeToken.accept(this, argu);
+      n.nodeToken1.accept(this, argu);
+      n.nodeToken2.accept(this, argu);
+      n.nodeToken3.accept(this, argu);
+      n.nodeToken4.accept(this, argu);
+      n.nodeToken5.accept(this, argu);
+      n.nodeToken6.accept(this, argu);
+      n.nodeToken7.accept(this, argu);
    }
 
    /**
@@ -531,7 +634,8 @@ public class GJVoidDepthFirst<A> implements GJVoidVisitor<A> {
     * nodeChoice -> ( &lt;PUBLIC&gt; | &lt;PROTECTED&gt; | &lt;PRIVATE&gt; )
     * nodeToken -> &lt;COMPONENT&gt;
     * nodeToken1 -> &lt;UNQUALIFIED_TYPE_NAME&gt;
-    * nodeToken2 -> &lt;SEMICOLON_CHAR&gt;
+    * nodeToken2 -> &lt;NAME_IDENTIFIER&gt;
+    * nodeToken3 -> &lt;SEMICOLON_CHAR&gt;
     * </PRE>
     */
    public void visit(ComponentDeclaration n, A argu) {
@@ -540,6 +644,7 @@ public class GJVoidDepthFirst<A> implements GJVoidVisitor<A> {
       n.nodeToken.accept(this, argu);
       n.nodeToken1.accept(this, argu);
       n.nodeToken2.accept(this, argu);
+      n.nodeToken3.accept(this, argu);
    }
 
    /**
@@ -569,7 +674,7 @@ public class GJVoidDepthFirst<A> implements GJVoidVisitor<A> {
     * parameterList -> ParameterList()
     * nodeToken3 -> &lt;RPAREN_CHAR&gt;
     * nodeOptional -> [ &lt;THROWS&gt; &lt;UNQUALIFIED_TYPE_NAME&gt; ]
-    * nodeToken4 -> &lt;SEMICOLON_CHAR&gt;
+    * nodeChoice1 -> ( &lt;SEMICOLON_CHAR&gt; | &lt;LBRACE_CHAR&gt; MethodBody() &lt;RBRACE_CHAR&gt; )
     * </PRE>
     */
    public void visit(MethodDeclaration n, A argu) {
@@ -581,34 +686,38 @@ public class GJVoidDepthFirst<A> implements GJVoidVisitor<A> {
       n.parameterList.accept(this, argu);
       n.nodeToken3.accept(this, argu);
       n.nodeOptional.accept(this, argu);
-      n.nodeToken4.accept(this, argu);
+      n.nodeChoice1.accept(this, argu);
    }
 
    /**
     * <PRE>
-    * annotationDeclaration -> AnnotationDeclaration()
-    * nodeChoice -> ( &lt;PUBLIC&gt; | &lt;PROTECTED&gt; | &lt;PRIVATE&gt; )
-    * nodeToken -> &lt;MAP&gt;
-    * nodeToken1 -> &lt;LBRACKET_CHAR&gt;
-    * nodeToken2 -> &lt;UNQUALIFIED_TYPE_NAME&gt;
-    * nodeToken3 -> &lt;COMMA_CHAR&gt;
-    * nodeToken4 -> &lt;UNQUALIFIED_TYPE_NAME&gt;
-    * nodeToken5 -> &lt;RBRACKET_CHAR&gt;
-    * nodeToken6 -> &lt;NAME_IDENTIFIER&gt;
-    * nodeToken7 -> &lt;SEMICOLON_CHAR&gt;
+    * nodeListOptional -> ( Parameter() )*
     * </PRE>
     */
-   public void visit(MapDeclaration n, A argu) {
-      n.annotationDeclaration.accept(this, argu);
-      n.nodeChoice.accept(this, argu);
+   public void visit(ParameterList n, A argu) {
+      n.nodeListOptional.accept(this, argu);
+   }
+
+   /**
+    * <PRE>
+    * nodeOptional -> [ &lt;COMMA_CHAR&gt; ]
+    * nodeToken -> &lt;UNQUALIFIED_TYPE_NAME&gt;
+    * nodeToken1 -> &lt;NAME_IDENTIFIER&gt;
+    * </PRE>
+    */
+   public void visit(Parameter n, A argu) {
+      n.nodeOptional.accept(this, argu);
       n.nodeToken.accept(this, argu);
       n.nodeToken1.accept(this, argu);
-      n.nodeToken2.accept(this, argu);
-      n.nodeToken3.accept(this, argu);
-      n.nodeToken4.accept(this, argu);
-      n.nodeToken5.accept(this, argu);
-      n.nodeToken6.accept(this, argu);
-      n.nodeToken7.accept(this, argu);
+   }
+
+   /**
+    * <PRE>
+    * block -> Block()
+    * </PRE>
+    */
+   public void visit(MethodBody n, A argu) {
+      n.block.accept(this, argu);
    }
 
    /**
@@ -797,28 +906,6 @@ public class GJVoidDepthFirst<A> implements GJVoidVisitor<A> {
       n.nodeToken1.accept(this, argu);
       n.nodeToken2.accept(this, argu);
       n.nodeToken3.accept(this, argu);
-   }
-
-   /**
-    * <PRE>
-    * nodeListOptional -> ( Parameter() )*
-    * </PRE>
-    */
-   public void visit(ParameterList n, A argu) {
-      n.nodeListOptional.accept(this, argu);
-   }
-
-   /**
-    * <PRE>
-    * nodeOptional -> [ &lt;COMMA_CHAR&gt; ]
-    * nodeToken -> &lt;UNQUALIFIED_TYPE_NAME&gt;
-    * nodeToken1 -> &lt;NAME_IDENTIFIER&gt;
-    * </PRE>
-    */
-   public void visit(Parameter n, A argu) {
-      n.nodeOptional.accept(this, argu);
-      n.nodeToken.accept(this, argu);
-      n.nodeToken1.accept(this, argu);
    }
 
 }

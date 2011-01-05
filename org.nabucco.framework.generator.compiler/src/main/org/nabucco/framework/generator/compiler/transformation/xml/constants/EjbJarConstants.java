@@ -56,6 +56,8 @@ public interface EjbJarConstants extends XmlConstants {
     final String INJECTION_TARGET_NAME = "injection-target-name";
     
     final String INJECTION_TARGET_CLASS = "injection-target-class";
+   
+    final String INTERCEPTOR_BINDING = "interceptor-binding";
     
     final String XPATH_FRAGMENT_SESSION = "/fragment/session";
     

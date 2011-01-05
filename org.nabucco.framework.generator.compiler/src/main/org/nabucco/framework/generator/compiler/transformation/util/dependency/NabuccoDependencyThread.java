@@ -1,30 +1,32 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2010 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco-source.org/nabucco-license.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.util.dependency;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationConstants;
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationException;
+import org.nabucco.framework.generator.compiler.verifier.NabuccoVerificationException;
+import org.nabucco.framework.generator.compiler.verifier.NabuccoVerifier;
 import org.nabucco.framework.generator.compiler.visitor.NabuccoVisitorException;
 import org.nabucco.framework.generator.parser.model.NabuccoModel;
-
 import org.nabucco.framework.mda.logger.MdaLogger;
 import org.nabucco.framework.mda.logger.MdaLoggingFactory;
 import org.nabucco.framework.mda.model.MdaModel;
@@ -69,22 +71,35 @@ public class NabuccoDependencyThread implements Callable<List<MdaModel<NabuccoMo
     @Override
     public List<MdaModel<NabuccoModel>> call() throws Exception {
 
+        List<MdaModel<NabuccoModel>> dependencies = new ArrayList<MdaModel<NabuccoModel>>();
+
         try {
-            List<MdaModel<NabuccoModel>> dependencies = NabuccoDependencyResolver.getInstance()
-                    .resolveDependencies(model, rootDir, outDir);
+            this.verivyModel();
+
+            dependencies.addAll(NabuccoDependencyResolver.getInstance().resolveDependencies(this.model,
+                    this.rootDir, this.outDir));
 
             logger.trace("Found '" + dependencies.size(), "' dependencies to resolve for '", model
                     .getModel().getNabuccoType().name(), "'.");
 
-            return dependencies;
-
+        } catch (NabuccoVerificationException ve) {
+            raiseException(ve.getMessage(), this.model, ve);
         } catch (NabuccoVisitorException ve) {
             raiseException(ve.getMessage(), this.model, ve.getCause());
-        } catch (Throwable t) {
-            raiseException("Unexpected error during NABUCCO dependency resolving.", this.model, t);
+        } catch (Exception e) {
+            raiseException("Unexpected error during NABUCCO dependency resolving.", this.model, e);
         }
 
-        return null;
+        return dependencies;
+    }
+
+    /**
+     * Verifies the NABUCCO model for semantic correctness.
+     * 
+     * @throws NabuccoVerificationException
+     */
+    private void verivyModel() throws NabuccoVerificationException {
+        NabuccoVerifier.getInstance().verifyNabuccoModel(this.model, this.rootDir, this.outDir);
     }
 
     /**
@@ -95,16 +110,18 @@ public class NabuccoDependencyThread implements Callable<List<MdaModel<NabuccoMo
      * @param currentModel
      *            the current nabucco model
      * @param cause
-     *            the cause
+     *            the causing exception
      * 
      * @throws NabuccoTransformationException
      */
-    private void raiseException(String msg, MdaModel<NabuccoModel> currentModel, Throwable cause)
+    private void raiseException(String msg, MdaModel<NabuccoModel> currentModel, Exception cause)
             throws NabuccoTransformationException {
 
         if (msg != null) {
             logger.error(msg);
         }
+        
+        logger.debug(cause);
 
         NabuccoTransformationException exception;
         if (cause instanceof NabuccoTransformationException) {

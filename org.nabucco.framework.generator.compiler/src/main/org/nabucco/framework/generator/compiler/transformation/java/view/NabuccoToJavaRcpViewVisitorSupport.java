@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2010 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco-source.org/nabucco-license.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java.view;
 
 import java.util.ArrayList;
@@ -199,7 +199,7 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
         javaFactory.getJavaAstArgument().setName(setter.arguments[0], parameterName);
 
         IfStatement ifStatement = (IfStatement) setter.statements[0];
-        OR_OR_Expression ifChecks = (OR_OR_Expression) ifStatement.condition;
+        AND_AND_Expression ifChecks = (AND_AND_Expression) ifStatement.condition;
         SingleNameReference receiver = producer.createSingleNameReference(localField);
         ((BinaryExpression) ifChecks.left).left = receiver;
         MessageSend getterCall = (MessageSend) ((EqualExpression) ifChecks.right).left;
@@ -230,7 +230,8 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
                     .get(referencedFieldTypeKey);
         } else {
             throw new NabuccoVisitorException("Used MappedField \""
-                    + referencedFieldTypeKey + "\" is no Basetype or Enumeration.");
+                    + referencedFieldTypeKey
+                    + "\" is no Basetype or Enumeration.");
         }
 
         createNew.name = referencedFieldTypeKey.toCharArray();
@@ -547,23 +548,38 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
         javaFactory.getJavaAstArgument().setName(setter.arguments[0], parameterName);
         javaFactory.getJavaAstMethod().setMethodName(setter, setterName.toString());
 
-        String enumName = NabuccoTransformationUtility.firstToUpper(referencedFieldTypeKey);
+        String enumPropertyName = NabuccoTransformationUtility.firstToUpper(referencedFieldTypeKey);
+        JavaAstContainter<TypeReference> enumAstNode = this.fieldNameToFieldTypeProperties.get(localField)
+                .get("Enumeration").get(referencedFieldTypeKey);
+        
+        TypeReference enumType = enumAstNode.getAstNode();
 
         // 1. Statement
-        LocalDeclaration localDeclaration = (LocalDeclaration) setter.statements[0];
-        MessageSend callName = (MessageSend) localDeclaration.initialization;
-        MessageSend callGetEnum = ((MessageSend) callName.receiver);
-        javaFactory.getJavaAstMethodCall().setMethodName(PREFIX_GETTER + enumName, callGetEnum);
+        // LocalDeclaration localDeclaration = (LocalDeclaration) setter.statements[1];
+        IfStatement ifChecks = (IfStatement) setter.statements[1];
+
+        BinaryExpression checkCondition = (BinaryExpression) ifChecks.condition;
+        MessageSend callGetEnum = ((MessageSend) checkCondition.left);
+        javaFactory.getJavaAstMethodCall().setMethodName(PREFIX_GETTER + enumPropertyName,
+                callGetEnum);
         callGetEnum.receiver = producer.createFieldThisReference(localField);
 
+        Block thenBlock = (Block) ifChecks.thenStatement;
+        Assignment oldValueAssignement = (Assignment) thenBlock.statements[0];
+        MessageSend getterForOldValue = (MessageSend) oldValueAssignement.expression;
+        getterForOldValue.receiver = callGetEnum;
+
         // 2. Statement
-        MessageSend callSetEnum = (MessageSend) setter.statements[1];
-        javaFactory.getJavaAstMethodCall().setMethodName(PREFIX_SETTER + enumName, callSetEnum);
+        MessageSend callSetEnum = (MessageSend) setter.statements[2];
+        javaFactory.getJavaAstMethodCall().setMethodName(PREFIX_SETTER + enumPropertyName,
+                callSetEnum);
         callSetEnum.receiver = producer.createFieldThisReference(localField);
-        callSetEnum.arguments[0] = producer.createSingleNameReference(parameterName);
+        SingleNameReference parameterReference = producer.createSingleNameReference(parameterName);
+        callSetEnum.arguments[0] = producer.createMessageSend("valueOf", enumType,
+                Arrays.asList(new Expression[] { parameterReference }));
 
         // 3. Statement
-        MessageSend callUpdateProperty = (MessageSend) setter.statements[2];
+        MessageSend callUpdateProperty = (MessageSend) setter.statements[3];
         StringBuilder property = new StringBuilder();
         property.append(PROPERTY);
         property.append(UNDERSCORE);
@@ -575,7 +591,7 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
         callUpdateProperty.arguments[2] = producer.createSingleNameReference(parameterName);
 
         // if-Statement
-        IfStatement ifStatement = (IfStatement) setter.statements[3];
+        IfStatement ifStatement = (IfStatement) setter.statements[4];
         AND_AND_Expression condition = (AND_AND_Expression) ifStatement.condition;
 
         MessageSend right = (MessageSend) condition.right;
@@ -653,10 +669,12 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
 
         } catch (JavaModelException e) {
             throw new NabuccoVisitorException("Error creating getter and setter for field "
-                    + fieldName + ".", e);
+                    + fieldName
+                    + ".", e);
         } catch (JavaTemplateException e) {
             throw new NabuccoVisitorException("Error creating getter and setter for field "
-                    + fieldName + ".", e);
+                    + fieldName
+                    + ".", e);
         }
     }
 
@@ -689,7 +707,10 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
         for (String property : usedSubSet.keySet()) {
             JavaAstModelProducer jamp = JavaAstModelProducer.getInstance();
             String prop = PROPERTY
-                    + UNDERSCORE + fieldName.toUpperCase() + UNDERSCORE + property.toUpperCase();
+                    + UNDERSCORE
+                    + fieldName.toUpperCase()
+                    + UNDERSCORE
+                    + property.toUpperCase();
 
             List<Expression> args = new LinkedList<Expression>();
 
@@ -830,8 +851,12 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
 
         arguments.clear();
         String propertyString = PROPERTY
-                + UNDERSCORE + localField.toUpperCase() + UNDERSCORE + fieldName.toUpperCase()
-                + UNDERSCORE + property.toUpperCase();
+                + UNDERSCORE
+                + localField.toUpperCase()
+                + UNDERSCORE
+                + fieldName.toUpperCase()
+                + UNDERSCORE
+                + property.toUpperCase();
 
         SingleNameReference propertyReference = jamp.createSingleNameReference(propertyString);
         SingleNameReference oldValueStringReference = jamp.createSingleNameReference(OLD_VALUE

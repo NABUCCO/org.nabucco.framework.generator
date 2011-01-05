@@ -24,6 +24,8 @@ package org.nabucco.framework.generator.compiler.transformation.common.annotatio
 public enum NabuccoAnnotationGroupType {
 
     CONSTRAINT("Constraint annotation"),
+    
+    CONNECTOR("Connector annotation"),
 
     DB("Database annotation"),
 

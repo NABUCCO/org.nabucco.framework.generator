@@ -54,7 +54,7 @@ class NabuccoToXmlServiceExceptionVisitor extends NabuccoToXmlVisitorSupport imp
 
         if (nabuccoMethod.nodeOptional.present()) {
 
-            String componentName = super.getComponentName(null, null);
+            String componentName = super.getProjectName(null, null);
 
             final NodeSequence nodeSequence = (NodeSequence) nabuccoMethod.nodeOptional.node;
 

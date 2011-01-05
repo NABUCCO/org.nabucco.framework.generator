@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2010 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco-source.org/nabucco-license.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.util.dependency;
 
 import java.io.File;
@@ -33,7 +33,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationException;
-import org.nabucco.framework.generator.parser.model.NabuccoPathEntryType;
+import org.nabucco.framework.generator.parser.model.NabuccoModelResourceType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -65,6 +65,12 @@ public class NbcPathParser {
     private static final String XPATH_NBCENTRY = "nbcpath/nbcentry";
 
     /**
+     * Private constructor must not be invoked.
+     */
+    private NbcPathParser() {
+    }
+
+    /**
      * Gets all {@link Element} of this XML document by an XPath.
      * 
      * @param filePath
@@ -92,7 +98,7 @@ public class NbcPathParser {
                 NamedNodeMap attributes = node.getAttributes();
 
                 String nodePath = null;
-                NabuccoPathEntryType entryType = null;
+                NabuccoModelResourceType entryType = null;
 
                 if (attributes != null) {
 
@@ -100,10 +106,10 @@ public class NbcPathParser {
 
                     if (kind != null && kind.getNodeValue() != null) {
                         String value = kind.getNodeValue();
-                        if (value.equalsIgnoreCase(NabuccoPathEntryType.ARCHIVE.getId())) {
-                            entryType = NabuccoPathEntryType.ARCHIVE;
-                        } else if (value.equalsIgnoreCase(NabuccoPathEntryType.PROJECT.getId())) {
-                            entryType = NabuccoPathEntryType.PROJECT;
+                        if (value.equalsIgnoreCase(NabuccoModelResourceType.ARCHIVE.getId())) {
+                            entryType = NabuccoModelResourceType.ARCHIVE;
+                        } else if (value.equalsIgnoreCase(NabuccoModelResourceType.PROJECT.getId())) {
+                            entryType = NabuccoModelResourceType.PROJECT;
                         }
                     }
 

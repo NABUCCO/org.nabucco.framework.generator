@@ -46,7 +46,7 @@ import org.nabucco.framework.mda.model.java.ast.produce.JavaAstModelProducer;
  */
 public class NabuccoToJavaConstraintMapper implements NabuccoToJavaConstraintConstants {
 
-    private static final String CONSTRAINTS_FIELD = "CONSTRAINTS";
+    private static final String CONSTRAINTS_FIELD = "PROPERTY_CONSTRAINTS";
 
     /**
      * Singleton instance.

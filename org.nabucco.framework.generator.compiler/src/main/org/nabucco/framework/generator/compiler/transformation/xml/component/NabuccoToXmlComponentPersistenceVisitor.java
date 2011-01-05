@@ -58,7 +58,7 @@ class NabuccoToXmlComponentPersistenceVisitor extends NabuccoToXmlVisitorSupport
     @Override
     public void visit(ComponentStatement nabuccoComponent, MdaModel<XmlModel> target) {
 
-        String componentName = super.getComponentName(null, null);
+        String componentName = super.getProjectName(null, null);
 
         try {
             XmlDocument document = super.extractDocument(NabuccoXmlTemplateConstants.PERSISTENCE_TEMPLATE);

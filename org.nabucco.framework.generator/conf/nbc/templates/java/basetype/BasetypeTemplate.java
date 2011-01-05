@@ -14,7 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import java.util.List;
 import org.nabucco.framework.base.facade.datatype.Basetype;
+import org.nabucco.framework.base.facade.datatype.property.SimpleProperty;
+import org.nabucco.framework.base.facade.datatype.property.NabuccoProperty;
 
 /**
  * BasetypeTemplate
@@ -25,26 +29,34 @@ public class BasetypeTemplate implements Basetype {
 
     private static final long serialVersionUID = 1L;
 
-    private static final String CONSTRAINTS = null;
-    
-    public BasetypeTemplate(){
+    private static final String PROPERTY_NAME = "value";
+
+    private static final String PROPERTY_CONSTRAINTS = null;
+
+    /**
+     * Creates a new {@link BasetypeTemplate} instance.
+     */
+    public BasetypeTemplate() {
         super();
     }
-    
-    public BasetypeTemplate(Basetype value){
+
+    public BasetypeTemplate(Basetype value) {
         super(value);
     }
-    
+
     @Override
-    public String[] getConstraints() {
-        return new String[]{ CONSTRAINTS };
+    public List<NabuccoProperty<?>> getProperties() {
+        List<NabuccoProperty<?>> properties = super.getProperties();
+        properties.add(new SimpleProperty<String>(PROPERTY_NAME, String.class,
+                PROPERTY_CONSTRAINTS, super.getValue()));
+        return properties;
     }
-    
+
     @Override
     public BasetypeTemplate cloneObject() {
         BasetypeTemplate clone = new BasetypeTemplate();
         super.cloneObject(clone);
         return clone;
     }
-    
+
 }

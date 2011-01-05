@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2010 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco-source.org/nabucco-license.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java.common.ast.util;
 
 import java.util.Arrays;
@@ -35,11 +35,8 @@ import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
-import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
-import org.nabucco.framework.generator.compiler.transformation.common.annotation.association.FetchStrategyType;
 import org.nabucco.framework.generator.compiler.transformation.common.collection.CollectionType;
 import org.nabucco.framework.generator.compiler.transformation.java.constants.CollectionConstants;
-
 import org.nabucco.framework.mda.model.java.JavaModelException;
 import org.nabucco.framework.mda.model.java.ast.JavaAstField;
 import org.nabucco.framework.mda.model.java.ast.JavaAstMethod;
@@ -113,17 +110,17 @@ public class JavaAstGetterSetterProducer implements CollectionConstants {
         if (options == null) {
             options = new GetterSetterOptions();
         }
-        
+
         String fieldName = fieldFactory.getFieldName(field);
-        MethodDeclaration method = modelProducer.createMethodDeclaration(createMethodName(field,
-                PREFIX_GETTER), null, false);
+        MethodDeclaration method = modelProducer.createMethodDeclaration(
+                createMethodName(field, PREFIX_GETTER), null, false);
 
         methodFactory.setReturnType(method, field.type);
 
         FieldReference fieldReference = modelProducer.createFieldThisReference(fieldName);
 
         CollectionType collectionType = this.getCollectionType(field);
-        
+
         if (collectionType == null) {
             this.produceDefaultGetter(method, fieldReference);
         } else {
@@ -215,8 +212,8 @@ public class JavaAstGetterSetterProducer implements CollectionConstants {
         QualifiedNameReference state = JavaAstModelProducer.getInstance()
                 .createQualifiedNameReference(COLLECTION_STATE, COLLECTION_STATE_INIT);
 
-        AllocationExpression constructor = modelProducer.createAllocationExpression(list, Arrays
-                .asList(state));
+        AllocationExpression constructor = modelProducer.createAllocationExpression(list,
+                Arrays.asList(state));
 
         Assignment assignment = modelProducer.createAssignment(fieldReference, constructor);
         Block then = modelProducer.createBlock(assignment);
@@ -292,8 +289,8 @@ public class JavaAstGetterSetterProducer implements CollectionConstants {
         QualifiedNameReference state = JavaAstModelProducer.getInstance()
                 .createQualifiedNameReference(COLLECTION_STATE, COLLECTION_STATE_INIT);
 
-        AllocationExpression constructor = modelProducer.createAllocationExpression(list, Arrays
-                .asList(state));
+        AllocationExpression constructor = modelProducer.createAllocationExpression(list,
+                Arrays.asList(state));
 
         Assignment assignment = modelProducer.createAssignment(fieldReference, constructor);
         Block then = modelProducer.createBlock(assignment);
@@ -356,7 +353,7 @@ public class JavaAstGetterSetterProducer implements CollectionConstants {
      */
     private void produceNabuccoMapGetter(FieldDeclaration field, MethodDeclaration method,
             FieldReference fieldReference) throws JavaModelException {
-        
+
         Literal nullLiteral = modelProducer.createLiteral(null, LiteralType.NULL_LITERAL);
 
         BinaryExpression condition = modelProducer.createBinaryExpression(
@@ -392,7 +389,7 @@ public class JavaAstGetterSetterProducer implements CollectionConstants {
      */
     private void produceDefaultMapGetter(FieldDeclaration field, MethodDeclaration method,
             FieldReference fieldReference) throws JavaModelException {
-        
+
         Literal nullLiteral = modelProducer.createLiteral(null, LiteralType.NULL_LITERAL);
 
         BinaryExpression condition = modelProducer.createBinaryExpression(
@@ -413,7 +410,7 @@ public class JavaAstGetterSetterProducer implements CollectionConstants {
     }
 
     /**
-     * Creates a setter method for a field with default producing options.
+     * Creates a setter method for a field with producing information.
      * 
      * @param field
      *            the {@link FieldDeclaration}
@@ -423,33 +420,9 @@ public class JavaAstGetterSetterProducer implements CollectionConstants {
      * @throws JavaModelException
      */
     public MethodDeclaration produceSetter(FieldDeclaration field) throws JavaModelException {
-        return this.produceSetter(field, null);
-    }
-
-    /**
-     * Creates a setter method for a field with producing information.
-     * 
-     * @param field
-     *            the {@link FieldDeclaration}
-     * @param fetchStrategy
-     *            the fetch type
-     * @param options
-     *            the setter producing information
-     * 
-     * @return the created {@link MethodDeclaration}
-     * 
-     * @throws JavaModelException
-     */
-    public MethodDeclaration produceSetter(FieldDeclaration field, GetterSetterOptions options)
-            throws JavaModelException {
-
-        if (options == null) {
-            options = new GetterSetterOptions();
-        }
 
         String fieldName = fieldFactory.getFieldName(field);
         String methodName = this.createMethodName(field, PREFIX_SETTER);
-        String collectionState = this.getCollectionState(options.getFetchType());
 
         MethodDeclaration setter = modelProducer.createMethodDeclaration(methodName, null, false);
 
@@ -461,45 +434,17 @@ public class JavaAstGetterSetterProducer implements CollectionConstants {
         if (collectionType == null) {
             this.produceDefaultSetter(fieldName, setter);
         } else {
-
+            
             switch (collectionType) {
-
-            case LIST: {
-                switch (options.getCollectionImplementationType()) {
-                case NABUCCO:
-                    this.produceNabuccoListSetter(field, fieldName, setter, collectionState);
-                    break;
-                default:
-                    this.produceDefaultListSetter(field, fieldName, setter);
-                    break;
-                }
+            case LIST:
+                this.produceDefaultListSetter(field, fieldName, setter);
                 break;
-            }
-
-            case SET: {
-                switch (options.getCollectionImplementationType()) {
-                case NABUCCO:
-                    this.produceNabuccoSetSetter(field, fieldName, setter, collectionState);
-                    break;
-                default:
-                    this.produceDefaultSetSetter(field, fieldName, setter);
-                    break;
-                }
+            case SET:
+                this.produceDefaultSetSetter(field, fieldName, setter);
                 break;
-            }
-
-            case MAP: {
-                switch (options.getCollectionImplementationType()) {
-                case NABUCCO:
-                    this.produceNabuccoMapSetter(field, fieldName, setter, collectionState);
-                    break;
-                default:
-                    this.produceDefaultMapSetter(field, fieldName, setter);
-                    break;
-                }
+            case MAP:
+                this.produceDefaultMapSetter(field, fieldName, setter);
                 break;
-            }
-
             }
         }
 
@@ -527,43 +472,6 @@ public class JavaAstGetterSetterProducer implements CollectionConstants {
     }
 
     /**
-     * Creates the list setter with the NABUCCO list implementation.
-     * 
-     * @param field
-     *            the field
-     * @param fieldName
-     *            the field name
-     * @param setter
-     *            the method
-     * @param collectionState
-     *            the collection state
-     * 
-     * @see CollectionConstants#NABUCCO_LIST
-     * 
-     * @throws JavaModelException
-     */
-    private void produceNabuccoListSetter(FieldDeclaration field, String fieldName,
-            MethodDeclaration setter, String collectionState) throws JavaModelException {
-
-        FieldReference fieldReference = modelProducer.createFieldThisReference(fieldName);
-        SingleNameReference nameReference = modelProducer.createSingleNameReference(fieldName);
-
-        methodFactory.setModifier(setter, ClassFileConstants.AccDefault);
-
-        QualifiedNameReference state = JavaAstModelProducer.getInstance()
-                .createQualifiedNameReference(COLLECTION_STATE, collectionState);
-
-        TypeReference nbcList = modelProducer.createParameterizedTypeReference(NABUCCO_LIST, false,
-                Arrays.asList(((ParameterizedSingleTypeReference) field.type).typeArguments));
-
-        AllocationExpression constructor = modelProducer.createAllocationExpression(nbcList, Arrays
-                .asList(nameReference, state));
-
-        setter.statements = new Statement[] { modelProducer.createAssignment(fieldReference,
-                constructor) };
-    }
-
-    /**
      * Creates the list setter with the default implementation.
      * 
      * @param field
@@ -586,44 +494,11 @@ public class JavaAstGetterSetterProducer implements CollectionConstants {
         TypeReference list = modelProducer.createParameterizedTypeReference(DEFAULT_LIST, false,
                 Arrays.asList(((ParameterizedSingleTypeReference) field.type).typeArguments));
 
-        AllocationExpression constructor = modelProducer.createAllocationExpression(list, Arrays
-                .asList(nameReference));
+        AllocationExpression constructor = modelProducer.createAllocationExpression(list,
+                Arrays.asList(nameReference));
 
         setter.statements = new Statement[] { modelProducer.createAssignment(fieldReference,
                 constructor) };
-    }
-
-    /**
-     * Creates the Set setter with the NABUCCO implementation.
-     * 
-     * @param field
-     *            the field
-     * @param fieldName
-     *            the field name
-     * @param setter
-     *            the method
-     * @param collectionState
-     *            the collection state
-     * 
-     * @see CollectionConstants#NABUCCO_SET
-     * 
-     * @throws JavaModelException
-     */
-    private void produceNabuccoSetSetter(FieldDeclaration field, String fieldName,
-            MethodDeclaration setter, String collectionState) throws JavaModelException {
-
-        FieldReference fieldReference = modelProducer.createFieldThisReference(fieldName);
-        SingleNameReference nameReference = modelProducer.createSingleNameReference(fieldName);
-
-        TypeReference nbcSet = modelProducer.createParameterizedTypeReference(NABUCCO_SET, false,
-                Arrays.asList(((ParameterizedSingleTypeReference) field.type).typeArguments));
-
-        AllocationExpression constructor = modelProducer.createAllocationExpression(nbcSet, Arrays
-                .asList(nameReference));
-
-        Assignment assignment = modelProducer.createAssignment(fieldReference, constructor);
-
-        setter.statements = new Statement[] { assignment };
     }
 
     /**
@@ -649,44 +524,11 @@ public class JavaAstGetterSetterProducer implements CollectionConstants {
         TypeReference list = modelProducer.createParameterizedTypeReference(DEFAULT_SET, false,
                 Arrays.asList(((ParameterizedSingleTypeReference) field.type).typeArguments));
 
-        AllocationExpression constructor = modelProducer.createAllocationExpression(list, Arrays
-                .asList(nameReference));
+        AllocationExpression constructor = modelProducer.createAllocationExpression(list,
+                Arrays.asList(nameReference));
 
         setter.statements = new Statement[] { modelProducer.createAssignment(fieldReference,
                 constructor) };
-    }
-
-    /**
-     * Creates the Map setter with the NABUCCO implementation.
-     * 
-     * @param field
-     *            the field
-     * @param fieldName
-     *            the field name
-     * @param setter
-     *            the method
-     * @param collectionState
-     *            the collection state
-     * 
-     * @see CollectionConstants#NABUCCO_MAP
-     * 
-     * @throws JavaModelException
-     */
-    private void produceNabuccoMapSetter(FieldDeclaration field, String fieldName,
-            MethodDeclaration setter, String collectionState) throws JavaModelException {
-
-        FieldReference fieldReference = modelProducer.createFieldThisReference(fieldName);
-        SingleNameReference nameReference = modelProducer.createSingleNameReference(fieldName);
-
-        TypeReference map = modelProducer.createParameterizedTypeReference(NABUCCO_MAP, false,
-                Arrays.asList(((ParameterizedSingleTypeReference) field.type).typeArguments));
-
-        AllocationExpression constructor = modelProducer.createAllocationExpression(map, Arrays
-                .asList(nameReference));
-
-        Assignment assignment = modelProducer.createAssignment(fieldReference, constructor);
-
-        setter.statements = new Statement[] { assignment };
     }
 
     /**
@@ -712,27 +554,12 @@ public class JavaAstGetterSetterProducer implements CollectionConstants {
         TypeReference map = modelProducer.createParameterizedTypeReference(DEFAULT_MAP, false,
                 Arrays.asList(((ParameterizedSingleTypeReference) field.type).typeArguments));
 
-        AllocationExpression constructor = modelProducer.createAllocationExpression(map, Arrays
-                .asList(nameReference));
+        AllocationExpression constructor = modelProducer.createAllocationExpression(map,
+                Arrays.asList(nameReference));
 
         Assignment assignment = modelProducer.createAssignment(fieldReference, constructor);
 
         setter.statements = new Statement[] { assignment };
-    }
-
-    /**
-     * Evaluates the collection state depending on the fetch strategy.
-     * 
-     * @param fetchStrategy
-     *            the fetch strategy
-     * 
-     * @return the appropriate collection state
-     */
-    private String getCollectionState(FetchStrategyType fetchStrategy) {
-        if (fetchStrategy == FetchStrategyType.EAGER) {
-            return COLLECTION_STATE_EAGER;
-        }
-        return COLLECTION_STATE_LAZY;
     }
 
     /**

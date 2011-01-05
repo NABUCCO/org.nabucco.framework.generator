@@ -23,6 +23,8 @@ package org.nabucco.framework.generator.parser.model;
  */
 public interface NabuccoModelConstants {
 
+    final String SERVER = "server";
+    
     final String COMPONENT = "component";
 
     final String BASETYPE = "basetype";

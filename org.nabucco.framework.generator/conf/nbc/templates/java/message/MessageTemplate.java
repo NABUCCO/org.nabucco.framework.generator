@@ -15,9 +15,11 @@
  * limitations under the License.
  */
 
+import java.util.List;
+
 import org.nabucco.framework.base.facade.message.ServiceMessage;
 import org.nabucco.framework.base.facade.message.ServiceMessageSupport;
-import org.nabucco.framework.base.facade.datatype.visitor.VisitorUtility;
+import org.nabucco.framework.base.facade.datatype.property.NabuccoProperty;
 
 /**
  * MessageTemplate
@@ -28,21 +30,17 @@ public class MessageTemplate extends ServiceMessageSupport implements ServiceMes
 
     private static final long serialVersionUID = 1L;
 
-    private static final String[] CONSTRAINTS = {};
+    private static final String[] PROPERTY_NAMES = {};
+
+    private static final String[] PROPERTY_CONSTRAINTS = {};
 
     @Override
-    public String[] getConstraints() {
-        return VisitorUtility.merge(super.getConstraints(), CONSTRAINTS);
-    }
-
-    @Override
-    public Object[] getProperties() {
-        return VisitorUtility.merge(super.getProperties(), new Object[] {});
-    }
-
-    @Override
-    public String[] getPropertyNames() {
-        return VisitorUtility.merge(super.getPropertyNames(), new String[] {});
+    public List<NabuccoProperty<?>> getProperties() {
+        List<NabuccoProperty<?>> properties = super.getProperties();
+        
+        // Insert properties here!
+        
+        return properties;
     }
 
     @Override

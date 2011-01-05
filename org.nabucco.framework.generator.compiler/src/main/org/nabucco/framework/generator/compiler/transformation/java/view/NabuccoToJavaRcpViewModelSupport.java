@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2010 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco-source.org/nabucco-license.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java.view;
 
 import java.util.ArrayList;
@@ -50,8 +50,7 @@ import org.nabucco.framework.mda.template.java.JavaTemplateException;
  * 
  * @author Stefanie Feld, PRODYNA AG
  */
-public class NabuccoToJavaRcpViewModelSupport implements NabuccoJavaTemplateConstants,
-        ViewConstants, CollectionConstants {
+public class NabuccoToJavaRcpViewModelSupport implements ViewConstants, CollectionConstants {
 
     /** Import String for the Activator. */
     private static final String ACTIVATOR_IMPORT = "org.nabucco.framework.plugin.base.Activator";
@@ -108,7 +107,8 @@ public class NabuccoToJavaRcpViewModelSupport implements NabuccoJavaTemplateCons
             String currentMappedField = mappedFieldAnn == null ? null : mappedFieldAnn.getValue();
 
             // get the method template
-            TypeDeclaration methodType = unit.getType(COMMON_VIEW_MODEL_METHOD_TEMPLATE);
+            TypeDeclaration methodType = unit
+                    .getType(NabuccoJavaTemplateConstants.COMMON_VIEW_MODEL_METHOD_TEMPLATE);
             JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
             // TODO: Replace 2 by N
@@ -200,7 +200,8 @@ public class NabuccoToJavaRcpViewModelSupport implements NabuccoJavaTemplateCons
             String currentMappedField = mappedFieldAnn == null ? null : mappedFieldAnn.getValue();
 
             // get the method template
-            TypeDeclaration methodType = unit.getType(COMMON_VIEW_MODEL_METHOD_TEMPLATE);
+            TypeDeclaration methodType = unit
+                    .getType(NabuccoJavaTemplateConstants.COMMON_VIEW_MODEL_METHOD_TEMPLATE);
             JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
             // get the templated methods getFieldCombo and setFieldCombo
@@ -212,12 +213,20 @@ public class NabuccoToJavaRcpViewModelSupport implements NabuccoJavaTemplateCons
             util.changeGetterCombo(getter, currentMappedField);
             util.changeSetterCombo(setter, currentMappedField);
 
-            JavaAstContainter<ASTNode> container = new JavaAstContainter<ASTNode>(getter,
+            JavaAstContainter<ASTNode> containerGetter = new JavaAstContainter<ASTNode>(getter,
                     JavaAstType.METHOD);
-            container.getImports().add(ACTIVATOR_IMPORT);
-            containerList.add(container);
+            containerGetter.getImports().add(ACTIVATOR_IMPORT);
+            containerList.add(containerGetter);
 
-            containerList.add(new JavaAstContainter<ASTNode>(setter, JavaAstType.METHOD));
+            JavaAstContainter<ASTNode> containerSetter = new JavaAstContainter<ASTNode>(setter,
+                    JavaAstType.METHOD);
+            // add the enumtype as import
+            String[] fieldAccess = currentMappedField.split(FIELD_SEPARATOR);
+            containerSetter.getImports().addAll(
+                    util.getFieldNameToFieldTypeProperties().get(fieldAccess[0]).get("Enumeration")
+                            .get(fieldAccess[1]).getImports());
+
+            containerList.add(containerSetter);
 
             containerList.add(NabuccoToJavaRcpViewVisitorSupportUtil
                     .createStaticFinalField(currentMappedField));
@@ -242,7 +251,8 @@ public class NabuccoToJavaRcpViewModelSupport implements NabuccoJavaTemplateCons
 
             String mappedField = mappedFieldAnn == null ? null : mappedFieldAnn.getValue();
 
-            TypeDeclaration javaType = unit.getType(COMMON_VIEW_MODEL_METHOD_TEMPLATE);
+            TypeDeclaration javaType = unit
+                    .getType(NabuccoJavaTemplateConstants.COMMON_VIEW_MODEL_METHOD_TEMPLATE);
 
             MethodDeclaration setter = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(
                     javaType, SIGNATURE_SET_MODEL_LIST);

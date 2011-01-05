@@ -44,6 +44,8 @@ public final class NabuccoCompilerOptions {
     public static final String MERGE_FRAGMENTS = "MERGE_FRAGMENTS";
 
     public static final String OUT_DIR = "OUT_DIR";
+    
+    public static final String LOG_LEVEL = "LOG_LEVEL";
 
     private Properties properties;
 
@@ -53,6 +55,16 @@ public final class NabuccoCompilerOptions {
      * @return the default NABUCCO compiler options
      */
     public static NabuccoCompilerOptions getDefaultOptions() {
+        NabuccoCompilerOptions options = new NabuccoCompilerOptions();
+        return options;
+    }
+
+    /**
+     * Creates compiler options with default NABUCCO behavior.
+     * 
+     * @return the default NABUCCO compiler options
+     */
+    public static NabuccoCompilerOptions getDebugOptions() {
         NabuccoCompilerOptions options = new NabuccoCompilerOptions();
         return options;
     }
@@ -180,6 +192,7 @@ public final class NabuccoCompilerOptions {
         properties.setProperty(GEN_XML, String.valueOf(Boolean.TRUE));
         properties.setProperty(MERGE_FRAGMENTS, String.valueOf(Boolean.TRUE));
         properties.setProperty(OUT_DIR, NabuccoCompilerDefaults.NBC_OUT_DIR);
+        properties.setProperty(LOG_LEVEL, NabuccoCompilerDefaults.LOG_LEVEL);
 
         // Add other default properties here.
 

@@ -28,10 +28,6 @@ public interface NabuccoTransformationConstants extends NabuccoConstants {
     final String CLASS = "class";
 
     final String IMPLEMENTATION = "Impl";
-    
-    final String SOURCE_SRC = "src";
-    
-    final String SOURCE_NBC = "nbc";
 
     final String PKG_FACADE = "facade";
 
@@ -43,15 +39,23 @@ public interface NabuccoTransformationConstants extends NabuccoConstants {
 
     final String PKG_WEB = "web";
 
+    final String PKG_SERVER = "server";
+    
     final String PKG_BROWSER = "browser";
 
+    final String PKG_CONNECTOR = "connector";
+    
     final String PKG_EDIT = "edit";
 
     final String PKG_LIST = "list";
 
     final String PKG_SEPARATOR = ".";
 
+    final String JAR_SEPARATOR = "/";
+
     final String TABLE_SEPARATOR = "_";
+    
+    final String CONSTANT_SEPARATOR = "_";
 
     final String CONF = "conf";
 

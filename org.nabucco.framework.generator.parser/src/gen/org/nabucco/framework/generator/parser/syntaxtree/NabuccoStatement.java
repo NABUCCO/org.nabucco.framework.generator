@@ -7,7 +7,7 @@ package org.nabucco.framework.generator.parser.syntaxtree;
 /**
  * Grammar production:
  * <PRE>
- * nodeChoice -> ( ComponentStatement() | DatatypeStatement() | BasetypeStatement() | EnumerationStatement() | ExceptionStatement() | ServiceStatement() | MessageStatement() | EditViewStatement() | ListViewStatement() | SearchViewStatement() | CommandStatement() )
+ * nodeChoice -> ( ApplicationStatement() | ComponentStatement() | DatatypeStatement() | BasetypeStatement() | EnumerationStatement() | ExceptionStatement() | ServiceStatement() | MessageStatement() | EditViewStatement() | ListViewStatement() | SearchViewStatement() | CommandStatement() )
  * </PRE>
  */
 public class NabuccoStatement implements Node {

@@ -42,7 +42,7 @@ import org.nabucco.framework.mda.template.xml.XmlTemplateException;
 import org.w3c.dom.Element;
 
 /**
- * NabuccoToXmlServiceEjbJarVisitor
+ * NabuccoToXmlComponentRelationEjbJarVisitor
  * 
  * @author Nicolas Moser, PRODYNA AG
  */
@@ -74,7 +74,7 @@ class NabuccoToXmlServiceEjbJarVisitor extends NabuccoToXmlVisitorSupport implem
         // Visit sub-nodes first!
         super.visit(nabuccoService, target);
 
-        String componentName = super.getComponentName(null, null);
+        String componentName = super.getProjectName(null, null);
 
         try {
             // Final document
@@ -90,10 +90,8 @@ class NabuccoToXmlServiceEjbJarVisitor extends NabuccoToXmlVisitorSupport implem
             target.getModel().getDocuments().add(document);
 
         } catch (XmlModelException me) {
-            logger.error(me, "Error during XML DOM service modification.");
             throw new NabuccoVisitorException("Error during XML DOM service modification.", me);
         } catch (XmlTemplateException te) {
-            logger.error(te, "Error during XML template service processing.");
             throw new NabuccoVisitorException("Error during XML template service processing.", te);
         }
     }

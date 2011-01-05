@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2010 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco-source.org/nabucco-license.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation;
 
 import java.text.MessageFormat;
@@ -48,9 +48,9 @@ public class NabuccoTransformationException extends TransformationException {
      * @param message
      *            the error message
      * @param cause
-     *            the causing throwable
+     *            the causing exception
      */
-    public NabuccoTransformationException(String message, Throwable cause) {
+    public NabuccoTransformationException(String message, Exception cause) {
         super(message, cause);
     }
 
@@ -67,11 +67,11 @@ public class NabuccoTransformationException extends TransformationException {
     /**
      * Creates a new {@link NabuccoTransformationException} instance.
      * 
-     * @param throwable
+     * @param cause
      *            the causing throwable
      */
-    public NabuccoTransformationException(Throwable throwable) {
-        super(throwable);
+    public NabuccoTransformationException(Exception cause) {
+        super(cause);
     }
 
     /**
@@ -90,6 +90,15 @@ public class NabuccoTransformationException extends TransformationException {
     @Override
     public String getMessage() {
         return format(super.getMessage());
+    }
+
+    /**
+     * Getter for the original error message.
+     * 
+     * @return the original message
+     */
+    public String getOriginalMessage() {
+        return super.getMessage();
     }
 
     /**

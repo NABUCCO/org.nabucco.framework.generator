@@ -23,8 +23,22 @@ limitations under the License.
 	<enterprise-beans>
 
 	</enterprise-beans>
+	
+    <interceptors>
+		<interceptor>
+			<interceptor-class>org.nabucco.framework.base.impl.service.interceptor.NabuccoInterceptor</interceptor-class>
+			<around-invoke>
+				<method-name>intercept</method-name>
+			</around-invoke>
+		</interceptor>
+	</interceptors>
 
 	<assembly-descriptor>
+		
+		<interceptor-binding>
+			<ejb-name>*</ejb-name>
+			<interceptor-class>org.nabucco.framework.base.impl.service.interceptor.NabuccoInterceptor</interceptor-class>
+		</interceptor-binding>
 
 	</assembly-descriptor>
 

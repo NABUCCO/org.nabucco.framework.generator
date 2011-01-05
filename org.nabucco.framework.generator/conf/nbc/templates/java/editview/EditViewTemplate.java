@@ -25,15 +25,15 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.widgets.Form;
 
 import org.nabucco.framework.base.facade.datatype.utils.I18N;
-import org.nabucco.framework.plugin.base.view.ManagedFormViewPart;
 import org.nabucco.framework.plugin.base.view.NabuccoFormToolkit;
+import org.nabucco.framework.plugin.base.component.edit.view.EditView;
 
 /**
  * EditViewTemplate
  * 
  * @author Stefanie Feld, PRODYNA AG
  */
-public class EditViewTemplate extends ManagedFormViewPart {
+public class EditViewTemplate extends EditView {
 
     public static final String TITLE = ID + ".title";
     

@@ -81,7 +81,7 @@ public class NabuccoToJavaEnumerationVisitor extends NabuccoToJavaVisitorSupport
 
         String name = nabuccoEnum.nodeToken2.tokenImage;
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
-        String projectName = super.getComponentName(NabuccoModelType.ENUMERATION,
+        String projectName = super.getProjectName(NabuccoModelType.ENUMERATION,
                 NabuccoModifierComponentMapper.getModifierType(nabuccoEnum.nodeToken.tokenImage));
 
         try {

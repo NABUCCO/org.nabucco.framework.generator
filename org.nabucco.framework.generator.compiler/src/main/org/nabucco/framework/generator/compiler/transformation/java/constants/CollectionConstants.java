@@ -30,7 +30,7 @@ public interface CollectionConstants extends JavaConstants {
     final String SET = "Set";
 
     final String MAP = "Map";
-
+    
     final String NABUCCO_COLLECTION = "NabuccoCollection";
     
     final String NABUCCO_LIST = "NabuccoList";
@@ -52,6 +52,12 @@ public interface CollectionConstants extends JavaConstants {
     final String COLLECTION_STATE_LAZY = "LAZY";
     
     final String COLLECTION_STATE_EAGER = "EAGER";
+    
+    final String GET_DELEGATE = "getDelegate";
+    
+    final String SET_DELEGATE = "setDelegate";
+    
+    final String SUFFIX_JPA = "JPA";
 
     final String IMPORT_LIST = "java.util.List";
 

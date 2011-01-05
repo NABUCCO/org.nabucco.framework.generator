@@ -21,9 +21,7 @@ limitations under the License.
 		<table name="DatatypeTemplate" />
 		<inheritance strategy="JOINED" />
 		<attributes>
-			<transient name="constraints" />
 			<transient name="properties" />
-			<transient name="propertyNames" />
 		</attributes>
 	</entity>
 
@@ -37,7 +35,7 @@ limitations under the License.
 	<lob/>
 
 	<basic name="attributeTemplate">
-		<column nullable="false" />
+		<column nullable="true" />
 	</basic>
 
 	<enumerated>STRING</enumerated>
@@ -56,7 +54,12 @@ limitations under the License.
 
 	<one-to-one name="datatypeTemplate" target-entity="DatatypeTemplate"
 		fetch="LAZY">
-		<join-column name="foreign_key_id" unique="true" />
+		<join-column name="foreign_key_id" nullable="true" />
+	</one-to-one>
+
+	<one-to-one name="datatypeTemplate" target-entity="DatatypeTemplate"
+		fetch="LAZY">
+		<join-column name="foreign_key_id" nullable="false" />
 	</one-to-one>
 
 	<one-to-many name="datatypeTemplate" target-entity="DatatypeTemplate"
@@ -64,12 +67,20 @@ limitations under the License.
 		<join-column name="foreign_key_id" nullable="true" />
 	</one-to-many>
 
+	<one-to-many name="datatypeTemplate" target-entity="DatatypeTemplate"
+		fetch="LAZY">
+		<join-column name="foreign_key_id" nullable="false" />
+	</one-to-many>
+
 	<many-to-one name="datatypeTemplate" target-entity="DatatypeTemplate"
 		fetch="LAZY">
 		<join-column name="foreign_key_id" nullable="true" />
 	</many-to-one>
-	
-	<transient name="name" />
+
+	<many-to-one name="datatypeTemplate" target-entity="DatatypeTemplate"
+		fetch="LAZY">
+		<join-column name="foreign_key_id" nullable="false" />
+	</many-to-one>
 
 	<many-to-many name="datatypeTemplate" target-entity="DatatypeTemplate"
 		fetch="LAZY">
@@ -80,17 +91,26 @@ limitations under the License.
 		</join-table>
 	</many-to-many>
 
+	<many-to-many name="datatypeTemplate" target-entity="DatatypeTemplate"
+		fetch="LAZY">
+		<join-table>
+			<join-column name="foreign_key_id" nullable="false" />
+			<inverse-join-column name="foreign_key_id"
+				nullable="false" />
+		</join-table>
+	</many-to-many>
+	
+	<transient name="name" />
+
 	<mapped-superclass class="DatatypeTemplate">
 		<attributes>
-			<transient name="constraints" />
 			<transient name="properties" />
-			<transient name="propertyNames" />
 		</attributes>
 	</mapped-superclass>
 	
 	<embeddable class="BasetypeTemplate">
 		<attributes>
-			<transient name="constraints" />
+			<transient name="properties" />
 		</attributes>
 	</embeddable>
 	

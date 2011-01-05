@@ -15,7 +15,7 @@ package org.nabucco.framework.generator.parser.syntaxtree;
  * parameterList -> ParameterList()
  * nodeToken3 -> &lt;RPAREN_CHAR&gt;
  * nodeOptional -> [ &lt;THROWS&gt; &lt;UNQUALIFIED_TYPE_NAME&gt; ]
- * nodeToken4 -> &lt;SEMICOLON_CHAR&gt;
+ * nodeChoice1 -> ( &lt;SEMICOLON_CHAR&gt; | &lt;LBRACE_CHAR&gt; MethodBody() &lt;RBRACE_CHAR&gt; )
  * </PRE>
  */
 public class MethodDeclaration implements Node {
@@ -28,9 +28,9 @@ public class MethodDeclaration implements Node {
    public ParameterList parameterList;
    public NodeToken nodeToken3;
    public NodeOptional nodeOptional;
-   public NodeToken nodeToken4;
+   public NodeChoice nodeChoice1;
 
-   public MethodDeclaration(AnnotationDeclaration n0, NodeToken n1, NodeChoice n2, NodeToken n3, NodeToken n4, ParameterList n5, NodeToken n6, NodeOptional n7, NodeToken n8) {
+   public MethodDeclaration(AnnotationDeclaration n0, NodeToken n1, NodeChoice n2, NodeToken n3, NodeToken n4, ParameterList n5, NodeToken n6, NodeOptional n7, NodeChoice n8) {
       annotationDeclaration = n0;
       if ( annotationDeclaration != null ) annotationDeclaration.setParent(this);
       nodeToken = n1;
@@ -47,11 +47,11 @@ public class MethodDeclaration implements Node {
       if ( nodeToken3 != null ) nodeToken3.setParent(this);
       nodeOptional = n7;
       if ( nodeOptional != null ) nodeOptional.setParent(this);
-      nodeToken4 = n8;
-      if ( nodeToken4 != null ) nodeToken4.setParent(this);
+      nodeChoice1 = n8;
+      if ( nodeChoice1 != null ) nodeChoice1.setParent(this);
    }
 
-   public MethodDeclaration(AnnotationDeclaration n0, NodeChoice n1, NodeToken n2, ParameterList n3, NodeOptional n4) {
+   public MethodDeclaration(AnnotationDeclaration n0, NodeChoice n1, NodeToken n2, ParameterList n3, NodeOptional n4, NodeChoice n5) {
       annotationDeclaration = n0;
       if ( annotationDeclaration != null ) annotationDeclaration.setParent(this);
       nodeToken = new NodeToken("public");
@@ -68,8 +68,8 @@ public class MethodDeclaration implements Node {
       if ( nodeToken3 != null ) nodeToken3.setParent(this);
       nodeOptional = n4;
       if ( nodeOptional != null ) nodeOptional.setParent(this);
-      nodeToken4 = new NodeToken(";");
-      if ( nodeToken4 != null ) nodeToken4.setParent(this);
+      nodeChoice1 = n5;
+      if ( nodeChoice1 != null ) nodeChoice1.setParent(this);
    }
 
    public void accept(org.nabucco.framework.generator.parser.visitor.Visitor v) {

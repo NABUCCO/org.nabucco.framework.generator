@@ -20,6 +20,7 @@ import org.nabucco.framework.base.facade.component.connection.ConnectionExceptio
 import org.nabucco.framework.base.facade.component.connection.ConnectionFactory;
 import org.nabucco.framework.base.facade.component.connection.ConnectionSpecification;
 import org.nabucco.framework.base.facade.exception.service.ServiceException;
+import org.nabucco.framework.base.facade.exception.client.ClientException;
 
 /**
  * ServiceDelegateFactoryTemplate

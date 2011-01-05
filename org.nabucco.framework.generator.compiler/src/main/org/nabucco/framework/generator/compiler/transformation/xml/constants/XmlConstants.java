@@ -30,6 +30,8 @@ public interface XmlConstants extends NabuccoTransformationConstants {
     final String NAME = "name";
     
     final String LENGTH = "length";
+    
+    final String NULLABLE = "nullable";
 
     final String FRAGMENT = "fragment";
     

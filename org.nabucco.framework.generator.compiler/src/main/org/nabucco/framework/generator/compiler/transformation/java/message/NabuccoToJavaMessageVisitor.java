@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2010 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco-source.org/nabucco-license.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java.message;
 
 import java.util.ArrayList;
@@ -25,11 +25,11 @@ import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.nabucco.framework.generator.compiler.template.NabuccoJavaTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.common.collection.CollectionImplementationType;
-import org.nabucco.framework.generator.compiler.transformation.java.common.NabuccoToJavaDatatypeReflectionSupport;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.JavaAstSupport;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.container.JavaAstContainter;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.util.GetterSetterOptions;
 import org.nabucco.framework.generator.compiler.transformation.java.common.constraint.NabuccoToJavaConstraintMapper;
+import org.nabucco.framework.generator.compiler.transformation.java.common.reflection.NabuccoToJavaReflectionFacade;
 import org.nabucco.framework.generator.compiler.transformation.java.visitor.NabuccoToJavaVisitorContext;
 import org.nabucco.framework.generator.compiler.transformation.java.visitor.NabuccoToJavaVisitorSupport;
 import org.nabucco.framework.generator.compiler.transformation.util.mapper.NabuccoModifierComponentMapper;
@@ -44,7 +44,6 @@ import org.nabucco.framework.generator.parser.syntaxtree.DatatypeDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.EnumerationDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.MessageStatement;
 import org.nabucco.framework.generator.parser.syntaxtree.NodeToken;
-
 import org.nabucco.framework.mda.logger.MdaLogger;
 import org.nabucco.framework.mda.logger.MdaLoggingFactory;
 import org.nabucco.framework.mda.model.MdaModel;
@@ -66,10 +65,10 @@ class NabuccoToJavaMessageVisitor extends NabuccoToJavaVisitorSupport {
 
     /** List for all field names */
     private List<String> fieldList = new ArrayList<String>();
-    
+
     /** List for all field constraint literals */
     private List<Literal> constraintLiterals = new ArrayList<Literal>();
-    
+
     public NabuccoToJavaMessageVisitor(NabuccoToJavaVisitorContext visitorContext) {
         super(visitorContext);
     }
@@ -79,16 +78,18 @@ class NabuccoToJavaMessageVisitor extends NabuccoToJavaVisitorSupport {
 
         // Visit sub-nodes first!
         super.visit(nabuccoMessage, target);
-        
+
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
         String name = nabuccoMessage.nodeToken2.tokenImage;
-        String projectName = super.getComponentName(NabuccoModelType.MESSAGE, NabuccoModifierComponentMapper
-                .getModifierType(nabuccoMessage.nodeToken.tokenImage));
+        String projectName = super
+                .getProjectName(NabuccoModelType.MESSAGE, NabuccoModifierComponentMapper
+                        .getModifierType(nabuccoMessage.nodeToken.tokenImage));
 
         try {
             // Load Template
-            JavaCompilationUnit unit = super.extractAst(NabuccoJavaTemplateConstants.MESSAGE_TEMPLATE);
+            JavaCompilationUnit unit = super
+                    .extractAst(NabuccoJavaTemplateConstants.MESSAGE_TEMPLATE);
             TypeDeclaration type = unit.getType(NabuccoJavaTemplateConstants.MESSAGE_TEMPLATE);
 
             // Name and Package
@@ -101,13 +102,13 @@ class NabuccoToJavaMessageVisitor extends NabuccoToJavaVisitorSupport {
 
             // Annotations
             JavaAstSupport.convertJavadocAnnotations(nabuccoMessage.annotationDeclaration, type);
-            
+
             // Constraints
             NabuccoToJavaConstraintMapper.getInstance().appendArrayLiterals(
                     this.constraintLiterals, type);
 
-            // Adjust the getProperties() and getPropertyNames() methods of the message
-            NabuccoToJavaDatatypeReflectionSupport.adjustPropertiesMethods(this.fieldList, type);
+            // Adjust the getProperties() method of the message
+            NabuccoToJavaReflectionFacade.getInstance().createReflection(nabuccoMessage, unit);
 
             JavaAstSupport.convertAstNodes(unit, this.getVisitorContext().getContainerList(), this
                     .getVisitorContext().getImportList());
@@ -158,7 +159,7 @@ class NabuccoToJavaMessageVisitor extends NabuccoToJavaVisitorSupport {
         this.fieldList.add(name);
         this.constraintLiterals.add(NabuccoToJavaConstraintMapper.getInstance()
                 .convertFieldConstraints(nabuccoBasetype));
-        
+
         NabuccoMultiplicityType multiplicity = NabuccoMultiplicityTypeMapper.getInstance()
                 .mapToMultiplicity(nabuccoBasetype.nodeToken2.tokenImage);
 
@@ -170,23 +171,28 @@ class NabuccoToJavaMessageVisitor extends NabuccoToJavaVisitorSupport {
 
         JavaAstContainter<FieldDeclaration> field = JavaAstSupport.createField(type, name,
                 modifier, isList);
-        JavaAstContainter<MethodDeclaration> getter = JavaAstSupport.createGetter(field
-                .getAstNode(), GetterSetterOptions.valueOf(CollectionImplementationType.DEFAULT));
-        
+        JavaAstContainter<MethodDeclaration> getter = JavaAstSupport.createGetter(
+                field.getAstNode(),
+                GetterSetterOptions.valueOf(CollectionImplementationType.DEFAULT));
+
         // Javadoc
-        JavaAstSupport.convertJavadocAnnotations(nabuccoBasetype.annotationDeclaration, field.getAstNode());
-        JavaAstSupport.convertJavadocAnnotations(nabuccoBasetype.annotationDeclaration, getter.getAstNode());
-        
+        JavaAstSupport.convertJavadocAnnotations(nabuccoBasetype.annotationDeclaration,
+                field.getAstNode());
+        JavaAstSupport.convertJavadocAnnotations(nabuccoBasetype.annotationDeclaration,
+                getter.getAstNode());
+
         this.getVisitorContext().getContainerList().add(field);
         this.getVisitorContext().getContainerList().add(getter);
-        
+
         if (!isList) {
-            JavaAstContainter<MethodDeclaration> setter = JavaAstSupport.createSetter(field.getAstNode());
-            JavaAstSupport.convertJavadocAnnotations(nabuccoBasetype.annotationDeclaration, setter.getAstNode());
+            JavaAstContainter<MethodDeclaration> setter = JavaAstSupport.createSetter(field
+                    .getAstNode());
+            JavaAstSupport.convertJavadocAnnotations(nabuccoBasetype.annotationDeclaration,
+                    setter.getAstNode());
             this.getVisitorContext().getContainerList().add(setter);
         }
     }
-    
+
     /**
      * Creates a java enumeration field with getters and setters for the given enumeration
      * declaration.
@@ -201,7 +207,7 @@ class NabuccoToJavaMessageVisitor extends NabuccoToJavaVisitorSupport {
         this.fieldList.add(name);
         this.constraintLiterals.add(NabuccoToJavaConstraintMapper.getInstance()
                 .convertFieldConstraints(nabuccoEnum));
-        
+
         NabuccoMultiplicityType multiplicity = NabuccoMultiplicityTypeMapper.getInstance()
                 .mapToMultiplicity(nabuccoEnum.nodeToken1.tokenImage);
 
@@ -213,19 +219,24 @@ class NabuccoToJavaMessageVisitor extends NabuccoToJavaVisitorSupport {
 
         JavaAstContainter<FieldDeclaration> field = JavaAstSupport.createField(type, name,
                 modifier, isList);
-        JavaAstContainter<MethodDeclaration> getter = JavaAstSupport.createGetter(field
-                .getAstNode(), GetterSetterOptions.valueOf(CollectionImplementationType.DEFAULT));
+        JavaAstContainter<MethodDeclaration> getter = JavaAstSupport.createGetter(
+                field.getAstNode(),
+                GetterSetterOptions.valueOf(CollectionImplementationType.DEFAULT));
 
         // Javadoc
-        JavaAstSupport.convertJavadocAnnotations(nabuccoEnum.annotationDeclaration, field.getAstNode());
-        JavaAstSupport.convertJavadocAnnotations(nabuccoEnum.annotationDeclaration, getter.getAstNode());
-        
+        JavaAstSupport.convertJavadocAnnotations(nabuccoEnum.annotationDeclaration,
+                field.getAstNode());
+        JavaAstSupport.convertJavadocAnnotations(nabuccoEnum.annotationDeclaration,
+                getter.getAstNode());
+
         this.getVisitorContext().getContainerList().add(field);
         this.getVisitorContext().getContainerList().add(getter);
-        
+
         if (!isList) {
-            JavaAstContainter<MethodDeclaration> setter = JavaAstSupport.createSetter(field.getAstNode());
-            JavaAstSupport.convertJavadocAnnotations(nabuccoEnum.annotationDeclaration, setter.getAstNode());
+            JavaAstContainter<MethodDeclaration> setter = JavaAstSupport.createSetter(field
+                    .getAstNode());
+            JavaAstSupport.convertJavadocAnnotations(nabuccoEnum.annotationDeclaration,
+                    setter.getAstNode());
             this.getVisitorContext().getContainerList().add(setter);
         }
     }
@@ -237,39 +248,44 @@ class NabuccoToJavaMessageVisitor extends NabuccoToJavaVisitorSupport {
      *            the NABUCCO datatype
      */
     private void createDatatype(DatatypeDeclaration nabuccoDatatype) {
-        String type = ((NodeToken)nabuccoDatatype.nodeChoice1.choice).tokenImage;
+        String type = ((NodeToken) nabuccoDatatype.nodeChoice1.choice).tokenImage;
         String name = nabuccoDatatype.nodeToken2.tokenImage;
 
         this.fieldList.add(name);
         this.constraintLiterals.add(NabuccoToJavaConstraintMapper.getInstance()
                 .convertFieldConstraints(nabuccoDatatype));
-        
+
         NabuccoMultiplicityType multiplicity = NabuccoMultiplicityTypeMapper.getInstance()
                 .mapToMultiplicity(nabuccoDatatype.nodeToken1.tokenImage);
-        
+
         NabuccoModifierType modifier = NabuccoModifierTypeMapper.getInstance().mapToModifier(
                 ((NodeToken) nabuccoDatatype.nodeChoice.choice).tokenImage);
 
         boolean isList = multiplicity == NabuccoMultiplicityType.ONE_TO_MANY
                 || multiplicity == NabuccoMultiplicityType.ZERO_TO_MANY;
-        
+
         JavaAstContainter<FieldDeclaration> field = JavaAstSupport.createField(type, name,
                 modifier, isList);
-        JavaAstContainter<MethodDeclaration> getter = JavaAstSupport.createGetter(field
-                .getAstNode(), GetterSetterOptions.valueOf(CollectionImplementationType.DEFAULT));
-        
+        JavaAstContainter<MethodDeclaration> getter = JavaAstSupport.createGetter(
+                field.getAstNode(),
+                GetterSetterOptions.valueOf(CollectionImplementationType.DEFAULT));
+
         // Javadoc
-        JavaAstSupport.convertJavadocAnnotations(nabuccoDatatype.annotationDeclaration, field.getAstNode());
-        JavaAstSupport.convertJavadocAnnotations(nabuccoDatatype.annotationDeclaration, getter.getAstNode());
-        
+        JavaAstSupport.convertJavadocAnnotations(nabuccoDatatype.annotationDeclaration,
+                field.getAstNode());
+        JavaAstSupport.convertJavadocAnnotations(nabuccoDatatype.annotationDeclaration,
+                getter.getAstNode());
+
         this.getVisitorContext().getContainerList().add(field);
         this.getVisitorContext().getContainerList().add(getter);
-        
+
         if (!isList) {
-            JavaAstContainter<MethodDeclaration> setter = JavaAstSupport.createSetter(field.getAstNode());
-            JavaAstSupport.convertJavadocAnnotations(nabuccoDatatype.annotationDeclaration, setter.getAstNode());
+            JavaAstContainter<MethodDeclaration> setter = JavaAstSupport.createSetter(field
+                    .getAstNode());
+            JavaAstSupport.convertJavadocAnnotations(nabuccoDatatype.annotationDeclaration,
+                    setter.getAstNode());
             this.getVisitorContext().getContainerList().add(setter);
         }
     }
-    
+
 }

@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2010 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco-source.org/nabucco-license.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.util;
 
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationConstants;
@@ -43,7 +43,7 @@ public final class NabuccoTransformationUtility implements NabuccoTransformation
      * 
      * @return the changed name
      */
-    public static String firstToUpper(String name) {
+    public static String firstToUpper(final String name) {
         if (name == null || name.length() == 0) {
             return name;
         }
@@ -59,7 +59,7 @@ public final class NabuccoTransformationUtility implements NabuccoTransformation
      * 
      * @return the changed name
      */
-    public static String firstToLower(String name) {
+    public static String firstToLower(final String name) {
         if (name == null || name.length() == 0) {
             return name;
         }
@@ -75,12 +75,12 @@ public final class NabuccoTransformationUtility implements NabuccoTransformation
      * 
      * @return the changed name
      */
-    public static char[] firstToUpper(char[] name) {
+    public static char[] firstToUpper(final char[] name) {
         if (name == null || name.length == 0) {
             return name;
         }
 
-        Character.toUpperCase(name[0]);
+        name[0] = Character.toUpperCase(name[0]);
         return name;
     }
 
@@ -92,12 +92,12 @@ public final class NabuccoTransformationUtility implements NabuccoTransformation
      * 
      * @return the changed name
      */
-    public static char[] firstToLower(char[] name) {
+    public static char[] firstToLower(final char[] name) {
         if (name == null || name.length == 0) {
             return name;
         }
 
-        Character.toLowerCase(name[0]);
+        name[0] = Character.toLowerCase(name[0]);
         return name;
     }
 
@@ -139,7 +139,7 @@ public final class NabuccoTransformationUtility implements NabuccoTransformation
      * 
      * @return the implementation package string
      */
-    public static String toImpl(String pkg) {
+    public static String toImpl(final String pkg) {
         return pkg.replace(FACADE, IMPL);
     }
 
@@ -151,7 +151,7 @@ public final class NabuccoTransformationUtility implements NabuccoTransformation
      * 
      * @return the facade package string
      */
-    public static String toFacade(String pkg) {
+    public static String toFacade(final String pkg) {
         return pkg.replace(IMPL, FACADE);
     }
 }

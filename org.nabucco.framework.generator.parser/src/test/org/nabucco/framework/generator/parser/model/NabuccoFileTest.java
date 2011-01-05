@@ -30,18 +30,18 @@ import org.nabucco.framework.generator.parser.file.NabuccoFile;
  */
 public class NabuccoFileTest {
 
-    private static final String PROJECT_TOKEN = "org.nabucco.framework.base";
+    private static final String PROJECT_TOKEN = "org.nabucco.framework";
 
     private static final String NBC_FILE_NAME_TOKEN = "Description";
 
-    private static final String TEST_PROJECT_PATH = "../" + PROJECT_TOKEN + "/";
+    private static final String TEST_PROJECT_PATH = "conf/sample/" + PROJECT_TOKEN + "/";
 
     private static final String TEST_SRC_PATH = TEST_PROJECT_PATH + "src/";
 
-    private static final String TEST_SRC_PACKET = TEST_SRC_PATH
-            + "nbc/org/nabucco/framework/base/facade/datatype/";
+    private static final String TEST_SRC_PKG = TEST_SRC_PATH
+            + "nbc/org/nabucco/framework/";
 
-    private static final String TEST_FILE_PATH = TEST_SRC_PACKET + NBC_FILE_NAME_TOKEN + ".nbc";
+    private static final String TEST_FILE_PATH = TEST_SRC_PKG + NBC_FILE_NAME_TOKEN + ".nbc";
 
     @Test
     public void testWithNabuccoFile() throws Exception {
@@ -53,7 +53,7 @@ public class NabuccoFileTest {
 
     @Test
     public void testWithNabuccoPackage() throws Exception {
-        NabuccoFile nabuccoFile = createNabuccoFile(TEST_SRC_PACKET);
+        NabuccoFile nabuccoFile = createNabuccoFile(TEST_SRC_PKG);
         Assert.assertEquals(PROJECT_TOKEN, nabuccoFile.getProjectName());
     }
 
@@ -61,19 +61,17 @@ public class NabuccoFileTest {
     public void testWithSrcDir() throws Exception {
         NabuccoFile nabuccoFile = createNabuccoFile(TEST_SRC_PATH);
         Assert.assertEquals(PROJECT_TOKEN, nabuccoFile.getProjectName());
-
     }
 
     @Test
     public void testWithProjectDir() throws Exception {
         NabuccoFile nabuccoFile = createNabuccoFile(TEST_PROJECT_PATH);
         Assert.assertEquals(PROJECT_TOKEN, nabuccoFile.getProjectName());
-
     }
 
     private NabuccoFile createNabuccoFile(String path) throws Exception {
         File file = new File(path);
-        Assert.assertTrue(file.exists());
+        Assert.assertTrue("NABUCCO File does not exist.", file.exists());
 
         return new NabuccoFile(file);
     }

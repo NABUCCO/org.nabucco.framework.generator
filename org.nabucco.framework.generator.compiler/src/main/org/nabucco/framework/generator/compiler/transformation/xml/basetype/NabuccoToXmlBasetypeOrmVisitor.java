@@ -81,7 +81,7 @@ class NabuccoToXmlBasetypeOrmVisitor extends NabuccoToXmlVisitorSupport implemen
 
         String componentName = this.componentName;
         if (componentName == null) {
-            componentName = super.getComponentName(null, null);
+            componentName = super.getProjectName(null, null);
         }
 
         try {

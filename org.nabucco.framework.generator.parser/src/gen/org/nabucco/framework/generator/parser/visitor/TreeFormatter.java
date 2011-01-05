@@ -3,9 +3,8 @@
 //
 package org.nabucco.framework.generator.parser.visitor;
 
-import java.util.*;
-
 import org.nabucco.framework.generator.parser.syntaxtree.*;
+import java.util.*;
 
 /**
  * A skeleton output formatter for your language grammar.  Using the
@@ -279,11 +278,34 @@ public class TreeFormatter extends DepthFirstVisitor {
 
    /**
     * <PRE>
-    * nodeChoice -> ( ComponentStatement() | DatatypeStatement() | BasetypeStatement() | EnumerationStatement() | ExceptionStatement() | ServiceStatement() | MessageStatement() | EditViewStatement() | ListViewStatement() | SearchViewStatement() | CommandStatement() )
+    * nodeChoice -> ( ApplicationStatement() | ComponentStatement() | DatatypeStatement() | BasetypeStatement() | EnumerationStatement() | ExceptionStatement() | ServiceStatement() | MessageStatement() | EditViewStatement() | ListViewStatement() | SearchViewStatement() | CommandStatement() )
     * </PRE>
     */
    public void visit(NabuccoStatement n) {
       n.nodeChoice.accept(this);
+   }
+
+   /**
+    * <PRE>
+    * annotationDeclaration -> AnnotationDeclaration()
+    * nodeToken -> &lt;PUBLIC&gt;
+    * nodeToken1 -> &lt;APPLICATION&gt;
+    * nodeToken2 -> &lt;UNQUALIFIED_TYPE_NAME&gt;
+    * nodeToken3 -> &lt;LBRACE_CHAR&gt;
+    * nodeListOptional -> ( ApplicationPropertyDeclaration() )*
+    * nodeToken4 -> &lt;RBRACE_CHAR&gt;
+    * </PRE>
+    */
+   public void visit(ApplicationStatement n) {
+      n.annotationDeclaration.accept(this);
+      n.nodeToken.accept(this);
+      n.nodeToken1.accept(this);
+      n.nodeToken2.accept(this);
+      n.nodeToken3.accept(this);
+      if ( n.nodeListOptional.present() ) {
+         processList(n.nodeListOptional);
+      }
+      n.nodeToken4.accept(this);
    }
 
    /**
@@ -462,6 +484,29 @@ public class TreeFormatter extends DepthFirstVisitor {
    /**
     * <PRE>
     * annotationDeclaration -> AnnotationDeclaration()
+    * nodeToken -> &lt;PRIVATE&gt;
+    * nodeToken1 -> &lt;CONNECTOR&gt;
+    * nodeToken2 -> &lt;UNQUALIFIED_TYPE_NAME&gt;
+    * nodeToken3 -> &lt;LBRACE_CHAR&gt;
+    * nodeListOptional -> ( ConnectorPropertyDeclaration() )*
+    * nodeToken4 -> &lt;RBRACE_CHAR&gt;
+    * </PRE>
+    */
+   public void visit(ConnectorStatement n) {
+      n.annotationDeclaration.accept(this);
+      n.nodeToken.accept(this);
+      n.nodeToken1.accept(this);
+      n.nodeToken2.accept(this);
+      n.nodeToken3.accept(this);
+      if ( n.nodeListOptional.present() ) {
+         processList(n.nodeListOptional);
+      }
+      n.nodeToken4.accept(this);
+   }
+
+   /**
+    * <PRE>
+    * annotationDeclaration -> AnnotationDeclaration()
     * nodeToken -> &lt;PUBLIC&gt;
     * nodeToken1 -> &lt;EDITVIEW&gt;
     * nodeToken2 -> &lt;UNQUALIFIED_TYPE_NAME&gt;
@@ -555,6 +600,15 @@ public class TreeFormatter extends DepthFirstVisitor {
 
    /**
     * <PRE>
+    * nodeChoice -> ( ComponentDeclaration() | ConnectorStatement() )
+    * </PRE>
+    */
+   public void visit(ApplicationPropertyDeclaration n) {
+      n.nodeChoice.accept(this);
+   }
+
+   /**
+    * <PRE>
     * nodeChoice -> ( ComponentDatatypeDeclaration() | EnumerationDeclaration() | ServiceDeclaration() | ComponentDeclaration() )
     * </PRE>
     */
@@ -573,7 +627,16 @@ public class TreeFormatter extends DepthFirstVisitor {
 
    /**
     * <PRE>
-    * nodeChoice -> ( BasetypeDeclaration() | DatatypeDeclaration() | EnumerationDeclaration() | MapDeclaration() )
+    * nodeChoice -> ( DatatypeDeclaration() | ServiceLinkDeclaration() )
+    * </PRE>
+    */
+   public void visit(ConnectorPropertyDeclaration n) {
+      n.nodeChoice.accept(this);
+   }
+
+   /**
+    * <PRE>
+    * nodeChoice -> ( BasetypeDeclaration() | DatatypeDeclaration() | EnumerationDeclaration() )
     * </PRE>
     */
    public void visit(PropertyDeclaration n) {
@@ -647,6 +710,50 @@ public class TreeFormatter extends DepthFirstVisitor {
       n.nodeToken1.accept(this);
       n.nodeToken2.accept(this);
       n.nodeToken3.accept(this);
+   }
+
+   /**
+    * <PRE>
+    * annotationDeclaration -> AnnotationDeclaration()
+    * nodeChoice -> ( &lt;PUBLIC&gt; | &lt;PROTECTED&gt; | &lt;PRIVATE&gt; )
+    * nodeToken -> &lt;CONNECTOR&gt;
+    * nodeToken1 -> &lt;UNQUALIFIED_TYPE_NAME&gt;
+    * nodeToken2 -> &lt;NAME_IDENTIFIER&gt;
+    * nodeToken3 -> &lt;SEMICOLON_CHAR&gt;
+    * </PRE>
+    */
+   public void visit(ConnectorDeclaration n) {
+      n.annotationDeclaration.accept(this);
+      n.nodeChoice.accept(this);
+      n.nodeToken.accept(this);
+      n.nodeToken1.accept(this);
+      n.nodeToken2.accept(this);
+      n.nodeToken3.accept(this);
+   }
+
+   /**
+    * <PRE>
+    * annotationDeclaration -> AnnotationDeclaration()
+    * nodeToken -> &lt;PRIVATE&gt;
+    * nodeToken1 -> &lt;SERVICELINK&gt;
+    * nodeToken2 -> &lt;QUALIFIED_TYPE_NAME&gt;
+    * nodeToken3 -> &lt;DOT_CHAR&gt;
+    * nodeToken4 -> &lt;NAME_IDENTIFIER&gt;
+    * nodeToken5 -> &lt;LPAREN_CHAR&gt;
+    * nodeToken6 -> &lt;RPAREN_CHAR&gt;
+    * nodeToken7 -> &lt;SEMICOLON_CHAR&gt;
+    * </PRE>
+    */
+   public void visit(ServiceLinkDeclaration n) {
+      n.annotationDeclaration.accept(this);
+      n.nodeToken.accept(this);
+      n.nodeToken1.accept(this);
+      n.nodeToken2.accept(this);
+      n.nodeToken3.accept(this);
+      n.nodeToken4.accept(this);
+      n.nodeToken5.accept(this);
+      n.nodeToken6.accept(this);
+      n.nodeToken7.accept(this);
    }
 
    /**
@@ -729,7 +836,8 @@ public class TreeFormatter extends DepthFirstVisitor {
     * nodeChoice -> ( &lt;PUBLIC&gt; | &lt;PROTECTED&gt; | &lt;PRIVATE&gt; )
     * nodeToken -> &lt;COMPONENT&gt;
     * nodeToken1 -> &lt;UNQUALIFIED_TYPE_NAME&gt;
-    * nodeToken2 -> &lt;SEMICOLON_CHAR&gt;
+    * nodeToken2 -> &lt;NAME_IDENTIFIER&gt;
+    * nodeToken3 -> &lt;SEMICOLON_CHAR&gt;
     * </PRE>
     */
    public void visit(ComponentDeclaration n) {
@@ -738,6 +846,7 @@ public class TreeFormatter extends DepthFirstVisitor {
       n.nodeToken.accept(this);
       n.nodeToken1.accept(this);
       n.nodeToken2.accept(this);
+      n.nodeToken3.accept(this);
    }
 
    /**
@@ -767,7 +876,7 @@ public class TreeFormatter extends DepthFirstVisitor {
     * parameterList -> ParameterList()
     * nodeToken3 -> &lt;RPAREN_CHAR&gt;
     * nodeOptional -> [ &lt;THROWS&gt; &lt;UNQUALIFIED_TYPE_NAME&gt; ]
-    * nodeToken4 -> &lt;SEMICOLON_CHAR&gt;
+    * nodeChoice1 -> ( &lt;SEMICOLON_CHAR&gt; | &lt;LBRACE_CHAR&gt; MethodBody() &lt;RBRACE_CHAR&gt; )
     * </PRE>
     */
    public void visit(MethodDeclaration n) {
@@ -781,34 +890,42 @@ public class TreeFormatter extends DepthFirstVisitor {
       if ( n.nodeOptional.present() ) {
          n.nodeOptional.accept(this);
       }
-      n.nodeToken4.accept(this);
+      n.nodeChoice1.accept(this);
    }
 
    /**
     * <PRE>
-    * annotationDeclaration -> AnnotationDeclaration()
-    * nodeChoice -> ( &lt;PUBLIC&gt; | &lt;PROTECTED&gt; | &lt;PRIVATE&gt; )
-    * nodeToken -> &lt;MAP&gt;
-    * nodeToken1 -> &lt;LBRACKET_CHAR&gt;
-    * nodeToken2 -> &lt;UNQUALIFIED_TYPE_NAME&gt;
-    * nodeToken3 -> &lt;COMMA_CHAR&gt;
-    * nodeToken4 -> &lt;UNQUALIFIED_TYPE_NAME&gt;
-    * nodeToken5 -> &lt;RBRACKET_CHAR&gt;
-    * nodeToken6 -> &lt;NAME_IDENTIFIER&gt;
-    * nodeToken7 -> &lt;SEMICOLON_CHAR&gt;
+    * nodeListOptional -> ( Parameter() )*
     * </PRE>
     */
-   public void visit(MapDeclaration n) {
-      n.annotationDeclaration.accept(this);
-      n.nodeChoice.accept(this);
+   public void visit(ParameterList n) {
+      if ( n.nodeListOptional.present() ) {
+         processList(n.nodeListOptional);
+      }
+   }
+
+   /**
+    * <PRE>
+    * nodeOptional -> [ &lt;COMMA_CHAR&gt; ]
+    * nodeToken -> &lt;UNQUALIFIED_TYPE_NAME&gt;
+    * nodeToken1 -> &lt;NAME_IDENTIFIER&gt;
+    * </PRE>
+    */
+   public void visit(Parameter n) {
+      if ( n.nodeOptional.present() ) {
+         n.nodeOptional.accept(this);
+      }
       n.nodeToken.accept(this);
       n.nodeToken1.accept(this);
-      n.nodeToken2.accept(this);
-      n.nodeToken3.accept(this);
-      n.nodeToken4.accept(this);
-      n.nodeToken5.accept(this);
-      n.nodeToken6.accept(this);
-      n.nodeToken7.accept(this);
+   }
+
+   /**
+    * <PRE>
+    * block -> Block()
+    * </PRE>
+    */
+   public void visit(MethodBody n) {
+      n.block.accept(this);
    }
 
    /**
@@ -997,32 +1114,6 @@ public class TreeFormatter extends DepthFirstVisitor {
       n.nodeToken1.accept(this);
       n.nodeToken2.accept(this);
       n.nodeToken3.accept(this);
-   }
-
-   /**
-    * <PRE>
-    * nodeListOptional -> ( Parameter() )*
-    * </PRE>
-    */
-   public void visit(ParameterList n) {
-      if ( n.nodeListOptional.present() ) {
-         processList(n.nodeListOptional);
-      }
-   }
-
-   /**
-    * <PRE>
-    * nodeOptional -> [ &lt;COMMA_CHAR&gt; ]
-    * nodeToken -> &lt;UNQUALIFIED_TYPE_NAME&gt;
-    * nodeToken1 -> &lt;NAME_IDENTIFIER&gt;
-    * </PRE>
-    */
-   public void visit(Parameter n) {
-      if ( n.nodeOptional.present() ) {
-         n.nodeOptional.accept(this);
-      }
-      n.nodeToken.accept(this);
-      n.nodeToken1.accept(this);
    }
 
 }

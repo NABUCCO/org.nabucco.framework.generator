@@ -15,21 +15,37 @@
  * limitations under the License.
  */
 
+import java.util.Map;
+import java.io.Serializable;
 import org.nabucco.framework.plugin.base.logging.Loggable;
-import org.nabucco.framework.plugin.base.model.ViewModel;
+import org.nabucco.framework.plugin.base.component.edit.model.EditViewModel;
+
+
 
 /**
- * EditViewModelTemplate
+ * CommonViewModelTemplate
  * 
  * @author Stefanie Feld, PRODYNA AG
  */
-public class EditViewModelTemplate extends ViewModel implements Loggable {
-    
+public class EditViewModelTemplate extends EditViewModel implements Loggable {
+
     public EditViewModelTemplate() {
-        //call create for each declared datatype
+        // call create for each declared datatype
     }
-    
-    public String getID(){
+
+    // create method for each declared datatype
+
+    public String getID() {
         return "fqn";
+    }
+
+    /**
+     * Getter for internationalized labels.
+     * 
+     * @return map of all view model properties for internationalization.
+     */
+    public Map<String, Serializable> getValues() {
+        Map<String, Serializable> result = super.getValues();
+        return result;
     }
 }

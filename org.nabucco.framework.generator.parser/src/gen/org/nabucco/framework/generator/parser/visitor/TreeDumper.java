@@ -3,10 +3,9 @@
 //
 package org.nabucco.framework.generator.parser.visitor;
 
+import org.nabucco.framework.generator.parser.syntaxtree.*;
 import java.util.*;
 import java.io.*;
-
-import org.nabucco.framework.generator.parser.syntaxtree.*;
 
 /**
  * Dumps the syntax tree to a Writer using the location information in
