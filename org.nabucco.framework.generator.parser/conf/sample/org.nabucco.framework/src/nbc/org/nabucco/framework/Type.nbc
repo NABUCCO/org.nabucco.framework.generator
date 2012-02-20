@@ -1,0 +1,10 @@
+/*
+ * Sample NABUCCO File
+ */
+package org.nabucco.framework;
+
+public Enumeration Type {
+
+	USER
+
+}

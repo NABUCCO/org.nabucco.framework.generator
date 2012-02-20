@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,7 +18,7 @@ package org.nabucco.framework.generator.compiler.transformation.xml.datatype;
 
 import java.io.File;
 
-import org.nabucco.framework.generator.compiler.template.NabuccoXmlTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoXmlTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.association.FetchStrategyType;
 import org.nabucco.framework.generator.compiler.transformation.common.constants.ComponentRelationConstants;
 import org.nabucco.framework.generator.compiler.transformation.util.NabuccoTransformationUtility;
@@ -39,8 +39,8 @@ import org.w3c.dom.Element;
  * 
  * @author Nicolas Moser, PRODYNA AG
  */
-class NabuccoToXmlComponentRelationEntityVisitor extends NabuccoToXmlVisitorSupport implements
-        PersistenceConstants, ComponentRelationConstants {
+class NabuccoToXmlComponentRelationEntityVisitor extends NabuccoToXmlVisitorSupport implements PersistenceConstants,
+        ComponentRelationConstants {
 
     private String componentPrefix;
 
@@ -50,8 +50,7 @@ class NabuccoToXmlComponentRelationEntityVisitor extends NabuccoToXmlVisitorSupp
      * @param visitorContext
      *            the visitor context
      */
-    public NabuccoToXmlComponentRelationEntityVisitor(NabuccoToXmlVisitorContext visitorContext,
-            String componentPrefix) {
+    public NabuccoToXmlComponentRelationEntityVisitor(NabuccoToXmlVisitorContext visitorContext, String componentPrefix) {
         super(visitorContext);
         this.componentPrefix = componentPrefix;
     }
@@ -68,16 +67,14 @@ class NabuccoToXmlComponentRelationEntityVisitor extends NabuccoToXmlVisitorSupp
         String componentName = super.getProjectName(null, null);
 
         try {
-            XmlDocument document = super
-                    .extractDocument(NabuccoXmlTemplateConstants.ORM_FRAGMENT_TEMPLATE);
+            XmlDocument document = super.extractDocument(NabuccoXmlTemplateConstants.ORM_FRAGMENT_TEMPLATE);
 
             document.getDocument().getDocumentElement().setAttribute(NAME, relationName);
             document.getDocument().getDocumentElement().setAttribute(ORDER, FRAGMENT_ORDER_ENTITY);
 
             Element entity = this.createEntity(targetName);
 
-            document.getDocument().getDocumentElement()
-                    .appendChild(document.getDocument().importNode(entity, true));
+            document.getDocument().getDocumentElement().appendChild(document.getDocument().importNode(entity, true));
 
             // File creation
             document.setProjectName(componentName);
@@ -102,8 +99,7 @@ class NabuccoToXmlComponentRelationEntityVisitor extends NabuccoToXmlVisitorSupp
      */
     private Element createEntity(String targetName) throws XmlTemplateException {
 
-        XmlTemplate ormTemplate = this.getVisitorContext().getTemplate(
-                NabuccoXmlTemplateConstants.ORM_TEMPLATE);
+        XmlTemplate ormTemplate = this.getVisitorContext().getTemplate(NabuccoXmlTemplateConstants.ORM_TEMPLATE);
 
         String pkg = this.getVisitorContext().getPackage();
         String targetImport = pkg + PKG_SEPARATOR + targetName;
@@ -112,9 +108,9 @@ class NabuccoToXmlComponentRelationEntityVisitor extends NabuccoToXmlVisitorSupp
         Element entity = (Element) ormTemplate.copyNodesByXPath(XPATH_ENTITY).get(0);
         entity.setAttribute(CLASS, relationImport);
 
-        String tableName = this.componentPrefix + TABLE_SEPARATOR
-                + NabuccoTransformationUtility.toTableName(targetName + COMPONENT_RELATION);
-        
+        String tableName = this.componentPrefix
+                + TABLE_SEPARATOR + NabuccoTransformationUtility.toTableName(targetName + COMPONENT_RELATION);
+
         Element table = (Element) entity.getElementsByTagName(TABLE).item(0);
         table.setAttribute(NAME, tableName);
 

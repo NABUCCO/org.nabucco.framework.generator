@@ -1,41 +1,45 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java.component;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.Assignment;
 import org.eclipse.jdt.internal.compiler.ast.Block;
+import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
+import org.eclipse.jdt.internal.compiler.ast.ExplicitConstructorCall;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.IfStatement;
 import org.eclipse.jdt.internal.compiler.ast.ImportReference;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.ThrowStatement;
 import org.eclipse.jdt.internal.compiler.ast.TryStatement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
-import org.nabucco.framework.generator.compiler.template.NabuccoJavaTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoJavaTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.JavaAstSupport;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.container.JavaAstContainter;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.container.JavaAstType;
@@ -49,7 +53,6 @@ import org.nabucco.framework.generator.parser.model.client.NabuccoClientType;
 import org.nabucco.framework.generator.parser.model.modifier.NabuccoModifierType;
 import org.nabucco.framework.generator.parser.syntaxtree.ComponentStatement;
 import org.nabucco.framework.generator.parser.syntaxtree.ServiceDeclaration;
-
 import org.nabucco.framework.mda.model.MdaModel;
 import org.nabucco.framework.mda.model.java.JavaCompilationUnit;
 import org.nabucco.framework.mda.model.java.JavaModel;
@@ -70,6 +73,8 @@ class NabuccoToJavaComponentServiceDelegateFactoryWebVisitor extends NabuccoToJa
 
     private static String PKG_COMMUNICATION = PKG_SEPARATOR + "communication";
 
+    private static String FACTORY_SUPPORT_IMPORT = "org.nabucco.framework.base.ui.web.communication.ServiceDelegateFactorySupport";
+
     private static final JavaAstMethodSignature GET_DELEGATE_SIGNATURE = new JavaAstMethodSignature(
             "getServiceDelegateTemplate", new String[] {});
 
@@ -78,17 +83,14 @@ class NabuccoToJavaComponentServiceDelegateFactoryWebVisitor extends NabuccoToJa
         super(visitorContext);
     }
 
-    // TODO: Externalize Strings!
-    
     @Override
     public void visit(ComponentStatement nabuccoComponent, MdaModel<JavaModel> target) {
 
         // Visit service-declarations first
         super.visit(nabuccoComponent, target);
 
-
         String projectName = super.getComponentName(NabuccoClientType.WEB);
-        
+
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
         try {
@@ -111,16 +113,22 @@ class NabuccoToJavaComponentServiceDelegateFactoryWebVisitor extends NabuccoToJa
             // handle getInstance()
             handleGetInstance(type, name);
 
-            // handle component field
-            handleComponentField(type, nabuccoComponent.nodeToken2.tokenImage);
+            // add import for ServiceDelegateFactorySupport
+            ImportReference serviceDelegateFactorySupportImport = JavaAstModelProducer
+                    .getInstance().createImportReference(FACTORY_SUPPORT_IMPORT);
+            javaFactory.getJavaAstUnit().addImport(unit.getUnitDeclaration(),
+                    serviceDelegateFactorySupportImport);
+
+            // handle type parameter for ServiceDelegateFactorySupport
+            handleFactorySupportParameter(type, nabuccoComponent.nodeToken2.tokenImage);
 
             // handle component field & add import for Locator
             javaFactory.getJavaAstUnit().addImport(unit.getUnitDeclaration(),
-                    handleInitComponentMethod(type, nabuccoComponent));
+                    handleConstrutor(type, nabuccoComponent));
 
-            // handle getComponent() and import of Component
+            // handle import of Component
             javaFactory.getJavaAstUnit().addImport(unit.getUnitDeclaration(),
-                    handleGetComponent(type, nabuccoComponent));
+                    handleComponentImport(type, nabuccoComponent));
 
             // handle service fields
             JavaAstSupport.convertAstNodes(unit, super.getVisitorContext().getContainerList(),
@@ -144,45 +152,53 @@ class NabuccoToJavaComponentServiceDelegateFactoryWebVisitor extends NabuccoToJa
 
     }
 
-    private ImportReference handleGetComponent(TypeDeclaration type,
-            ComponentStatement nabuccoComponent) throws JavaModelException {
+    /**
+     * @param type
+     * @param tokenImage
+     */
+    private void handleFactorySupportParameter(TypeDeclaration type, String tokenImage) {
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
-        MethodDeclaration method = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(type,
-                new JavaAstMethodSignature("getComponent", new String[] {}));
+        try {
+            TypeReference superClass = javaFactory.getJavaAstType().getSuperClass(type);
+            if (superClass instanceof ParameterizedSingleTypeReference) {
+                ParameterizedSingleTypeReference superType = (ParameterizedSingleTypeReference) superClass;
+                superType.typeArguments[0] = JavaAstModelProducer.getInstance()
+                        .createTypeReference(tokenImage, false);
+            }
+
+        } catch (JavaModelException jme) {
+            throw new NabuccoVisitorException("Error during Java AST Component modification.", jme);
+        }
+
+    }
+
+    private ImportReference handleComponentImport(TypeDeclaration type,
+            ComponentStatement nabuccoComponent) throws JavaModelException {
         String componentName = nabuccoComponent.nodeToken2.tokenImage;
-        TypeReference componentType = JavaAstModelProducer.getInstance().createTypeReference(
-                componentName, false);
-        javaFactory.getJavaAstMethod().setReturnType(method, componentType);
         String componentPackage = super.getProjectName(NabuccoModelType.COMPONENT,
                 NabuccoModifierType.PUBLIC);
         return JavaAstModelProducer.getInstance().createImportReference(
                 componentPackage + PKG_SEPARATOR + componentName);
     }
 
-    private ImportReference handleInitComponentMethod(TypeDeclaration type,
+    private ImportReference handleConstrutor(TypeDeclaration type,
             ComponentStatement nabuccoComponent) throws JavaModelException {
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
-        MethodDeclaration method = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(type,
-                new JavaAstMethodSignature("initComponent", new String[] {}));
-        TypeReference locatorTypeReference = JavaAstModelProducer.getInstance()
-                .createTypeReference(
-                        nabuccoComponent.nodeToken2.tokenImage + LOCATOR, false);
-        ((MessageSend) ((MessageSend) ((Assignment) method.statements[2]).expression).receiver).receiver = locatorTypeReference;
         String locatorPackage = super.getProjectName(NabuccoModelType.COMPONENT,
                 NabuccoModifierType.PUBLIC);
+        String typeName = javaFactory.getJavaAstType().getTypeName(type);
+        ConstructorDeclaration constructor = javaFactory.getJavaAstType().getConstructor(type,
+                new JavaAstMethodSignature(typeName, new String[] {}));
+        TypeReference locatorTypeReference = JavaAstModelProducer.getInstance()
+                .createTypeReference(nabuccoComponent.nodeToken2.tokenImage + LOCATOR, false);
+        MessageSend locatorGetInstanceCall = JavaAstModelProducer.getInstance().createMessageSend(
+                SINGLETON_GETTER, locatorTypeReference,
+                Collections.<org.eclipse.jdt.internal.compiler.ast.Expression> emptyList());
+        ExplicitConstructorCall constructorCall = constructor.constructorCall;
+        constructorCall.arguments[0] = locatorGetInstanceCall;
 
         return JavaAstModelProducer.getInstance().createImportReference(
                 locatorPackage + PKG_SEPARATOR + nabuccoComponent.nodeToken2.tokenImage + LOCATOR);
-    }
-
-    private void handleComponentField(TypeDeclaration type, String componentName)
-            throws JavaModelException {
-        JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
-        FieldDeclaration fieldDeclaration = javaFactory.getJavaAstType()
-                .getField(type, NabuccoTransformationUtility.firstToLower(COMPONENT));
-        TypeReference componentType = JavaAstModelProducer.getInstance().createTypeReference(
-                componentName, false);
-        javaFactory.getJavaAstField().setFieldType(fieldDeclaration, componentType);
     }
 
     private void handleGetInstance(TypeDeclaration type, String name) throws JavaModelException {
@@ -202,7 +218,7 @@ class NabuccoToJavaComponentServiceDelegateFactoryWebVisitor extends NabuccoToJa
         String delegateName = NabuccoTransformationUtility.firstToLower(delegateType);
 
         JavaAstContainter<FieldDeclaration> field = JavaAstSupport.createField(delegateType,
-                delegateName, NabuccoModifierType.PRIVATE, false);
+                delegateName, NabuccoModifierType.PRIVATE);
 
         JavaAstContainter<MethodDeclaration> getter = new JavaAstContainter<MethodDeclaration>(
                 handleGetterMethod(field.getAstNode()), JavaAstType.METHOD);
@@ -219,13 +235,15 @@ class NabuccoToJavaComponentServiceDelegateFactoryWebVisitor extends NabuccoToJa
     }
 
     private MethodDeclaration handleGetterMethod(FieldDeclaration fieldDeclaration) {
-        
+
         MethodDeclaration result = null;
-        
+
         try {
             // Load Template
-            JavaCompilationUnit unit = super.extractAst(NabuccoJavaTemplateConstants.COMPONENT_OPERATION_TEMPLATE);
-            TypeDeclaration type = unit.getType(NabuccoJavaTemplateConstants.COMPONENT_OPERATION_TEMPLATE);
+            JavaCompilationUnit unit = super
+                    .extractAst(NabuccoJavaTemplateConstants.COMPONENT_OPERATION_TEMPLATE);
+            TypeDeclaration type = unit
+                    .getType(NabuccoJavaTemplateConstants.COMPONENT_OPERATION_TEMPLATE);
 
             JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
             MethodDeclaration method = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(
@@ -242,18 +260,18 @@ class NabuccoToJavaComponentServiceDelegateFactoryWebVisitor extends NabuccoToJa
 
             String buildMethodName = PREFIX_GETTER + serviceName;
             Statement[] statementsInTryBlock = (((TryStatement) method.statements[0]).tryBlock).statements;
-            
+
             ((AllocationExpression) (((ThrowStatement) (((TryStatement) method.statements[0]).catchBlocks[0]).statements[0]).exception)).arguments[0] = JavaAstModelProducer
                     .getInstance().createLiteral("Cannot locate service: " + serviceName,
                             LiteralType.STRING_LITERAL);
-            
+
             EqualExpression ifBlockConditionStatement = (EqualExpression) ((IfStatement) statementsInTryBlock[0]).condition;
             ((FieldReference) ifBlockConditionStatement.left).token = fieldName.toCharArray();
-            
+
             Statement[] ifBlockStatements = ((Block) ((IfStatement) statementsInTryBlock[0]).thenStatement).statements;
             ((FieldReference) ((Assignment) ifBlockStatements[0]).lhs).token = fieldName
                     .toCharArray();
-            
+
             ((AllocationExpression) ((Assignment) ifBlockStatements[0]).expression).type = fieldType;
             ((MessageSend) ((AllocationExpression) ((Assignment) ifBlockStatements[0]).expression).arguments[0]).selector = buildMethodName
                     .toCharArray();

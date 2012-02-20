@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java.visitor.util.spp.extension;
 
 import java.util.HashSet;
@@ -28,7 +28,6 @@ import org.nabucco.framework.generator.compiler.transformation.java.visitor.util
 import org.nabucco.framework.generator.compiler.transformation.java.visitor.util.spp.StructuredPropertyPathQuery;
 import org.nabucco.framework.generator.parser.syntaxtree.AnnotationDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.Node;
-
 
 /**
  * 
@@ -47,8 +46,7 @@ public class UsedMappedFieldCollector extends StructuredPropertyPathExtension {
         NabuccoAnnotationMapper annotationMapper = NabuccoAnnotationMapper.getInstance();
         if (annotationMapper.hasAnnotation(n, NabuccoAnnotationType.MAPPED_FIELD)) {
             getMappedFieldsInUse().add(
-                    annotationMapper.mapToAnnotation(n, NabuccoAnnotationType.MAPPED_FIELD)
-                            .getValue());
+                    annotationMapper.mapToAnnotation(n, NabuccoAnnotationType.MAPPED_FIELD).getValue());
         }
         super.visit(n, argu);
     }
@@ -85,11 +83,9 @@ public class UsedMappedFieldCollector extends StructuredPropertyPathExtension {
      *            element from which the search should be started from.
      * @return all elements that a field should be created for.
      */
-    public Set<Entry<String, StructuredPropertyPathEntry>> getFieldEntries(
-            StructuredPropertyPathEntry root) {
+    public Set<Entry<String, StructuredPropertyPathEntry>> getFieldEntries(StructuredPropertyPathEntry root) {
         Set<Entry<String, StructuredPropertyPathEntry>> result = new LinkedHashSet<Entry<String, StructuredPropertyPathEntry>>();
-        for (Entry<String, StructuredPropertyPathEntry> element : new StructuredPropertyPathQuery(
-                root, "").execute()) {
+        for (Entry<String, StructuredPropertyPathEntry> element : new StructuredPropertyPathQuery(root, "").execute()) {
             for (String keyValue : getMappedFieldsInUse()) {
                 if (keyValue.startsWith(element.getKey())) {
                     result.add(element);
@@ -110,8 +106,7 @@ public class UsedMappedFieldCollector extends StructuredPropertyPathExtension {
      */
     public Set<Entry<String, StructuredPropertyPathEntry>> getUpdateRelevantSubEntries(
             StructuredPropertyPathEntry root, String path) {
-        Set<Entry<String, StructuredPropertyPathEntry>> execute = new StructuredPropertyPathQuery(
-                root, path).execute();
+        Set<Entry<String, StructuredPropertyPathEntry>> execute = new StructuredPropertyPathQuery(root, path).execute();
         Set<Entry<String, StructuredPropertyPathEntry>> result = new HashSet<Entry<String, StructuredPropertyPathEntry>>();
         for (String usedField : getMappedFieldsInUse()) {
             for (Entry<String, StructuredPropertyPathEntry> current : execute) {

@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -52,7 +52,7 @@ public class ServiceLinkResolver extends TraversingNabuccoToJavaVisitor<ServiceL
     private String responseMessage;
 
     private ApplicationStatement application;
-    
+
     private List<NabuccoAnnotation> annotations;
 
     private static final String EMPTY_SERVICE_MESSAGE = "org.nabucco.framework.base.facade.message.EmptyServiceMessage";
@@ -65,8 +65,7 @@ public class ServiceLinkResolver extends TraversingNabuccoToJavaVisitor<ServiceL
      * @param serviceLink
      *            the service link
      */
-    public ServiceLinkResolver(ApplicationStatement nabuccoApplication,
-            NabuccoToJavaVisitorContext context) {
+    public ServiceLinkResolver(ApplicationStatement nabuccoApplication, NabuccoToJavaVisitorContext context) {
         super(new NabuccoToJavaVisitorContext(context));
 
         this.application = nabuccoApplication;
@@ -92,8 +91,7 @@ public class ServiceLinkResolver extends TraversingNabuccoToJavaVisitor<ServiceL
 
         this.application.accept(this, serviceLink);
 
-        this.annotations = NabuccoAnnotationMapper.getInstance().mapToAnnotations(
-                serviceLink.annotationDeclaration);
+        this.annotations = NabuccoAnnotationMapper.getInstance().mapToAnnotationList(serviceLink.annotationDeclaration);
     }
 
     @Override
@@ -180,7 +178,7 @@ public class ServiceLinkResolver extends TraversingNabuccoToJavaVisitor<ServiceL
         }
         return this.responseMessage;
     }
-    
+
     /**
      * Getter for the annotations.
      * 

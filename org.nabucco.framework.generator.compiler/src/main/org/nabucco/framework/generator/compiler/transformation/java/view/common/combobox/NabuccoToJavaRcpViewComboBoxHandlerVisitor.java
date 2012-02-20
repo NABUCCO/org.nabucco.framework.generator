@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java.view.common.combobox;
 
 import org.eclipse.jdt.internal.compiler.ast.Block;
@@ -25,7 +25,7 @@ import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
-import org.nabucco.framework.generator.compiler.template.NabuccoJavaTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoJavaTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotation;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationMapper;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationType;
@@ -39,7 +39,6 @@ import org.nabucco.framework.generator.parser.model.client.NabuccoClientType;
 import org.nabucco.framework.generator.parser.syntaxtree.AnnotationDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.ComboBoxDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.LabeledComboBoxDeclaration;
-
 import org.nabucco.framework.mda.model.MdaModel;
 import org.nabucco.framework.mda.model.java.JavaCompilationUnit;
 import org.nabucco.framework.mda.model.java.JavaModel;
@@ -54,8 +53,7 @@ import org.nabucco.framework.mda.template.java.JavaTemplateException;
  * 
  * @author Stefanie Feld, PRODYNA AG
  */
-class NabuccoToJavaRcpViewComboBoxHandlerVisitor extends NabuccoToJavaVisitorSupport implements
-        ViewConstants {
+class NabuccoToJavaRcpViewComboBoxHandlerVisitor extends NabuccoToJavaVisitorSupport implements ViewConstants {
 
     /**
      * The method signature for "changeWidgetDefaultSelected".
@@ -66,8 +64,8 @@ class NabuccoToJavaRcpViewComboBoxHandlerVisitor extends NabuccoToJavaVisitorSup
     /**
      * The method signature for "changeWidgetSelected".
      */
-    private static final JavaAstMethodSignature CHANGE_WIDGET_SELECTED = new JavaAstMethodSignature(
-            WIDGET_SELECTED, SELECTION_EVENT);
+    private static final JavaAstMethodSignature CHANGE_WIDGET_SELECTED = new JavaAstMethodSignature(WIDGET_SELECTED,
+            SELECTION_EVENT);
 
     /**
      * the name of the view.
@@ -94,8 +92,8 @@ class NabuccoToJavaRcpViewComboBoxHandlerVisitor extends NabuccoToJavaVisitorSup
      * @param annotationDeclaration
      *            the name of the view from which the constructor is called.
      */
-    public NabuccoToJavaRcpViewComboBoxHandlerVisitor(NabuccoToJavaVisitorContext visitorContext,
-            String viewName, AnnotationDeclaration annotationDeclaration) {
+    public NabuccoToJavaRcpViewComboBoxHandlerVisitor(NabuccoToJavaVisitorContext visitorContext, String viewName,
+            AnnotationDeclaration annotationDeclaration) {
         super(visitorContext);
         this.viewName = viewName;
         this.viewAnnotationDeclaration = annotationDeclaration;
@@ -130,12 +128,11 @@ class NabuccoToJavaRcpViewComboBoxHandlerVisitor extends NabuccoToJavaVisitorSup
      * @param comboBoxName
      *            the name of the combo box.
      */
-    private void createComboBoxHandler(MdaModel<JavaModel> target,
-            AnnotationDeclaration annotationDeclaration, String comboBoxName) {
+    private void createComboBoxHandler(MdaModel<JavaModel> target, AnnotationDeclaration annotationDeclaration,
+            String comboBoxName) {
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
-        String name = this.viewName
-                + NabuccoTransformationUtility.firstToUpper(comboBoxName) + COMBO_BOX_HANDLER;
+        String name = this.viewName + NabuccoTransformationUtility.firstToUpper(comboBoxName) + COMBO_BOX_HANDLER;
         String rootPath = super.getVisitorContext().getPackage().replace(UI, UI_RCP);
 
         String pkg = rootPath + PKG_SEPARATOR + VIEW_PACKAGE;
@@ -145,8 +142,7 @@ class NabuccoToJavaRcpViewComboBoxHandlerVisitor extends NabuccoToJavaVisitorSup
 
             JavaCompilationUnit unit = super
                     .extractAst(NabuccoJavaTemplateConstants.COMMON_VIEW_COMBO_BOX_HANDLER_TEMPLATE);
-            TypeDeclaration type = unit
-                    .getType(NabuccoJavaTemplateConstants.COMMON_VIEW_COMBO_BOX_HANDLER_TEMPLATE);
+            TypeDeclaration type = unit.getType(NabuccoJavaTemplateConstants.COMMON_VIEW_COMBO_BOX_HANDLER_TEMPLATE);
 
             javaFactory.getJavaAstType().setTypeName(type, name);
             javaFactory.getJavaAstUnit().setPackage(unit.getUnitDeclaration(), pkg);
@@ -173,19 +169,17 @@ class NabuccoToJavaRcpViewComboBoxHandlerVisitor extends NabuccoToJavaVisitorSup
             JavaAstSupport.convertJavadocAnnotations(viewAnnotationDeclaration, type);
 
             // JavaDocAnnotations
-            JavaAstSupport.convertAstNodes(unit, getVisitorContext().getContainerList(),
-                    getVisitorContext().getImportList());
+            JavaAstSupport.convertAstNodes(unit, getVisitorContext().getContainerList(), getVisitorContext()
+                    .getImportList());
 
             unit.setProjectName(projectName);
             unit.setSourceFolder(super.getSourceFolder());
 
             target.getModel().getUnitList().add(unit);
         } catch (JavaModelException jme) {
-            throw new NabuccoVisitorException(
-                    "Error during Java AST combo box handler modification.", jme);
+            throw new NabuccoVisitorException("Error during Java AST combo box handler modification.", jme);
         } catch (JavaTemplateException te) {
-            throw new NabuccoVisitorException(
-                    "Error during Java template combo box handler processing.", te);
+            throw new NabuccoVisitorException("Error during Java template combo box handler processing.", te);
         }
     }
 
@@ -201,13 +195,12 @@ class NabuccoToJavaRcpViewComboBoxHandlerVisitor extends NabuccoToJavaVisitorSup
      * @throws JavaModelException
      *             if an error occurred transforming the model.
      */
-    private void changeMethod(String methodName, TypeDeclaration type,
-            JavaAstMethodSignature signature) throws JavaModelException {
+    private void changeMethod(String methodName, TypeDeclaration type, JavaAstMethodSignature signature)
+            throws JavaModelException {
 
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
-        MethodDeclaration method = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(type,
-                signature);
+        MethodDeclaration method = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(type, signature);
 
         IfStatement ifStatement = (IfStatement) method.statements[0];
         Block thenStatement = (Block) ifStatement.thenStatement;
@@ -223,8 +216,8 @@ class NabuccoToJavaRcpViewComboBoxHandlerVisitor extends NabuccoToJavaVisitorSup
      */
     private String createSetterMethodName(AnnotationDeclaration annotationDeclaration) {
 
-        NabuccoAnnotation annotation = NabuccoAnnotationMapper.getInstance().mapToAnnotation(
-                annotationDeclaration, NabuccoAnnotationType.MAPPED_FIELD);
+        NabuccoAnnotation annotation = NabuccoAnnotationMapper.getInstance().mapToAnnotation(annotationDeclaration,
+                NabuccoAnnotationType.MAPPED_FIELD);
 
         String mappedField = annotation == null ? null : annotation.getValue();
         String[] accessPath = mappedField.split(FIELD_SEPARATOR);
@@ -251,8 +244,7 @@ class NabuccoToJavaRcpViewComboBoxHandlerVisitor extends NabuccoToJavaVisitorSup
     private void changeConstructor(TypeDeclaration type, String name) throws JavaModelException {
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
         JavaAstMethodSignature signature = new JavaAstMethodSignature(name, EDIT_VIEW_MODEL);
-        ConstructorDeclaration constructor = javaFactory.getJavaAstType().getConstructor(type,
-                signature);
+        ConstructorDeclaration constructor = javaFactory.getJavaAstType().getConstructor(type, signature);
         ((SingleTypeReference) (constructor.arguments[0]).type).token = modelType.toCharArray();
     }
 

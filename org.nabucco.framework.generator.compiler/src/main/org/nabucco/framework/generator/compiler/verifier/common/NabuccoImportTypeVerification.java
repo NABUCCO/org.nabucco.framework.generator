@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -56,7 +56,7 @@ public class NabuccoImportTypeVerification extends NabuccoModelVerificationVisit
     private List<String> imports = new ArrayList<String>();
 
     private Set<String> usedImports = new HashSet<String>();
-    
+
     private Set<ImportDeclaration> visited = new HashSet<ImportDeclaration>();
 
     private String pkg;
@@ -90,10 +90,12 @@ public class NabuccoImportTypeVerification extends NabuccoModelVerificationVisit
         if (!visited.add(nabuccoImport)) {
             return;
         }
-        
+
         String importString = nabuccoImport.nodeToken1.tokenImage;
-        int col = nabuccoImport.nodeToken1.beginColumn;
-        int line = nabuccoImport.nodeToken1.beginLine;
+        int beginColumn = nabuccoImport.nodeToken1.beginColumn;
+        int endColumn = nabuccoImport.nodeToken1.endColumn;
+        int beginLine = nabuccoImport.nodeToken1.beginLine;
+        int endLine = nabuccoImport.nodeToken1.endLine;
 
         this.imports.add(importString);
 
@@ -101,8 +103,8 @@ public class NabuccoImportTypeVerification extends NabuccoModelVerificationVisit
         nabuccoImport.getParent().getParent().accept(this, result);
 
         if (!this.usedImports.contains(importString)) {
-            result.addError(VerificationErrorCriticality.WARNING, line, col, "The import '"
-                    + importString + "' is never used.");
+            result.addError(VerificationErrorCriticality.WARNING, beginLine, endLine, beginColumn, endColumn,
+                    "The import '" + importString + "' is never used.");
         }
     }
 
@@ -188,8 +190,10 @@ public class NabuccoImportTypeVerification extends NabuccoModelVerificationVisit
             return;
         }
 
-        int column = token.beginColumn;
-        int line = token.beginLine;
+        int beginLine = token.beginLine;
+        int endLine = token.endLine;
+        int beginColumn = token.beginColumn;
+        int endColumn = token.endColumn;
 
         String importString = null;
 
@@ -209,10 +213,10 @@ public class NabuccoImportTypeVerification extends NabuccoModelVerificationVisit
         if (importString == null) {
             try {
                 importString = this.pkg + PKG_SEPARATOR + type;
-                NabuccoDependencyResolver.getInstance().resolveDependency(this.rootDirectory,
-                        this.pkg, importString, this.outDirectory);
+                NabuccoDependencyResolver.getInstance().resolveDependency(this.rootDirectory, this.pkg, importString,
+                        this.outDirectory);
             } catch (NabuccoTransformationException e) {
-                result.addError(VerificationErrorCriticality.ERROR, line, column, type
+                result.addError(VerificationErrorCriticality.ERROR, beginLine, endLine, beginColumn, endColumn, type
                         + " cannot be resolved to a type.");
             }
         }

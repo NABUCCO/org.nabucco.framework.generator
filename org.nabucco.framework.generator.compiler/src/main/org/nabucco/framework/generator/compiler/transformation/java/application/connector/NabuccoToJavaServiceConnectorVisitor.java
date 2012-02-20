@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,7 +24,7 @@ import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
-import org.nabucco.framework.generator.compiler.template.NabuccoJavaTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoJavaTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotation;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationMapper;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationType;
@@ -55,8 +55,8 @@ import org.nabucco.framework.mda.template.java.JavaTemplateException;
  * 
  * @author Nicolas Moser, PRODYNA AG
  */
-class NabuccoToJavaServiceConnectorVisitor extends NabuccoToJavaVisitorSupport implements
-        NabuccoJavaTemplateConstants, ServerConstants {
+class NabuccoToJavaServiceConnectorVisitor extends NabuccoToJavaVisitorSupport implements NabuccoJavaTemplateConstants,
+        ServerConstants {
 
     private JavaCompilationUnit unit;
 
@@ -68,7 +68,7 @@ class NabuccoToJavaServiceConnectorVisitor extends NabuccoToJavaVisitorSupport i
 
     private static final String FIELD_SOURCE_MESSAGE = "SOURCE_MESSAGE";
 
-    private static final String STRATEGY_BEFORE = "STRATEGY_BEFORE";
+    private static final String STRATEGY_BEFORE = "BEFORE";
 
     /**
      * Creates a new {@link NabuccoToJavaServiceConnectorVisitor} instance.
@@ -137,8 +137,7 @@ class NabuccoToJavaServiceConnectorVisitor extends NabuccoToJavaVisitorSupport i
     private void createJavadoc(ConnectorStatement nabuccoConnector, TypeDeclaration type) {
         Node application = nabuccoConnector.getParent().getParent().getParent().getParent();
         if (application instanceof ApplicationStatement) {
-            JavaAstSupport.convertJavadocAnnotations(
-                    ((ApplicationStatement) application).annotationDeclaration, type);
+            JavaAstSupport.convertJavadocAnnotations(((ApplicationStatement) application).annotationDeclaration, type);
         }
     }
 
@@ -156,8 +155,7 @@ class NabuccoToJavaServiceConnectorVisitor extends NabuccoToJavaVisitorSupport i
         pkg.append(PKG_SEPARATOR);
         pkg.append(PKG_CONNECTOR);
 
-        JavaAstElementFactory.getInstance().getJavaAstUnit()
-                .setPackage(unit.getUnitDeclaration(), pkg.toString());
+        JavaAstElementFactory.getInstance().getJavaAstUnit().setPackage(unit.getUnitDeclaration(), pkg.toString());
     }
 
     /**
@@ -169,9 +167,13 @@ class NabuccoToJavaServiceConnectorVisitor extends NabuccoToJavaVisitorSupport i
      */
     private void createConstructor(ConnectorStatement nabuccoConnector) throws JavaModelException {
 
-        NabuccoAnnotation connectorStrategy = NabuccoAnnotationMapper.getInstance()
-                .mapToAnnotation(nabuccoConnector.annotationDeclaration,
-                        NabuccoAnnotationType.CONNECTOR_STRATEGY);
+        NabuccoAnnotation connectorStrategy = NabuccoAnnotationMapper.getInstance().mapToAnnotation(
+                nabuccoConnector.annotationDeclaration, NabuccoAnnotationType.CONNECTOR_STRATEGY);
+
+        // Skip because template defaults to AFTER
+        if (connectorStrategy == null || connectorStrategy.getValue() == null) {
+            return;
+        }
 
         String value = connectorStrategy.getValue();
 
@@ -183,12 +185,10 @@ class NabuccoToJavaServiceConnectorVisitor extends NabuccoToJavaVisitorSupport i
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
         TypeDeclaration type = this.unit.getType();
 
-        List<ConstructorDeclaration> constructors = javaFactory.getJavaAstType().getConstructors(
-                type);
+        List<ConstructorDeclaration> constructors = javaFactory.getJavaAstType().getConstructors(type);
 
         if (constructors.size() != 1) {
-            throw new IllegalStateException(
-                    "Connector Template not valid. Multiple constructors found.");
+            throw new IllegalStateException("Connector Template not valid. Multiple constructors found.");
         }
 
         ConstructorDeclaration constructor = constructors.get(0);
@@ -217,8 +217,8 @@ class NabuccoToJavaServiceConnectorVisitor extends NabuccoToJavaVisitorSupport i
     @Override
     public void visit(ServiceLinkDeclaration serviceLink, MdaModel<JavaModel> target) {
 
-        boolean isSource = JavaAstSupport.hasAnnotation(serviceLink.annotationDeclaration,
-                NabuccoAnnotationType.SOURCE);
+        boolean isSource = JavaAstSupport
+                .hasAnnotation(serviceLink.annotationDeclaration, NabuccoAnnotationType.SOURCE);
 
         if (isSource) {
             this.createSourceConstants(serviceLink);
@@ -237,8 +237,7 @@ class NabuccoToJavaServiceConnectorVisitor extends NabuccoToJavaVisitorSupport i
      */
     private void createSourceConstants(ServiceLinkDeclaration serviceLink) {
 
-        ServiceLinkResolver resolver = new ServiceLinkResolver(this.nabuccoApplication,
-                super.getVisitorContext());
+        ServiceLinkResolver resolver = new ServiceLinkResolver(this.nabuccoApplication, super.getVisitorContext());
 
         resolver.resolve(serviceLink);
 
@@ -276,8 +275,7 @@ class NabuccoToJavaServiceConnectorVisitor extends NabuccoToJavaVisitorSupport i
      * @param target
      *            the target model
      */
-    private void createTargetCallbacks(ServiceLinkDeclaration serviceLink,
-            MdaModel<JavaModel> target) {
+    private void createTargetCallbacks(ServiceLinkDeclaration serviceLink, MdaModel<JavaModel> target) {
         NabuccoToJavaServiceTargetServiceLinkVisitor visitor = new NabuccoToJavaServiceTargetServiceLinkVisitor(
                 super.getVisitorContext(), this.nabuccoApplication, this.unit);
 

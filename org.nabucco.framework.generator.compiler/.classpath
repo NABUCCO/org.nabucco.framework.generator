@@ -5,10 +5,19 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.nabucco.framework.generator.parser"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="lib" path="/org.nabucco.framework.generator/lib/org.nabucco.framework.mda.jar"/>
-	<classpathentry kind="lib" path="/org.nabucco.framework.generator/lib/log4j.jar"/>
-	<classpathentry kind="lib" path="/org.nabucco.framework.generator/lib/org.eclipse.equinox.common.jar"/>
-	<classpathentry kind="lib" path="/org.nabucco.framework.generator/lib/org.eclipse.jdt.core.jar" sourcepath="D:/Downloads/org.eclipse.jdt.core.source_3.6.0.v_A58.jar"/>
-	<classpathentry kind="lib" path="/org.nabucco.framework.generator/lib/org.eclipse.text.jar"/>
+	<classpathentry kind="lib" path="/org.nabucco.framework.generator/lib/compiler/log4j.jar"/>
+	<classpathentry kind="lib" path="/org.nabucco.framework.generator/lib/compiler/org.eclipse.emf.common.jar"/>
+	<classpathentry kind="lib" path="/org.nabucco.framework.generator/lib/compiler/org.eclipse.emf.ecore.jar"/>
+	<classpathentry kind="lib" path="/org.nabucco.framework.generator/lib/compiler/org.eclipse.emf.ecore.xmi.jar"/>
+	<classpathentry kind="lib" path="/org.nabucco.framework.generator/lib/compiler/org.eclipse.emf.mapping.ecore2xml.jar"/>
+	<classpathentry kind="lib" path="/org.nabucco.framework.generator/lib/compiler/org.eclipse.equinox.common.jar"/>
+	<classpathentry kind="lib" path="/org.nabucco.framework.generator/lib/compiler/org.eclipse.equinox.registry.jar"/>
+	<classpathentry kind="lib" path="/org.nabucco.framework.generator/lib/compiler/org.eclipse.jdt.core.jar" sourcepath="D:/Downloads/Temp/Sources/org.eclipse.jdt.core.source_3.6.0.v_A58.jar"/>
+	<classpathentry kind="lib" path="/org.nabucco.framework.generator/lib/compiler/org.eclipse.text.jar"/>
+	<classpathentry kind="lib" path="/org.nabucco.framework.generator/lib/compiler/org.eclipse.uml2.common.jar"/>
+	<classpathentry kind="lib" path="/org.nabucco.framework.generator/lib/compiler/org.eclipse.uml2.jar"/>
+	<classpathentry kind="lib" path="/org.nabucco.framework.generator/lib/compiler/org.eclipse.uml2.uml.jar"/>
+	<classpathentry kind="lib" path="/org.nabucco.framework.generator/lib/compiler/org.eclipse.uml2.uml.resources.jar"/>
+	<classpathentry kind="lib" path="/org.nabucco.framework.generator/lib/compiler/org.nabucco.framework.mda.jar" sourcepath="/org.nabucco.framework.mda.model.text"/>
 	<classpathentry kind="output" path="out/ide"/>
 </classpath>

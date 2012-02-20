@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,7 +21,7 @@ import org.eclipse.jdt.internal.compiler.ast.Assignment;
 import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
-import org.nabucco.framework.generator.compiler.template.NabuccoJavaTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoJavaTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.JavaAstSupport;
 import org.nabucco.framework.generator.compiler.transformation.java.constants.ViewConstants;
 import org.nabucco.framework.generator.compiler.transformation.java.view.NabuccoToJavaRcpViewVisitorSupportUtil;
@@ -49,8 +49,7 @@ import org.nabucco.framework.mda.template.java.JavaTemplateException;
  */
 class NabuccoToJavaRcpViewListVisitor extends NabuccoToJavaVisitorSupport implements ViewConstants {
 
-    private static MdaLogger logger = MdaLoggingFactory.getInstance().getLogger(
-            NabuccoToJavaRcpViewListVisitor.class);
+    private static MdaLogger logger = MdaLoggingFactory.getInstance().getLogger(NabuccoToJavaRcpViewListVisitor.class);
 
     /**
      * @param visitorContext
@@ -65,16 +64,13 @@ class NabuccoToJavaRcpViewListVisitor extends NabuccoToJavaVisitorSupport implem
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
         String name = nabuccoListView.nodeToken2.tokenImage;
-        String pkg = super.getVisitorContext().getPackage()
-                .replace(ViewConstants.UI, ViewConstants.UI_RCP)
-                + ViewConstants.PKG_SEPARATOR
-                + ViewConstants.VIEW_PACKAGE;
+        String pkg = super.getVisitorContext().getPackage().replace(ViewConstants.UI, ViewConstants.UI_RCP)
+                + ViewConstants.PKG_SEPARATOR + ViewConstants.VIEW_PACKAGE;
 
         String projectName = super.getComponentName(NabuccoClientType.RCP);
         try {
 
-            JavaCompilationUnit unit = super
-                    .extractAst(NabuccoJavaTemplateConstants.LIST_VIEW_TEMPLATE);
+            JavaCompilationUnit unit = super.extractAst(NabuccoJavaTemplateConstants.LIST_VIEW_TEMPLATE);
             TypeDeclaration type = unit.getType(NabuccoJavaTemplateConstants.LIST_VIEW_TEMPLATE);
 
             javaFactory.getJavaAstType().setTypeName(type, name);
@@ -85,8 +81,7 @@ class NabuccoToJavaRcpViewListVisitor extends NabuccoToJavaVisitorSupport implem
 
             // select the constructor
             JavaAstMethodSignature signature = new JavaAstMethodSignature(name);
-            ConstructorDeclaration constructor = javaFactory.getJavaAstType().getConstructor(type,
-                    signature);
+            ConstructorDeclaration constructor = javaFactory.getJavaAstType().getConstructor(type, signature);
             TypeReference nameReference = jamp.createTypeReference(name + MODEL, false);
 
             TypeReference superClass = javaFactory.getJavaAstType().getSuperClass(type);
@@ -100,25 +95,20 @@ class NabuccoToJavaRcpViewListVisitor extends NabuccoToJavaVisitorSupport implem
             statement.expression = expression;
 
             // add import of editViewModel
-            String importString = pkg.replace(VIEW_PACKAGE, MODEL_PACKAGE)
-                    + PKG_SEPARATOR
-                    + name
-                    + MODEL;
+            String importString = pkg.replace(VIEW_PACKAGE, MODEL_PACKAGE) + PKG_SEPARATOR + name + MODEL;
             BrowserElementSupport.addImport(importString, unit);
 
             // add Id as static final field and the getter for it
 
-            JavaCompilationUnit uIUnit = super
-                    .extractAst(NabuccoJavaTemplateConstants.COMMON_VIEW_VIEW_TEMPLATE);
-            TypeDeclaration uIType = uIUnit
-                    .getType(NabuccoJavaTemplateConstants.COMMON_VIEW_VIEW_TEMPLATE);
+            JavaCompilationUnit uIUnit = super.extractAst(NabuccoJavaTemplateConstants.COMMON_VIEW_VIEW_TEMPLATE);
+            TypeDeclaration uIType = uIUnit.getType(NabuccoJavaTemplateConstants.COMMON_VIEW_VIEW_TEMPLATE);
             super.getVisitorContext()
                     .getContainerList()
-                    .addAll(NabuccoToJavaRcpViewVisitorSupportUtil.getUiCommonElements(uIType,
-                            type, nabuccoListView.annotationDeclaration));
+                    .addAll(NabuccoToJavaRcpViewVisitorSupportUtil.getUiCommonElements(uIType, type,
+                            nabuccoListView.annotationDeclaration));
 
-            JavaAstSupport.convertAstNodes(unit, getVisitorContext().getContainerList(),
-                    getVisitorContext().getImportList());
+            JavaAstSupport.convertAstNodes(unit, getVisitorContext().getContainerList(), getVisitorContext()
+                    .getImportList());
 
             // swap order of public static final fields ID and TITLE
             NabuccoToJavaRcpViewVisitorSupportUtil.swapFieldOrder(type);

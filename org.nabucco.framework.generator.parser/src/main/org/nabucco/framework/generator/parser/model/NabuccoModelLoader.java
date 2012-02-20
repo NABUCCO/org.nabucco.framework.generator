@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.parser.model;
 
 import java.io.File;
@@ -148,24 +148,26 @@ public class NabuccoModelLoader extends ModelLoader<NabuccoModel, NabuccoFile> {
         case 1:
             return NabuccoModelType.COMPONENT;
         case 2:
-            return NabuccoModelType.DATATYPE;
+            return NabuccoModelType.ADAPTER;
         case 3:
-            return NabuccoModelType.BASETYPE;
+            return NabuccoModelType.DATATYPE;
         case 4:
-            return NabuccoModelType.ENUMERATION;
+            return NabuccoModelType.BASETYPE;
         case 5:
-            return NabuccoModelType.EXCEPTION;
+            return NabuccoModelType.ENUMERATION;
         case 6:
-            return NabuccoModelType.SERVICE;
+            return NabuccoModelType.EXCEPTION;
         case 7:
-            return NabuccoModelType.MESSAGE;
+            return NabuccoModelType.SERVICE;
         case 8:
-            return NabuccoModelType.EDIT_VIEW;
+            return NabuccoModelType.MESSAGE;
         case 9:
-            return NabuccoModelType.LIST_VIEW;
+            return NabuccoModelType.EDIT_VIEW;
         case 10:
-            return NabuccoModelType.SEARCH_VIEW;
+            return NabuccoModelType.LIST_VIEW;
         case 11:
+            return NabuccoModelType.SEARCH_VIEW;
+        case 12:
             return NabuccoModelType.COMMAND;
         }
 

@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.xml.exception;
 
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationException;
@@ -27,7 +27,6 @@ import org.nabucco.framework.generator.parser.syntaxtree.MethodDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.Node;
 import org.nabucco.framework.generator.parser.syntaxtree.NodeSequence;
 import org.nabucco.framework.generator.parser.syntaxtree.NodeToken;
-
 import org.nabucco.framework.mda.model.MdaModel;
 import org.nabucco.framework.mda.model.xml.XmlModel;
 
@@ -36,8 +35,7 @@ import org.nabucco.framework.mda.model.xml.XmlModel;
  * 
  * @author Nicolas Moser, PRODYNA AG
  */
-class NabuccoToXmlServiceExceptionVisitor extends NabuccoToXmlVisitorSupport implements
-        EjbJarConstants {
+class NabuccoToXmlServiceExceptionVisitor extends NabuccoToXmlVisitorSupport implements EjbJarConstants {
 
     /**
      * Creates a new {@link NabuccoToXmlServiceExceptionVisitor} instance.
@@ -75,14 +73,13 @@ class NabuccoToXmlServiceExceptionVisitor extends NabuccoToXmlVisitorSupport imp
                 NabuccoToXmlVisitorContext context = super.getVisitorContext();
                 NabuccoToXmlVisitorContext contextClone = new NabuccoToXmlVisitorContext(context);
 
-                NabuccoToXmlExceptionVisitor visitor = new NabuccoToXmlExceptionVisitor(
-                        contextClone, componentName);
+                NabuccoToXmlExceptionVisitor visitor = new NabuccoToXmlExceptionVisitor(contextClone, componentName);
 
                 try {
 
                     String pkg = super.getVisitorContext().getPackage();
-                    MdaModel<NabuccoModel> exceptionModel = NabuccoDependencyResolver.getInstance()
-                            .resolveDependency(context, pkg, exceptionImport);
+                    MdaModel<NabuccoModel> exceptionModel = NabuccoDependencyResolver.getInstance().resolveDependency(
+                            context, pkg, exceptionImport);
 
                     exceptionModel.getModel().getUnit().accept(visitor, target);
                 } catch (NabuccoTransformationException e) {

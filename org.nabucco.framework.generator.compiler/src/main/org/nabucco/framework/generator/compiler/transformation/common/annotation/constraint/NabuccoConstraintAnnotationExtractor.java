@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.common.annotation.constraint;
 
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotation;
@@ -22,7 +22,6 @@ import org.nabucco.framework.generator.compiler.transformation.common.annotation
 import org.nabucco.framework.generator.parser.syntaxtree.AnnotationDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.BasetypeStatement;
 import org.nabucco.framework.generator.parser.visitor.DepthFirstVisitor;
-
 import org.nabucco.framework.mda.logger.MdaLogger;
 import org.nabucco.framework.mda.logger.MdaLoggingFactory;
 
@@ -51,11 +50,9 @@ public class NabuccoConstraintAnnotationExtractor extends DepthFirstVisitor {
 
         AnnotationDeclaration annotations = nabuccoBasetype.annotationDeclaration;
 
-        this.minLength = extractLength(name, annotations, NabuccoAnnotationType.MIN_LENGTH,
-                DEFAULT_MIN_LENGTH);
+        this.minLength = extractLength(name, annotations, NabuccoAnnotationType.MIN_LENGTH, DEFAULT_MIN_LENGTH);
 
-        this.maxLength = extractLength(name, annotations, NabuccoAnnotationType.MAX_LENGTH,
-                DEFAULT_MAX_LENGTH);
+        this.maxLength = extractLength(name, annotations, NabuccoAnnotationType.MAX_LENGTH, DEFAULT_MAX_LENGTH);
 
         super.visit(nabuccoBasetype);
     }
@@ -74,11 +71,10 @@ public class NabuccoConstraintAnnotationExtractor extends DepthFirstVisitor {
      * 
      * @return the appropriate length for the given annotation
      */
-    private String extractLength(String name, AnnotationDeclaration annotations,
-            NabuccoAnnotationType type, final int defaultValue) {
+    private String extractLength(String name, AnnotationDeclaration annotations, NabuccoAnnotationType type,
+            final int defaultValue) {
 
-        NabuccoAnnotation annotation = NabuccoAnnotationMapper.getInstance().mapToAnnotation(
-                annotations, type);
+        NabuccoAnnotation annotation = NabuccoAnnotationMapper.getInstance().mapToAnnotation(annotations, type);
 
         if (annotation != null && annotation.getValue() != null) {
 
@@ -100,8 +96,7 @@ public class NabuccoConstraintAnnotationExtractor extends DepthFirstVisitor {
                 return String.valueOf(length);
 
             } catch (NumberFormatException e) {
-                logger.warning("Cannot parse @", annotationName, " [", annotation.getValue(), "]. ",
-                        e.getMessage());
+                logger.warning("Cannot parse @", annotationName, " [", annotation.getValue(), "]. ", e.getMessage());
             }
         }
 

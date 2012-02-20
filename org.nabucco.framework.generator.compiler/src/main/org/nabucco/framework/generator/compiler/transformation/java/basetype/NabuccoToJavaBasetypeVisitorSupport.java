@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java.basetype;
 
 import java.util.Arrays;
@@ -31,7 +31,6 @@ import org.nabucco.framework.generator.compiler.transformation.common.annotation
 import org.nabucco.framework.generator.compiler.transformation.java.common.basetype.BasetypeFacade;
 import org.nabucco.framework.generator.compiler.visitor.NabuccoVisitorException;
 import org.nabucco.framework.generator.parser.syntaxtree.AnnotationDeclaration;
-
 import org.nabucco.framework.mda.model.java.JavaModelException;
 import org.nabucco.framework.mda.model.java.ast.element.JavaAstElementFactory;
 import org.nabucco.framework.mda.model.java.ast.element.discriminator.LiteralType;
@@ -45,8 +44,10 @@ import org.nabucco.framework.mda.model.java.ast.produce.JavaAstModelProducer;
  */
 class NabuccoToJavaBasetypeVisitorSupport {
 
+    private static final String BASETYPE_SETTER = "setValue";
+
     private static final String TEMPLATE_NAME = "Basetype";
-    
+
     /**
      * Private constructor must not be invoked.
      */
@@ -63,11 +64,11 @@ class NabuccoToJavaBasetypeVisitorSupport {
      * @param type
      *            the type
      */
-    public static void createDefaultValues(AnnotationDeclaration annotationDeclaration,
-            String superType, TypeDeclaration type) {
+    public static void createDefaultValues(AnnotationDeclaration annotationDeclaration, String superType,
+            TypeDeclaration type) {
 
-        NabuccoAnnotation annotation = NabuccoAnnotationMapper.getInstance().mapToAnnotation(
-                annotationDeclaration, NabuccoAnnotationType.DEFAULT);
+        NabuccoAnnotation annotation = NabuccoAnnotationMapper.getInstance().mapToAnnotation(annotationDeclaration,
+                NabuccoAnnotationType.DEFAULT);
 
         if (annotation != null) {
             NabuccoToJavaBasetypeVisitorSupport.addDefaultValue(annotation, superType, type);
@@ -84,8 +85,7 @@ class NabuccoToJavaBasetypeVisitorSupport {
      * @param type
      *            the type to holding the constructor
      */
-    private static void addDefaultValue(NabuccoAnnotation defaultValue, String superType,
-            TypeDeclaration type) {
+    private static void addDefaultValue(NabuccoAnnotation defaultValue, String superType, TypeDeclaration type) {
 
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
         JavaAstModelProducer jamp = JavaAstModelProducer.getInstance();
@@ -96,17 +96,15 @@ class NabuccoToJavaBasetypeVisitorSupport {
             ConstructorDeclaration constructor = javaFactory.getJavaAstType().getConstructor(type,
                     new JavaAstMethodSignature(typeName, new String[] {}));
 
-            Literal literal = jamp.createLiteral(defaultValue.getValue(), (LiteralType
-                    .mapFromString(baseTypeType)));
+            Literal literal = jamp.createLiteral(defaultValue.getValue(), (LiteralType.mapFromString(baseTypeType)));
 
-            MessageSend setValue = jamp.createMessageSend("setValue", jamp.createThisReference(),
+            MessageSend setValue = jamp.createMessageSend(BASETYPE_SETTER, jamp.createThisReference(),
                     Arrays.asList(literal));
 
             if (constructor.statements == null) {
                 constructor.statements = new Statement[] {};
             }
-            constructor.statements = Arrays.copyOf(constructor.statements,
-                    constructor.statements.length + 1);
+            constructor.statements = Arrays.copyOf(constructor.statements, constructor.statements.length + 1);
             constructor.statements[constructor.statements.length - 1] = setValue;
 
         } catch (JavaModelException e) {
@@ -114,23 +112,32 @@ class NabuccoToJavaBasetypeVisitorSupport {
         }
     }
 
-    public static void adjustAlternativeConstructor(String name, String superType,
-            TypeDeclaration type) {
+    /**
+     * Adjust the alternative basetype constructor.
+     * 
+     * @param name
+     *            name of the basetype
+     * @param superType
+     *            the abstract super type
+     * @param type
+     *            the java type
+     */
+    public static void adjustAlternativeConstructor(String name, String superType, TypeDeclaration type) {
 
         try {
-            JavaAstMethodSignature constuctorSignature = new JavaAstMethodSignature(name,
-                    TEMPLATE_NAME);
+            JavaAstMethodSignature constuctorSignature = new JavaAstMethodSignature(name, TEMPLATE_NAME);
 
-            ConstructorDeclaration constructor = JavaAstElementFactory.getInstance()
-                    .getJavaAstType().getConstructor(type, constuctorSignature);
-            
-            List<Argument> arguments = JavaAstElementFactory.getInstance().getJavaAstMethod().getAllArguments(constructor);
+            ConstructorDeclaration constructor = JavaAstElementFactory.getInstance().getJavaAstType()
+                    .getConstructor(type, constuctorSignature);
+
+            List<Argument> arguments = JavaAstElementFactory.getInstance().getJavaAstMethod()
+                    .getAllArguments(constructor);
 
             if (arguments.size() == 1) {
                 arguments.get(0).type = JavaAstModelProducer.getInstance().createTypeReference(
                         BasetypeFacade.mapToPrimitiveType(superType), false);
             }
-            
+
         } catch (JavaModelException e) {
             throw new NabuccoVisitorException("Error modifying Basetype constructor.", e);
         }

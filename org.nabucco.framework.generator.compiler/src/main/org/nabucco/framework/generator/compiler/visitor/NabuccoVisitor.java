@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,16 +16,30 @@
  */
 package org.nabucco.framework.generator.compiler.visitor;
 
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.nabucco.framework.generator.compiler.NabuccoCompilerSupport;
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformation;
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationConstants;
+import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationException;
+import org.nabucco.framework.generator.compiler.transformation.util.dependency.NabuccoDependencyResolver;
 import org.nabucco.framework.generator.compiler.transformation.util.mapper.NabuccoModelTypeComponentMapper;
 import org.nabucco.framework.generator.compiler.transformation.util.mapper.NabuccoModifierComponentMapper;
+import org.nabucco.framework.generator.compiler.visitor.util.NabuccoPropertyKey;
+import org.nabucco.framework.generator.compiler.visitor.util.NabuccoPropertyVisitor;
+import org.nabucco.framework.generator.parser.model.NabuccoModel;
 import org.nabucco.framework.generator.parser.model.NabuccoModelType;
 import org.nabucco.framework.generator.parser.model.client.NabuccoClientType;
 import org.nabucco.framework.generator.parser.model.modifier.NabuccoModifierType;
+import org.nabucco.framework.generator.parser.syntaxtree.BasetypeDeclaration;
+import org.nabucco.framework.generator.parser.syntaxtree.DatatypeDeclaration;
+import org.nabucco.framework.generator.parser.syntaxtree.EnumerationDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.ExtensionDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.ImportDeclaration;
+import org.nabucco.framework.generator.parser.syntaxtree.NabuccoUnit;
+import org.nabucco.framework.generator.parser.syntaxtree.Node;
 import org.nabucco.framework.generator.parser.syntaxtree.NodeToken;
 import org.nabucco.framework.generator.parser.syntaxtree.PackageDeclaration;
 import org.nabucco.framework.generator.parser.visitor.GJVoidDepthFirst;
@@ -47,6 +61,8 @@ public abstract class NabuccoVisitor<M extends MdaModel<? extends ModelImplement
 
     private final C visitorContext;
 
+    private NabuccoUnit root;
+
     /**
      * Creates a new {@link NabuccoVisitor} instance.
      * 
@@ -64,6 +80,13 @@ public abstract class NabuccoVisitor<M extends MdaModel<? extends ModelImplement
      */
     protected C getVisitorContext() {
         return visitorContext;
+    }
+
+    @Override
+    public void visit(NabuccoUnit nabuccoUnit, M target) {
+        this.root = nabuccoUnit;
+
+        super.visit(nabuccoUnit, target);
     }
 
     @Override
@@ -85,6 +108,15 @@ public abstract class NabuccoVisitor<M extends MdaModel<? extends ModelImplement
         String extendedTypeName = ((NodeToken) nabuccoExtension.nodeChoice.choice).tokenImage;
         this.getVisitorContext().setNabuccoExtension(extendedTypeName);
         super.visit(nabuccoExtension, target);
+    }
+
+    /**
+     * Getter for the nabucco unit.
+     * 
+     * @return Returns the root node.
+     */
+    public NabuccoUnit getRoot() {
+        return this.root;
     }
 
     /**
@@ -115,8 +147,7 @@ public abstract class NabuccoVisitor<M extends MdaModel<? extends ModelImplement
             throws NabuccoVisitorException {
 
         StringBuilder path = new StringBuilder();
-        path.append(NabuccoCompilerSupport.getParentComponentName(this.getVisitorContext()
-                .getPackage()));
+        path.append(NabuccoCompilerSupport.getParentComponentName(this.getVisitorContext().getPackage()));
 
         if (modelType != null) {
 
@@ -133,6 +164,60 @@ public abstract class NabuccoVisitor<M extends MdaModel<? extends ModelImplement
     }
 
     /**
+     * Getter for the parent model.
+     * 
+     * @return the parent model, or null if none exists
+     * 
+     * @throws NabuccoTransformationException
+     *             when the parent cannot be resolved
+     */
+    public NabuccoModel getParent() throws NabuccoVisitorException {
+        String extension = this.visitorContext.getNabuccoExtension();
+        if (extension == null) {
+            return null;
+        }
+
+        String extensionImport = this.resolveImport(extension);
+        if (extensionImport == null) {
+            return null;
+        }
+
+        try {
+            MdaModel<NabuccoModel> parent = NabuccoDependencyResolver.getInstance().resolveDependency(
+                    this.visitorContext, this.visitorContext.getPackage(), extensionImport);
+
+            if (parent != null) {
+                return parent.getModel();
+            }
+
+            return null;
+
+        } catch (NabuccoTransformationException e) {
+            throw new NabuccoVisitorException(e);
+        }
+    }
+
+    /**
+     * Collect all properties of the NABUCO source model. The result contains all
+     * {@link BasetypeDeclaration}, {@link EnumerationDeclaration} and {@link DatatypeDeclaration}
+     * instances of the model.
+     * 
+     * @return the map of nabucco properties by their qualified name
+     */
+    public Map<NabuccoPropertyKey, Node> getProperties() {
+        Map<NabuccoPropertyKey, Node> properties = new LinkedHashMap<NabuccoPropertyKey, Node>();
+
+        NabuccoModel parent = this.getParent();
+        if (parent != null && parent.getUnit() != null) {
+            NabuccoPropertyVisitor propertyVisitor = new NabuccoPropertyVisitor(this.visitorContext.getRootDir(),
+                    this.visitorContext.getOutDir());
+            parent.getUnit().accept(propertyVisitor, properties);
+        }
+
+        return properties;
+    }
+
+    /**
      * Resolves the component name of a client type
      * 
      * @param type
@@ -143,8 +228,7 @@ public abstract class NabuccoVisitor<M extends MdaModel<? extends ModelImplement
     public String getComponentName(NabuccoClientType type) {
 
         StringBuilder path = new StringBuilder();
-        path.append(NabuccoCompilerSupport.getParentComponentName(this.getVisitorContext()
-                .getPackage()));
+        path.append(NabuccoCompilerSupport.getParentComponentName(this.getVisitorContext().getPackage()));
 
         path.append(PKG_SEPARATOR);
         path.append(PKG_UI);
@@ -168,7 +252,7 @@ public abstract class NabuccoVisitor<M extends MdaModel<? extends ModelImplement
     }
 
     /**
-     * Resolves the import of type with a given visitor context.
+     * Resolves the import of type for a given visitor context.
      * 
      * @param <C>
      *            the visitor context type
@@ -180,10 +264,26 @@ public abstract class NabuccoVisitor<M extends MdaModel<? extends ModelImplement
      * @return the resolved import
      */
     public static <C extends NabuccoVisitorContext> String resolveImport(String type, C context) {
+        return resolveImport(type, context.getPackage(), context.getImportList());
+    }
+
+    /**
+     * Resolves the import of type for a given package and imports.
+     * 
+     * @param type
+     *            the type to resolve
+     * @param pkg
+     *            the current package
+     * @param imports
+     *            all existing imports
+     * 
+     * @return the resolved import
+     */
+    public static String resolveImport(String type, String pkg, Collection<String> imports) {
 
         String importString = null;
 
-        for (String nabuccoImport : context.getImportList()) {
+        for (String nabuccoImport : imports) {
             if (nabuccoImport.endsWith(type)) {
                 String[] importToken = nabuccoImport.split("\\.");
                 if (importToken[importToken.length - 1].equals(type)) {
@@ -194,7 +294,7 @@ public abstract class NabuccoVisitor<M extends MdaModel<? extends ModelImplement
         }
 
         if (importString == null) {
-            importString = context.getPackage() + PKG_SEPARATOR + type;
+            importString = pkg + PKG_SEPARATOR + type;
         }
         return importString;
     }

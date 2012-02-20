@@ -1,23 +1,23 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java.view.command;
 
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
-import org.nabucco.framework.generator.compiler.template.NabuccoJavaTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoJavaTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.JavaAstSupport;
 import org.nabucco.framework.generator.compiler.transformation.java.visitor.NabuccoToJavaVisitorContext;
 import org.nabucco.framework.generator.compiler.transformation.java.visitor.NabuccoToJavaVisitorSupport;
@@ -25,7 +25,6 @@ import org.nabucco.framework.generator.compiler.transformation.util.NabuccoTrans
 import org.nabucco.framework.generator.compiler.visitor.NabuccoVisitorException;
 import org.nabucco.framework.generator.parser.model.client.NabuccoClientType;
 import org.nabucco.framework.generator.parser.syntaxtree.MethodDeclaration;
-
 import org.nabucco.framework.mda.logger.MdaLogger;
 import org.nabucco.framework.mda.logger.MdaLoggingFactory;
 import org.nabucco.framework.mda.model.MdaModel;
@@ -57,17 +56,14 @@ public class NabuccoToJavaRcpViewCommandHandlerVisitor extends NabuccoToJavaVisi
     public void visit(MethodDeclaration methodDeclaration, MdaModel<JavaModel> target) {
         super.visit(methodDeclaration, target);
         String pkg = super.getVisitorContext().getPackage().replace("ui", "ui.rcp");
-        String name = NabuccoTransformationUtility
-                .firstToUpper(methodDeclaration.nodeToken1.tokenImage)
+        String name = NabuccoTransformationUtility.firstToUpper(methodDeclaration.nodeToken1.tokenImage)
                 + NabuccoJavaTemplateConstants.HANDLER;
         String projectName = super.getComponentName(NabuccoClientType.RCP);
 
         try {
             // Load Template
-            JavaCompilationUnit unit = super
-                    .extractAst(NabuccoJavaTemplateConstants.VIEW_COMMAND_HANDLER_TEMAPLTE);
-            TypeDeclaration type = unit
-                    .getType(NabuccoJavaTemplateConstants.VIEW_COMMAND_HANDLER_TEMAPLTE);
+            JavaCompilationUnit unit = super.extractAst(NabuccoJavaTemplateConstants.VIEW_COMMAND_HANDLER_TEMAPLTE);
+            TypeDeclaration type = unit.getType(NabuccoJavaTemplateConstants.VIEW_COMMAND_HANDLER_TEMAPLTE);
             JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
             javaFactory.getJavaAstType().setTypeName(type, name);
@@ -85,12 +81,10 @@ public class NabuccoToJavaRcpViewCommandHandlerVisitor extends NabuccoToJavaVisi
 
         } catch (JavaModelException jme) {
             logger.error(jme, "Error during Java AST datatype modification.");
-            throw new NabuccoVisitorException("Error during Java AST Command method modification.",
-                    jme);
+            throw new NabuccoVisitorException("Error during Java AST Command method modification.", jme);
         } catch (JavaTemplateException te) {
             logger.error(te, "Error during Java template datatype processing.");
-            throw new NabuccoVisitorException(
-                    "Error during Java template Command method processing.", te);
+            throw new NabuccoVisitorException("Error during Java template Command method processing.", te);
         }
     }
 
@@ -102,10 +96,8 @@ public class NabuccoToJavaRcpViewCommandHandlerVisitor extends NabuccoToJavaVisi
             throws JavaModelException {
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
         org.eclipse.jdt.internal.compiler.ast.MethodDeclaration commandMethod = (org.eclipse.jdt.internal.compiler.ast.MethodDeclaration) javaFactory
-                .getJavaAstType().getMethod(type,
-                        new JavaAstMethodSignature("templateMethod", new String[] {}));
-        javaFactory.getJavaAstMethod().setMethodName(commandMethod,
-                methodDeclaration.nodeToken1.tokenImage);
+                .getJavaAstType().getMethod(type, new JavaAstMethodSignature("templateMethod", new String[] {}));
+        javaFactory.getJavaAstMethod().setMethodName(commandMethod, methodDeclaration.nodeToken1.tokenImage);
     }
 
 }

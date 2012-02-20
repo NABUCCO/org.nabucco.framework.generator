@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import org.nabucco.framework.generator.compiler.NabuccoCompilerOptions;
+import org.nabucco.framework.generator.compiler.NabuccoCompilerOptionType;
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationConstants;
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationException;
 import org.nabucco.framework.generator.compiler.verifier.NabuccoVerificationException;
@@ -40,8 +42,7 @@ import org.nabucco.framework.mda.model.MdaModel;
  * 
  * @author Nicolas Moser, PRODYNA AG
  */
-public class NabuccoDependencyThread implements Callable<List<MdaModel<NabuccoModel>>>,
-        NabuccoTransformationConstants {
+public class NabuccoDependencyThread implements Callable<List<MdaModel<NabuccoModel>>>, NabuccoTransformationConstants {
 
     private MdaModel<NabuccoModel> model;
 
@@ -49,23 +50,27 @@ public class NabuccoDependencyThread implements Callable<List<MdaModel<NabuccoMo
 
     private String outDir;
 
-    private static MdaLogger logger = MdaLoggingFactory.getInstance().getLogger(
-            NabuccoDependencyThread.class);
+    private NabuccoCompilerOptions options;
+
+    private static MdaLogger logger = MdaLoggingFactory.getInstance().getLogger(NabuccoDependencyThread.class);
 
     /**
      * Creates a new {@link NabuccoDependencyThread} instance.
      * 
      * @param model
      *            the NABUCCO model
+     * @param options
+     *            compiler options
      * @param rootDir
      *            the NABUCCO root directory
      * @param outDir
      *            the NABUCCO out directory
      */
-    public NabuccoDependencyThread(MdaModel<NabuccoModel> model, String rootDir, String outDir) {
+    public NabuccoDependencyThread(MdaModel<NabuccoModel> model, NabuccoCompilerOptions options, String rootDir) {
         this.model = model;
         this.rootDir = rootDir;
-        this.outDir = outDir;
+        this.outDir = options.getOption(NabuccoCompilerOptionType.OUT_DIR);
+        this.options = options;
     }
 
     @Override
@@ -74,13 +79,13 @@ public class NabuccoDependencyThread implements Callable<List<MdaModel<NabuccoMo
         List<MdaModel<NabuccoModel>> dependencies = new ArrayList<MdaModel<NabuccoModel>>();
 
         try {
-            this.verivyModel();
+            this.verifyModel();
 
-            dependencies.addAll(NabuccoDependencyResolver.getInstance().resolveDependencies(this.model,
-                    this.rootDir, this.outDir));
+            dependencies.addAll(NabuccoDependencyResolver.getInstance().resolveDependencies(this.model, this.rootDir,
+                    this.outDir));
 
-            logger.trace("Found '" + dependencies.size(), "' dependencies to resolve for '", model
-                    .getModel().getNabuccoType().name(), "'.");
+            logger.trace("Found '" + dependencies.size(), "' dependencies to resolve for '", model.getModel()
+                    .getNabuccoType().name(), "'.");
 
         } catch (NabuccoVerificationException ve) {
             raiseException(ve.getMessage(), this.model, ve);
@@ -98,8 +103,8 @@ public class NabuccoDependencyThread implements Callable<List<MdaModel<NabuccoMo
      * 
      * @throws NabuccoVerificationException
      */
-    private void verivyModel() throws NabuccoVerificationException {
-        NabuccoVerifier.getInstance().verifyNabuccoModel(this.model, this.rootDir, this.outDir);
+    private void verifyModel() throws NabuccoVerificationException {
+        NabuccoVerifier.getInstance().verifyNabuccoModel(this.model, this.rootDir, this.options);
     }
 
     /**
@@ -120,7 +125,7 @@ public class NabuccoDependencyThread implements Callable<List<MdaModel<NabuccoMo
         if (msg != null) {
             logger.error(msg);
         }
-        
+
         logger.debug(cause);
 
         NabuccoTransformationException exception;

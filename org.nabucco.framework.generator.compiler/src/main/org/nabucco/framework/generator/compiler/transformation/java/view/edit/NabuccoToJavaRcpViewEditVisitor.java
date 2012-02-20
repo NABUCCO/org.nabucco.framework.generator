@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,7 +22,7 @@ import org.eclipse.jdt.internal.compiler.ast.ImportReference;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
-import org.nabucco.framework.generator.compiler.template.NabuccoJavaTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoJavaTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.JavaAstSupport;
 import org.nabucco.framework.generator.compiler.transformation.java.constants.ViewConstants;
 import org.nabucco.framework.generator.compiler.transformation.java.view.NabuccoToJavaRcpViewVisitorSupportUtil;
@@ -63,28 +63,21 @@ class NabuccoToJavaRcpViewEditVisitor extends NabuccoToJavaVisitorSupport {
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
         String name = nabuccoEditView.nodeToken2.tokenImage;
-        String modelName = nabuccoEditView.nodeToken2.tokenImage.replace(
-                NabuccoJavaTemplateConstants.VIEW, NabuccoJavaTemplateConstants.VIEW
-                        + NabuccoJavaTemplateConstants.MODEL);
-        String pkg = super.getVisitorContext().getPackage()
-                .replace(ViewConstants.UI, ViewConstants.UI_RCP)
-                + ViewConstants.PKG_SEPARATOR
-                + ViewConstants.VIEW_PACKAGE;
-        String modelPkg = super.getVisitorContext().getPackage()
-                .replace(ViewConstants.UI, ViewConstants.UI_RCP)
-                + ViewConstants.PKG_SEPARATOR
-                + ViewConstants.MODEL_PACKAGE;
+        String modelName = nabuccoEditView.nodeToken2.tokenImage.replace(NabuccoJavaTemplateConstants.VIEW,
+                NabuccoJavaTemplateConstants.VIEW + NabuccoJavaTemplateConstants.MODEL);
+        String pkg = super.getVisitorContext().getPackage().replace(ViewConstants.UI, ViewConstants.UI_RCP)
+                + ViewConstants.PKG_SEPARATOR + ViewConstants.VIEW_PACKAGE;
+        String modelPkg = super.getVisitorContext().getPackage().replace(ViewConstants.UI, ViewConstants.UI_RCP)
+                + ViewConstants.PKG_SEPARATOR + ViewConstants.MODEL_PACKAGE;
 
         String projectName = super.getComponentName(NabuccoClientType.RCP);
         try {
 
-            JavaCompilationUnit unit = super
-                    .extractAst(NabuccoJavaTemplateConstants.EDIT_VIEW_TEMPLATE);
+            JavaCompilationUnit unit = super.extractAst(NabuccoJavaTemplateConstants.EDIT_VIEW_TEMPLATE);
             TypeDeclaration type = unit.getType(NabuccoJavaTemplateConstants.EDIT_VIEW_TEMPLATE);
 
             // create type reference for view model
-            TypeReference modelTypeReference = JavaAstModelProducer.getInstance()
-                    .createTypeReference(modelName, false);
+            TypeReference modelTypeReference = JavaAstModelProducer.getInstance().createTypeReference(modelName, false);
 
             javaFactory.getJavaAstType().setTypeName(type, name);
 
@@ -98,10 +91,8 @@ class NabuccoToJavaRcpViewEditVisitor extends NabuccoToJavaVisitorSupport {
             javaFactory.getJavaAstUnit().setPackage(unit.getUnitDeclaration(), pkg);
 
             // common ui element handling
-            JavaCompilationUnit uIUnit = super
-                    .extractAst(NabuccoJavaTemplateConstants.COMMON_VIEW_VIEW_TEMPLATE);
-            TypeDeclaration uIType = uIUnit
-                    .getType(NabuccoJavaTemplateConstants.COMMON_VIEW_VIEW_TEMPLATE);
+            JavaCompilationUnit uIUnit = super.extractAst(NabuccoJavaTemplateConstants.COMMON_VIEW_VIEW_TEMPLATE);
+            TypeDeclaration uIType = uIUnit.getType(NabuccoJavaTemplateConstants.COMMON_VIEW_VIEW_TEMPLATE);
             getVisitorContext().getContainerList().addAll(
                     NabuccoToJavaRcpViewVisitorSupportUtil.getUiCommonElements(uIType, type,
                             nabuccoEditView.annotationDeclaration));
@@ -109,15 +100,15 @@ class NabuccoToJavaRcpViewEditVisitor extends NabuccoToJavaVisitorSupport {
             // JavaDocAnnotations
             JavaAstSupport.convertJavadocAnnotations(nabuccoEditView.annotationDeclaration, type);
 
-            JavaAstSupport.convertAstNodes(unit, getVisitorContext().getContainerList(),
-                    getVisitorContext().getImportList());
+            JavaAstSupport.convertAstNodes(unit, getVisitorContext().getContainerList(), getVisitorContext()
+                    .getImportList());
 
             // swap order of public static final fields ID and TITLE
             NabuccoToJavaRcpViewVisitorSupportUtil.swapFieldOrder(type);
 
             // add the model import
-            ImportReference modelImportRef = JavaAstModelProducer.getInstance()
-                    .createImportReference(modelPkg + ViewConstants.PKG_SEPARATOR + modelName);
+            ImportReference modelImportRef = JavaAstModelProducer.getInstance().createImportReference(
+                    modelPkg + ViewConstants.PKG_SEPARATOR + modelName);
             javaFactory.getJavaAstUnit().addImport(unit.getUnitDeclaration(), modelImportRef);
 
             // handle createFormControl method
@@ -148,15 +139,11 @@ class NabuccoToJavaRcpViewEditVisitor extends NabuccoToJavaVisitorSupport {
      * @throws JavaModelException
      *             if an error occurred transforming the model.
      */
-    private void handleCreateFormControl(TypeDeclaration type, String modelName)
-            throws JavaModelException {
+    private void handleCreateFormControl(TypeDeclaration type, String modelName) throws JavaModelException {
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
-        MethodDeclaration method = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(
-                type,
-                new JavaAstMethodSignature(ViewConstants.CREATE_FORM_CONTROL,
-                        new String[] { ViewConstants.FORM }));
-        TypeReference modelType = JavaAstModelProducer.getInstance().createTypeReference(modelName,
-                false);
+        MethodDeclaration method = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(type,
+                new JavaAstMethodSignature(ViewConstants.CREATE_FORM_CONTROL, new String[] { ViewConstants.FORM }));
+        TypeReference modelType = JavaAstModelProducer.getInstance().createTypeReference(modelName, false);
         ((AllocationExpression) ((Assignment) method.statements[2]).expression).type = modelType;
     }
 

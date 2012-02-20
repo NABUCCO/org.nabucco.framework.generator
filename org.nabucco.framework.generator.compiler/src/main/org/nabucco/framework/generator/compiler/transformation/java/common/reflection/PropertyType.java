@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,23 +23,21 @@ package org.nabucco.framework.generator.compiler.transformation.java.common.refl
  */
 enum PropertyType {
 
-    BASETYPE(
-            "BasetypeProperty",
-            "org.nabucco.framework.base.facade.datatype.property.BasetypeProperty"),
+    BASETYPE("BasetypeProperty"),
 
-    DATATYPE(
-            "DatatypeProperty",
-            "org.nabucco.framework.base.facade.datatype.property.DatatypeProperty"),
+    DATATYPE("DatatypeProperty", "org.nabucco.framework.base.facade.datatype.property.PropertyAssociationType"),
 
-    ENUM("EnumProperty", "org.nabucco.framework.base.facade.datatype.property.EnumProperty"),
+    ENUMERATION("EnumProperty"),
 
-    SIMPLE("SimpleProperty", "org.nabucco.framework.base.facade.datatype.property.SimpleProperty"),
+    SIMPLE("SimpleProperty"),
 
-    LIST("ListProperty", "org.nabucco.framework.base.facade.datatype.property.ListProperty");
+    COLLECTION("CollectionProperty", "org.nabucco.framework.base.facade.datatype.property.PropertyAssociationType");
 
     private String name;
 
-    private String importName;
+    private String[] imports;
+
+    private static final String IMPORT = "org.nabucco.framework.base.facade.datatype.property.NabuccoPropertyType";
 
     /**
      * Creates a new {@link PropertyType} instance.
@@ -49,9 +47,9 @@ enum PropertyType {
      * @param importName
      *            the fully qualified import of the property
      */
-    private PropertyType(String name, String importName) {
+    private PropertyType(String name, String... importName) {
         this.name = name;
-        this.importName = importName;
+        this.imports = importName;
     }
 
     /**
@@ -68,8 +66,17 @@ enum PropertyType {
      * 
      * @return Returns the importName.
      */
-    public String getImport() {
-        return this.importName;
+    public String[] getImports() {
+        return this.imports;
+    }
+
+    /**
+     * Getter for the property type import.
+     * 
+     * @return the property type import
+     */
+    public static String getImport() {
+        return IMPORT;
     }
 
 }

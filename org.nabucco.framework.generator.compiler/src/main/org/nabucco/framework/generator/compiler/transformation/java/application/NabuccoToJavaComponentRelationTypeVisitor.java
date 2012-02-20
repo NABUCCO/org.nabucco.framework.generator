@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -31,7 +31,7 @@ import org.eclipse.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
-import org.nabucco.framework.generator.compiler.template.NabuccoJavaTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoJavaTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotation;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationMapper;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationType;
@@ -66,16 +66,16 @@ class NabuccoToJavaComponentRelationTypeVisitor extends NabuccoToJavaVisitorSupp
     private ApplicationStatement application;
 
     private JavaCompilationUnit unit;
-    
+
     private boolean hasFields = false;
 
     private static final Object CONNECTOR_TYPE_DATATYPE = "DATATYPE";
 
-    private static final JavaAstMethodSignature SIGNATURE_BY_SOURCE = new JavaAstMethodSignature(
-            "valuesBySource", "Class");
+    private static final JavaAstMethodSignature SIGNATURE_BY_SOURCE = new JavaAstMethodSignature("valuesBySource",
+            "Class");
 
-    private static final JavaAstMethodSignature SIGNATURE_BY_TARGET = new JavaAstMethodSignature(
-            "valuesByTarget", "Class");
+    private static final JavaAstMethodSignature SIGNATURE_BY_TARGET = new JavaAstMethodSignature("valuesByTarget",
+            "Class");
 
     /**
      * Creates a new {@link NabuccoToJavaComponentRelationTypeVisitor} instance.
@@ -103,10 +103,8 @@ class NabuccoToJavaComponentRelationTypeVisitor extends NabuccoToJavaVisitorSupp
 
         try {
             // Load Template
-            this.unit = super
-                    .extractAst(NabuccoJavaTemplateConstants.COMPONENT_RELATION_TYPE_TEMPLATE);
-            TypeDeclaration type = this.unit
-                    .getType(NabuccoJavaTemplateConstants.COMPONENT_RELATION_TYPE_TEMPLATE);
+            this.unit = super.extractAst(NabuccoJavaTemplateConstants.COMPONENT_RELATION_TYPE_TEMPLATE);
+            TypeDeclaration type = this.unit.getType(NabuccoJavaTemplateConstants.COMPONENT_RELATION_TYPE_TEMPLATE);
 
             javaFactory.getJavaAstType().setTypeName(type, name);
 
@@ -115,8 +113,7 @@ class NabuccoToJavaComponentRelationTypeVisitor extends NabuccoToJavaVisitorSupp
             // Enums cannot be loaded appropriately, templates are loaded as class and are converted
             javaFactory.getJavaAstType().addModifier(type, ClassFileConstants.AccEnum);
 
-            for (ConstructorDeclaration constructor : javaFactory.getJavaAstType().getConstructors(
-                    type)) {
+            for (ConstructorDeclaration constructor : javaFactory.getJavaAstType().getConstructors(type)) {
                 constructor.constructorCall = null;
             }
 
@@ -152,8 +149,7 @@ class NabuccoToJavaComponentRelationTypeVisitor extends NabuccoToJavaVisitorSupp
         pkg.append(PKG_SEPARATOR);
         pkg.append(CR_PACKAGE);
 
-        JavaAstElementFactory.getInstance().getJavaAstUnit()
-                .setPackage(this.unit.getUnitDeclaration(), pkg.toString());
+        JavaAstElementFactory.getInstance().getJavaAstUnit().setPackage(this.unit.getUnitDeclaration(), pkg.toString());
     }
 
     /**
@@ -171,11 +167,11 @@ class NabuccoToJavaComponentRelationTypeVisitor extends NabuccoToJavaVisitorSupp
         String relationType = this.application.nodeToken2.tokenImage + COMPONENT_RELATION_TYPE;
         TypeReference relationTypeRef = producer.createTypeReference(relationType, false);
 
-        MethodDeclaration bySource = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(
-                type, SIGNATURE_BY_SOURCE);
+        MethodDeclaration bySource = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(type,
+                SIGNATURE_BY_SOURCE);
 
-        MethodDeclaration byTarget = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(
-                type, SIGNATURE_BY_TARGET);
+        MethodDeclaration byTarget = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(type,
+                SIGNATURE_BY_TARGET);
 
         this.createMethod(relationTypeRef, bySource);
         this.createMethod(relationTypeRef, byTarget);
@@ -192,12 +188,11 @@ class NabuccoToJavaComponentRelationTypeVisitor extends NabuccoToJavaVisitorSupp
      * 
      * @throws JavaModelException
      */
-    private void createMethod(TypeReference relationType, MethodDeclaration method)
-            throws JavaModelException {
+    private void createMethod(TypeReference relationType, MethodDeclaration method) throws JavaModelException {
 
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
-        ParameterizedSingleTypeReference returnType = (ParameterizedSingleTypeReference) javaFactory
-                .getJavaAstMethod().getReturnType(method);
+        ParameterizedSingleTypeReference returnType = (ParameterizedSingleTypeReference) javaFactory.getJavaAstMethod()
+                .getReturnType(method);
 
         returnType.typeArguments = new TypeReference[] { relationType };
 
@@ -236,12 +231,12 @@ class NabuccoToJavaComponentRelationTypeVisitor extends NabuccoToJavaVisitorSupp
         JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
-        DatatypeCollector collector = new DatatypeCollector(super.getVisitorContext(),
-                this.application);
+        DatatypeCollector collector = new DatatypeCollector(super.getVisitorContext(), this.application);
         collector.accept(nabuccoConnector);
 
         String sourceType = collector.getSourceType();
-        String upperCaseSource = sourceType.toUpperCase();
+        String sourceName = collector.getSourceName();
+        String upperCaseSource = sourceName.toUpperCase();
 
         try {
 
@@ -253,11 +248,10 @@ class NabuccoToJavaComponentRelationTypeVisitor extends NabuccoToJavaVisitorSupp
 
             for (String targetName : collector.getTargetMap().keySet()) {
                 String targetType = collector.getTargetMap().get(targetName);
-                String upperCaseTarget = targetType.toUpperCase();
+                String upperCaseTarget = targetName.toUpperCase();
                 String literalName = upperCaseSource + CONSTANT_SEPARATOR + upperCaseTarget;
 
-                FieldDeclaration literal = producer.createFieldDeclaration(literalName,
-                        ClassFileConstants.AccDefault);
+                FieldDeclaration literal = producer.createFieldDeclaration(literalName, ClassFileConstants.AccDefault);
 
                 String relationType = targetType + COMPONENT_RELATION;
                 ClassLiteralAccess relationClass = producer.createClassLiteralAccess(relationType);
@@ -270,15 +264,13 @@ class NabuccoToJavaComponentRelationTypeVisitor extends NabuccoToJavaVisitorSupp
 
                 String targetImport = super.resolveImport(targetType);
                 ImportReference targetImportRef = producer.createImportReference(targetImport);
-                javaFactory.getJavaAstUnit().addImport(this.unit.getUnitDeclaration(),
-                        targetImportRef);
+                javaFactory.getJavaAstUnit().addImport(this.unit.getUnitDeclaration(), targetImportRef);
 
                 String relationImport = super.resolveImport(targetType) + COMPONENT_RELATION;
                 ImportReference relationImportRef = producer.createImportReference(relationImport);
-                javaFactory.getJavaAstUnit().addImport(this.unit.getUnitDeclaration(),
-                        relationImportRef);
+                javaFactory.getJavaAstUnit().addImport(this.unit.getUnitDeclaration(), relationImportRef);
             }
-            
+
             this.hasFields = true;
 
         } catch (JavaModelException me) {

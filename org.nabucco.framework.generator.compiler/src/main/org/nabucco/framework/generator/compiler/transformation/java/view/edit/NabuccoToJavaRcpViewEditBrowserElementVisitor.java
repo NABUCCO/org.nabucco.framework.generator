@@ -1,26 +1,26 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java.view.edit;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
-import org.nabucco.framework.generator.compiler.template.NabuccoJavaTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoJavaTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotation;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationMapper;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationType;
@@ -42,7 +42,6 @@ import org.nabucco.framework.generator.parser.syntaxtree.LabeledPickerDeclaratio
 import org.nabucco.framework.generator.parser.syntaxtree.ListPickerDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.NodeToken;
 import org.nabucco.framework.generator.parser.syntaxtree.PickerDeclaration;
-
 import org.nabucco.framework.mda.model.MdaModel;
 import org.nabucco.framework.mda.model.java.JavaCompilationUnit;
 import org.nabucco.framework.mda.model.java.JavaModel;
@@ -55,8 +54,7 @@ import org.nabucco.framework.mda.template.java.JavaTemplateException;
  * 
  * @author Stefanie Feld, PRODYNA AG
  */
-public class NabuccoToJavaRcpViewEditBrowserElementVisitor extends NabuccoToJavaVisitorSupport
-        implements ViewConstants {
+public class NabuccoToJavaRcpViewEditBrowserElementVisitor extends NabuccoToJavaVisitorSupport implements ViewConstants {
 
     DatatypeDeclaration datatypeDeclaration;
 
@@ -92,10 +90,8 @@ public class NabuccoToJavaRcpViewEditBrowserElementVisitor extends NabuccoToJava
 
             String projectName = super.getComponentName(NabuccoClientType.RCP);
 
-            JavaCompilationUnit unit = super
-                    .extractAst(NabuccoJavaTemplateConstants.BROWSER_VIEW_ELEMENT_TEMPLATE);
-            TypeDeclaration type = unit
-                    .getType(NabuccoJavaTemplateConstants.BROWSER_VIEW_ELEMENT_TEMPLATE);
+            JavaCompilationUnit unit = super.extractAst(NabuccoJavaTemplateConstants.BROWSER_VIEW_ELEMENT_TEMPLATE);
+            TypeDeclaration type = unit.getType(NabuccoJavaTemplateConstants.BROWSER_VIEW_ELEMENT_TEMPLATE);
 
             javaFactory.getJavaAstType().setTypeName(type, name);
             javaFactory.getJavaAstUnit().setPackage(unit.getUnitDeclaration(), pkg);
@@ -103,10 +99,9 @@ public class NabuccoToJavaRcpViewEditBrowserElementVisitor extends NabuccoToJava
             modifyTemplate(viewName, datatype, unit, type);
 
             // JavaDocAnnotations
-            JavaAstSupport.convertJavadocAnnotations(datatypeDeclaration.annotationDeclaration,
-                    type);
-            JavaAstSupport.convertAstNodes(unit, getVisitorContext().getContainerList(),
-                    getVisitorContext().getImportList());
+            JavaAstSupport.convertJavadocAnnotations(datatypeDeclaration.annotationDeclaration, type);
+            JavaAstSupport.convertAstNodes(unit, getVisitorContext().getContainerList(), getVisitorContext()
+                    .getImportList());
 
             // add import of editViewModel
             String importString = datatypePkg.replace(UI, UI_RCP)
@@ -122,11 +117,9 @@ public class NabuccoToJavaRcpViewEditBrowserElementVisitor extends NabuccoToJava
             target.getModel().getUnitList().add(unit);
 
         } catch (JavaModelException jme) {
-            throw new NabuccoVisitorException(
-                    "Error during Java AST browser element modification.", jme);
+            throw new NabuccoVisitorException("Error during Java AST browser element modification.", jme);
         } catch (JavaTemplateException te) {
-            throw new NabuccoVisitorException(
-                    "Error during Java template browser element processing.", te);
+            throw new NabuccoVisitorException("Error during Java template browser element processing.", te);
         }
     }
 
@@ -221,8 +214,8 @@ public class NabuccoToJavaRcpViewEditBrowserElementVisitor extends NabuccoToJava
      * @throws JavaTemplateException
      *             if an error occurred loading the template.
      */
-    private void modifyTemplate(String viewName, String datatype, JavaCompilationUnit unit,
-            TypeDeclaration type) throws JavaModelException, JavaTemplateException {
+    private void modifyTemplate(String viewName, String datatype, JavaCompilationUnit unit, TypeDeclaration type)
+            throws JavaModelException, JavaTemplateException {
         String datatypeName = datatypeDeclaration.nodeToken2.tokenImage;
         String name = datatype + EDIT_VIEW_BROWSER_ELEMENT;
 

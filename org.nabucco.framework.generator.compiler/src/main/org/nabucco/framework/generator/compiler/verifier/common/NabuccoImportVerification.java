@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,9 +26,9 @@ import java.util.jar.JarFile;
 import org.nabucco.framework.generator.compiler.NabuccoCompilerSupport;
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationConstants;
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationException;
-import org.nabucco.framework.generator.compiler.transformation.util.dependency.NabuccoPath;
-import org.nabucco.framework.generator.compiler.transformation.util.dependency.NabuccoPathEntry;
-import org.nabucco.framework.generator.compiler.transformation.util.dependency.NbcPathParser;
+import org.nabucco.framework.generator.compiler.transformation.util.dependency.path.NabuccoPath;
+import org.nabucco.framework.generator.compiler.transformation.util.dependency.path.NabuccoPathEntry;
+import org.nabucco.framework.generator.compiler.transformation.util.dependency.path.NbcPathParser;
 import org.nabucco.framework.generator.compiler.verifier.NabuccoModelVerificationVisitor;
 import org.nabucco.framework.generator.compiler.verifier.error.VerificationErrorCriticality;
 import org.nabucco.framework.generator.compiler.verifier.error.VerificationResult;
@@ -88,10 +88,14 @@ public class NabuccoImportVerification extends NabuccoModelVerificationVisitor i
         try {
             this.validateImport(importString, result);
         } catch (NabuccoTransformationException e) {
-            int line = nabuccoImport.nodeToken1.beginLine;
-            int col = nabuccoImport.nodeToken1.beginColumn;
+            int beginLine = nabuccoImport.nodeToken1.beginLine;
+            int endLine = nabuccoImport.nodeToken1.endLine;
+            int beginColumn = nabuccoImport.nodeToken1.beginColumn;
+            int endColumn = nabuccoImport.nodeToken1.endColumn;
+            String msg = e.getOriginalMessage();
+
             VerificationErrorCriticality criticality = VerificationErrorCriticality.ERROR;
-            result.addError(criticality, line, col, e.getOriginalMessage());
+            result.addError(criticality, beginLine, endLine, beginColumn, endColumn, msg);
         }
     }
 
@@ -105,8 +109,7 @@ public class NabuccoImportVerification extends NabuccoModelVerificationVisitor i
      * 
      * @throws NabuccoTransformationException
      */
-    private void validateImport(String importString, VerificationResult result)
-            throws NabuccoTransformationException {
+    private void validateImport(String importString, VerificationResult result) throws NabuccoTransformationException {
 
         String component = NabuccoCompilerSupport.getParentComponentName(pkg);
 
@@ -139,13 +142,11 @@ public class NabuccoImportVerification extends NabuccoModelVerificationVisitor i
                     break;
 
                 case PROJECT:
-                    model = readFromProject(this.rootDirectory, importString, this.outDirectory,
-                            location);
+                    model = readFromProject(this.rootDirectory, importString, this.outDirectory, location);
                     break;
 
                 default:
-                    throw new IllegalStateException("NbcPath Entry is not supported: "
-                            + entryType + ".");
+                    throw new IllegalStateException("NbcPath Entry is not supported: " + entryType + ".");
                 }
 
                 if (model != null) {
@@ -192,8 +193,7 @@ public class NabuccoImportVerification extends NabuccoModelVerificationVisitor i
             if (entry != null) {
                 InputStream in = jarFile.getInputStream(entry);
 
-                NabuccoModel nabuccoModel = NabuccoModelSerializer.getInstance()
-                        .deserializeNabucco(modelName, in);
+                NabuccoModel nabuccoModel = NabuccoModelSerializer.getInstance().deserializeNabucco(modelName, in);
 
                 return nabuccoModel;
             }
@@ -215,8 +215,8 @@ public class NabuccoImportVerification extends NabuccoModelVerificationVisitor i
      * @return the file path
      */
     private static String convertImportString(String importString) {
-        String nbccPath = importString.replace(PKG_SEPARATOR, JAR_SEPARATOR)
-                .replace("\\", JAR_SEPARATOR).concat(NabuccoFileConstants.NBCC_SUFFIX);
+        String nbccPath = importString.replace(PKG_SEPARATOR, JAR_SEPARATOR).replace("\\", JAR_SEPARATOR)
+                .concat(NabuccoFileConstants.NBCC_SUFFIX);
         return nbccPath;
     }
 
@@ -236,8 +236,8 @@ public class NabuccoImportVerification extends NabuccoModelVerificationVisitor i
      * @throws NabuccoTransformationException
      *             if the file cannot be found
      */
-    private static NabuccoModel readFromProject(String rootDir, String importString, String outDir,
-            String location) throws NabuccoTransformationException {
+    private static NabuccoModel readFromProject(String rootDir, String importString, String outDir, String location)
+            throws NabuccoTransformationException {
         if (location == null) {
             StringBuilder path = new StringBuilder();
             path.append(rootDir);
@@ -282,15 +282,13 @@ public class NabuccoImportVerification extends NabuccoModelVerificationVisitor i
         File file = new File(path);
 
         if (!file.exists()) {
-            throw new NabuccoTransformationException("Cannot resolve import '"
-                    + importString + "'.");
+            throw new NabuccoTransformationException("Cannot resolve import '" + importString + "'.");
         }
 
         try {
             return new NabuccoFile(file);
         } catch (IOException e) {
-            throw new NabuccoTransformationException("Cannot resolve import '"
-                    + importString + "'.", e);
+            throw new NabuccoTransformationException("Cannot resolve import '" + importString + "'.", e);
         }
     }
 
@@ -307,22 +305,19 @@ public class NabuccoImportVerification extends NabuccoModelVerificationVisitor i
         File file = new File(path);
 
         if (!file.exists()) {
-            String msg = "NABUCCO path does not point to a valid project '"
-                    + path + "' (target does not exist).";
+            String msg = "NABUCCO path does not point to a valid project '" + path + "' (target does not exist).";
             throw new NabuccoTransformationException(msg);
         }
 
         if (!file.isDirectory()) {
-            String msg = "NABUCCO path does not point to a valid project '"
-                    + path + "' (target is no directory).";
+            String msg = "NABUCCO path does not point to a valid project '" + path + "' (target is no directory).";
             throw new NabuccoTransformationException(msg);
         }
 
         File sourceFolder = new File(file, NBC_SOURCE_FOLDER);
 
         if (!sourceFolder.exists()) {
-            String msg = "NABUCCO path does not point to a valid NABUCCO project '"
-                    + path + "' (src/nbc not found).";
+            String msg = "NABUCCO path does not point to a valid NABUCCO project '" + path + "' (src/nbc not found).";
             throw new NabuccoTransformationException(msg);
         }
     }

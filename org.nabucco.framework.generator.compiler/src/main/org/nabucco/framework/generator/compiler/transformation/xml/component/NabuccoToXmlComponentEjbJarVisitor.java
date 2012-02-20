@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,16 +20,14 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.nabucco.framework.generator.compiler.template.NabuccoXmlTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoXmlTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.common.constants.ComponentRelationConstants;
 import org.nabucco.framework.generator.compiler.transformation.util.NabuccoTransformationUtility;
 import org.nabucco.framework.generator.compiler.transformation.xml.constants.EjbJarConstants;
 import org.nabucco.framework.generator.compiler.transformation.xml.visitor.NabuccoToXmlVisitorContext;
 import org.nabucco.framework.generator.compiler.transformation.xml.visitor.NabuccoToXmlVisitorSupport;
 import org.nabucco.framework.generator.compiler.visitor.NabuccoVisitorException;
-import org.nabucco.framework.generator.parser.syntaxtree.ComponentDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.ComponentStatement;
-import org.nabucco.framework.generator.parser.syntaxtree.ServiceDeclaration;
 import org.nabucco.framework.mda.model.MdaModel;
 import org.nabucco.framework.mda.model.xml.XmlDocument;
 import org.nabucco.framework.mda.model.xml.XmlModel;
@@ -45,17 +43,20 @@ import org.w3c.dom.Element;
  * 
  * @author Nicolas Moser, PRODYNA AG
  */
-class NabuccoToXmlComponentEjbJarVisitor extends NabuccoToXmlVisitorSupport implements
-        EjbJarConstants, ComponentRelationConstants {
+class NabuccoToXmlComponentEjbJarVisitor extends NabuccoToXmlVisitorSupport implements EjbJarConstants,
+        ComponentRelationConstants {
 
-    /** List of service references */
-    private List<Element> ejbReferenceList = new ArrayList<Element>();
+    /** List of remote service references */
+    private List<Element> ejbRemoteReferenceList = new ArrayList<Element>();
+
+    /** List of local service references */
+    private List<Element> ejbLocalReferenceList = new ArrayList<Element>();
 
     /** Name of the component interface */
     private String interfaceName;
 
     /**
-     * Creates a new {@link NabuccoToXmlComponentEjbJarVisitor} instance.
+     * Creates a new {@link NabuccoToXmlAdapterEjbJarVisitor} instance.
      * 
      * @param visitorContext
      *            the visitor context
@@ -77,32 +78,36 @@ class NabuccoToXmlComponentEjbJarVisitor extends NabuccoToXmlVisitorSupport impl
         String componentName = super.getProjectName(null, null);
 
         // Component Relation Service
-        String componentRelation = interfacePackage + PKG_SEPARATOR + COMPONENT_RELATION_SERVICE;
-        this.createEjbReference(COMPONENT_RELATION_SERVICE, componentRelation, CR_INTERFACE);
+        // String componentRelation = interfacePackage + PKG_SEPARATOR + COMPONENT_RELATION_SERVICE;
+        // this.createEjbReference(COMPONENT_RELATION_SERVICE, componentRelation, CR_INTERFACE);
 
         try {
-            XmlDocument document = super
-                    .extractDocument(NabuccoXmlTemplateConstants.EJB_JAR_FRAGMENT_TEMPLATE);
+            XmlDocument document = super.extractDocument(NabuccoXmlTemplateConstants.EJB_JAR_FRAGMENT_TEMPLATE);
 
             String ejbName = interfacePackage + PKG_SEPARATOR + this.interfaceName;
             document.getDocument().getDocumentElement().setAttribute(NAME, this.interfaceName);
 
-            Element sessionElement = (Element) document.getElementsByXPath(XPATH_FRAGMENT_SESSION)
-                    .get(0);
+            Element sessionElement = (Element) document.getElementsByXPath(XPATH_FRAGMENT_SESSION).get(0);
 
-            String implName = NabuccoTransformationUtility.toImpl(interfacePackage)
-                    + PKG_SEPARATOR + name;
+            String implName = NabuccoTransformationUtility.toImpl(interfacePackage) + PKG_SEPARATOR + name;
 
             sessionElement.getElementsByTagName(EJB_NAME).item(0).setTextContent(ejbName);
-            sessionElement.getElementsByTagName(EJB_REMOTE).item(0).setTextContent(ejbName);
+            sessionElement.getElementsByTagName(EJB_REMOTE).item(0).setTextContent(ejbName + REMOTE);
+            sessionElement.getElementsByTagName(EJB_LOCAL).item(0).setTextContent(ejbName + LOCAL);
             sessionElement.getElementsByTagName(EJB_CLASS).item(0).setTextContent(implName);
 
-            ((Element) document.getElementsByXPath(XPATH_FRAGMENT_EJB_NAME).get(0))
-                    .setTextContent(ejbName);
+            ((Element) document.getElementsByXPath(XPATH_FRAGMENT_EJB_NAME).get(0)).setTextContent(ejbName);
 
-            for (Element ejbReference : this.ejbReferenceList) {
+            for (Element ejbReference : this.ejbRemoteReferenceList) {
                 sessionElement.appendChild(document.getDocument().importNode(ejbReference, true));
             }
+
+            for (Element ejbReference : this.ejbLocalReferenceList) {
+                sessionElement.appendChild(document.getDocument().importNode(ejbReference, true));
+            }
+
+            // PostConstruct, PreDestroy
+            this.addLifecycleMethods(document, sessionElement);
 
             document.getDocument().importNode(sessionElement, true);
 
@@ -119,24 +124,26 @@ class NabuccoToXmlComponentEjbJarVisitor extends NabuccoToXmlVisitorSupport impl
         }
     }
 
-    @Override
-    public void visit(ServiceDeclaration nabuccoService, MdaModel<XmlModel> target) {
+    /**
+     * Adds postConstruct and preDestroy deployment descriptor elements to the session.
+     * 
+     * @param document
+     *            the xml document
+     * @param sessionElement
+     *            the session element
+     * 
+     * @throws XmlTemplateException
+     */
+    private void addLifecycleMethods(XmlDocument document, Element sessionElement) throws XmlTemplateException {
 
-        String serviceName = nabuccoService.nodeToken1.tokenImage;
-        String referenceName = NabuccoTransformationUtility.firstToLower(serviceName);
-        String ejbName = super.resolveImport(serviceName);
+        // Template
+        XmlTemplate ejbTemplate = this.getVisitorContext().getTemplate(NabuccoXmlTemplateConstants.EJB_JAR_TEMPLATE);
 
-        this.createEjbReference(referenceName, ejbName, ejbName);
-    }
+        Element postConstruct = (Element) ejbTemplate.copyNodesByXPath(XPATH_POST_CONSTRUCT).get(0);
+        Element preDestroy = (Element) ejbTemplate.copyNodesByXPath(XPATH_PRE_DESTROY).get(0);
 
-    @Override
-    public void visit(ComponentDeclaration nabuccoComponent, MdaModel<XmlModel> target) {
-
-        String componentName = nabuccoComponent.nodeToken1.tokenImage;
-        String referenceName = NabuccoTransformationUtility.firstToLower(componentName);
-        String ejbName = super.resolveImport(componentName);
-
-        this.createEjbReference(referenceName, ejbName, ejbName);
+        sessionElement.appendChild(document.getDocument().importNode(postConstruct, true));
+        sessionElement.appendChild(document.getDocument().importNode(preDestroy, true));
     }
 
     /**
@@ -149,20 +156,19 @@ class NabuccoToXmlComponentEjbJarVisitor extends NabuccoToXmlVisitorSupport impl
      * @param name
      *            fully qualified name of the remote interface
      */
+    @SuppressWarnings("unused")
     private void createEjbReference(String fieldName, String ejbName, String interfaceName) {
 
         try {
-            XmlTemplate ejbTemplate = this.getVisitorContext().getTemplate(
-                    NabuccoXmlTemplateConstants.EJB_JAR_TEMPLATE);
+            XmlTemplate ejbTemplate = this.getVisitorContext()
+                    .getTemplate(NabuccoXmlTemplateConstants.EJB_JAR_TEMPLATE);
 
-            Element ejbRefElement = (Element) ejbTemplate.copyNodesByXPath(XPATH_EJB_REF).get(0);
+            Element ejbLocalRefElement = (Element) ejbTemplate.copyNodesByXPath(XPATH_EJB_REF).get(0);
 
-            ejbRefElement.getElementsByTagName(EJB_REF_NAME).item(0).setTextContent(ejbName);
-            ejbRefElement.getElementsByTagName(EJB_REF_REMOTE).item(0)
-                    .setTextContent(interfaceName);
+            ejbLocalRefElement.getElementsByTagName(EJB_REF_NAME).item(0).setTextContent(ejbName);
+            ejbLocalRefElement.getElementsByTagName(EJB_REF_REMOTE).item(0).setTextContent(interfaceName + REMOTE);
 
-            Element injectionElement = (Element) ejbRefElement.getElementsByTagName(
-                    INJECTION_TARGET).item(0);
+            Element injectionElement = (Element) ejbLocalRefElement.getElementsByTagName(INJECTION_TARGET).item(0);
 
             String pkg = NabuccoTransformationUtility.toImpl(this.getVisitorContext().getPackage());
 
@@ -178,7 +184,52 @@ class NabuccoToXmlComponentEjbJarVisitor extends NabuccoToXmlVisitorSupport impl
             injectionElement.getElementsByTagName(INJECTION_TARGET_NAME).item(0)
                     .setTextContent(NabuccoTransformationUtility.firstToLower(fieldName));
 
-            this.ejbReferenceList.add(ejbRefElement);
+            this.ejbRemoteReferenceList.add(ejbLocalRefElement);
+
+        } catch (XmlTemplateException te) {
+            throw new NabuccoVisitorException("Error creating service reference " + fieldName, te);
+        }
+    }
+
+    /**
+     * Create the EJB injection reference.
+     * 
+     * @param fieldName
+     *            name of the reference
+     * @param name
+     *            jndi name of the EJB reference
+     * @param name
+     *            fully qualified name of the remote interface
+     */
+    @SuppressWarnings("unused")
+    private void createEjbLocalReference(String fieldName, String ejbName, String interfaceName) {
+
+        try {
+            XmlTemplate ejbTemplate = this.getVisitorContext()
+                    .getTemplate(NabuccoXmlTemplateConstants.EJB_JAR_TEMPLATE);
+
+            Element ejbRefElement = (Element) ejbTemplate.copyNodesByXPath(XPATH_EJB_LOCAL_REF).get(0);
+
+            ejbRefElement.getElementsByTagName(EJB_REF_NAME).item(0).setTextContent(ejbName);
+            ejbRefElement.getElementsByTagName(EJB_REF_LOCAL).item(0).setTextContent(interfaceName + LOCAL);
+
+            Element injectionElement = (Element) ejbRefElement.getElementsByTagName(INJECTION_TARGET).item(0);
+
+            String pkg = NabuccoTransformationUtility.toImpl(this.getVisitorContext().getPackage());
+
+            StringBuilder injectionTarget = new StringBuilder();
+            injectionTarget.append(pkg);
+            injectionTarget.append(PKG_SEPARATOR);
+            injectionTarget.append(this.interfaceName);
+            injectionTarget.append(IMPLEMENTATION);
+
+            injectionElement.getElementsByTagName(INJECTION_TARGET_CLASS).item(0)
+                    .setTextContent(injectionTarget.toString());
+
+            injectionElement.getElementsByTagName(INJECTION_TARGET_NAME).item(0)
+                    .setTextContent(NabuccoTransformationUtility.firstToLower(fieldName));
+
+            this.ejbLocalReferenceList.add(ejbRefElement);
 
         } catch (XmlTemplateException te) {
             throw new NabuccoVisitorException("Error creating service reference " + fieldName, te);

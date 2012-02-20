@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -35,7 +35,7 @@ import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.SwitchStatement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
-import org.nabucco.framework.generator.compiler.template.NabuccoJavaTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoJavaTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.common.constants.ComponentRelationConstants;
 import org.nabucco.framework.generator.compiler.transformation.java.application.connector.util.DatatypeCollector;
 import org.nabucco.framework.generator.compiler.transformation.java.application.connector.util.ServiceLinkResolver;
@@ -66,8 +66,7 @@ import org.nabucco.framework.mda.template.java.JavaTemplateException;
  * 
  * @author Nicolas Moser, PRODYNA AG
  */
-class NabuccoToJavaDatatypeConnectorVisitor extends NabuccoToJavaVisitorSupport implements
-        ServerConstants {
+class NabuccoToJavaDatatypeConnectorVisitor extends NabuccoToJavaVisitorSupport implements ServerConstants {
 
     private JavaCompilationUnit unit;
 
@@ -121,8 +120,7 @@ class NabuccoToJavaDatatypeConnectorVisitor extends NabuccoToJavaVisitorSupport 
         try {
             // Load Template
             this.unit = super.extractAst(NabuccoJavaTemplateConstants.DATATYPE_CONNECTOR_TEMPLATE);
-            TypeDeclaration type = this.unit
-                    .getType(NabuccoJavaTemplateConstants.DATATYPE_CONNECTOR_TEMPLATE);
+            TypeDeclaration type = this.unit.getType(NabuccoJavaTemplateConstants.DATATYPE_CONNECTOR_TEMPLATE);
 
             javaFactory.getJavaAstType().setTypeName(type, name);
 
@@ -145,7 +143,7 @@ class NabuccoToJavaDatatypeConnectorVisitor extends NabuccoToJavaVisitorSupport 
                     super.getVisitorContext(), this.nabuccoApplication, this.unit);
 
             nabuccoConnector.accept(visitor, target);
-            
+
             // File creation
             this.unit.setProjectName(projectName);
             this.unit.setSourceFolder(super.getSourceFolder());
@@ -172,8 +170,7 @@ class NabuccoToJavaDatatypeConnectorVisitor extends NabuccoToJavaVisitorSupport 
     private void createJavadoc(ConnectorStatement nabuccoConnector, TypeDeclaration type) {
         Node application = nabuccoConnector.getParent().getParent().getParent().getParent();
         if (application instanceof ApplicationStatement) {
-            JavaAstSupport.convertJavadocAnnotations(
-                    ((ApplicationStatement) application).annotationDeclaration, type);
+            JavaAstSupport.convertJavadocAnnotations(((ApplicationStatement) application).annotationDeclaration, type);
         }
     }
 
@@ -191,8 +188,7 @@ class NabuccoToJavaDatatypeConnectorVisitor extends NabuccoToJavaVisitorSupport 
         pkg.append(PKG_SEPARATOR);
         pkg.append(PKG_CONNECTOR);
 
-        JavaAstElementFactory.getInstance().getJavaAstUnit()
-                .setPackage(unit.getUnitDeclaration(), pkg.toString());
+        JavaAstElementFactory.getInstance().getJavaAstUnit().setPackage(unit.getUnitDeclaration(), pkg.toString());
     }
 
     /**
@@ -203,8 +199,7 @@ class NabuccoToJavaDatatypeConnectorVisitor extends NabuccoToJavaVisitorSupport 
      * 
      * @throws JavaModelException
      */
-    private void createGetRelationTypes(ConnectorStatement nabuccoConnector)
-            throws JavaModelException {
+    private void createGetRelationTypes(ConnectorStatement nabuccoConnector) throws JavaModelException {
 
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
         JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
@@ -212,8 +207,8 @@ class NabuccoToJavaDatatypeConnectorVisitor extends NabuccoToJavaVisitorSupport 
         String type = this.nabuccoApplication.nodeToken2.tokenImage + COMPONENT_RELATION_TYPE;
         TypeReference typeReference = producer.createTypeReference(type, false);
 
-        MethodDeclaration getRelationType = (MethodDeclaration) javaFactory.getJavaAstType()
-                .getMethod(this.unit.getType(), SIGNATURE_GET_RELATIONTYPE);
+        MethodDeclaration getRelationType = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(
+                this.unit.getType(), SIGNATURE_GET_RELATIONTYPE);
 
         TypeReference returnType = javaFactory.getJavaAstMethod().getReturnType(getRelationType);
 
@@ -247,8 +242,7 @@ class NabuccoToJavaDatatypeConnectorVisitor extends NabuccoToJavaVisitorSupport 
      */
     private void createDatatypeMethods(ConnectorStatement connector) {
 
-        DatatypeCollector collector = new DatatypeCollector(super.getVisitorContext(),
-                this.nabuccoApplication);
+        DatatypeCollector collector = new DatatypeCollector(super.getVisitorContext(), this.nabuccoApplication);
 
         collector.accept(connector);
 
@@ -284,8 +278,8 @@ class NabuccoToJavaDatatypeConnectorVisitor extends NabuccoToJavaVisitorSupport 
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
         JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
 
-        MethodDeclaration getClass = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(
-                this.unit.getType(), SIGNATURE_GET_CLASS);
+        MethodDeclaration getClass = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(this.unit.getType(),
+                SIGNATURE_GET_CLASS);
 
         TypeReference typeReference = producer.createTypeReference(type, false);
 
@@ -317,13 +311,11 @@ class NabuccoToJavaDatatypeConnectorVisitor extends NabuccoToJavaVisitorSupport 
         JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
-        MethodDeclaration lookupMethod = (MethodDeclaration) javaFactory.getJavaAstType()
-                .getMethod(this.unit.getType(), SIGNATURE_LOOKUP_COMPONENT);
+        MethodDeclaration lookupMethod = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(
+                this.unit.getType(), SIGNATURE_LOOKUP_COMPONENT);
 
-        String applicationType = this.nabuccoApplication.nodeToken2.tokenImage
-                + COMPONENT_RELATION_TYPE;
-        TypeReference applicationTypeReference = producer.createTypeReference(applicationType,
-                false);
+        String applicationType = this.nabuccoApplication.nodeToken2.tokenImage + COMPONENT_RELATION_TYPE;
+        TypeReference applicationTypeReference = producer.createTypeReference(applicationType, false);
 
         // If Condition
         IfStatement ifStatement = (IfStatement) lookupMethod.statements[0];
@@ -336,16 +328,14 @@ class NabuccoToJavaDatatypeConnectorVisitor extends NabuccoToJavaVisitorSupport 
         CastExpression cast = (CastExpression) switchStatement.expression;
         cast.type = applicationTypeReference;
 
-        String source = collector.getSourceType().toUpperCase();
+        String source = collector.getSourceName().toUpperCase();
 
         List<CaseStatement> cases = new ArrayList<CaseStatement>();
         List<Statement> statements = new ArrayList<Statement>();
 
         for (String targetName : collector.getTargetMap().keySet()) {
-            String targetType = collector.getTargetMap().get(targetName);
-
             CaseStatement caseStatement = producer.createCaseStatement(source
-                    + CONSTANT_SEPARATOR + targetType.toUpperCase());
+                    + CONSTANT_SEPARATOR + targetName.toUpperCase());
 
             cases.add(caseStatement);
             statements.add(caseStatement);
@@ -356,22 +346,18 @@ class NabuccoToJavaDatatypeConnectorVisitor extends NabuccoToJavaVisitorSupport 
                 resolver = collector.getResolveServices().get(targetName);
 
                 if (resolver == null) {
-                    throw new IllegalStateException("No ServiceLink defined for target '"
-                            + targetName + "'.");
+                    throw new IllegalStateException("No ServiceLink defined for target '" + targetName + "'.");
                 }
             }
-            
+
             String component = resolver.getComponent();
 
             component = component.substring(component.lastIndexOf(PKG_SEPARATOR) + 1);
 
-            SingleNameReference componentLocator = producer.createSingleNameReference(component
-                    + LOCATOR);
+            SingleNameReference componentLocator = producer.createSingleNameReference(component + LOCATOR);
 
-            MessageSend getInstance = producer.createMessageSend("getInstance", componentLocator,
-                    null);
-            MessageSend getComponent = producer
-                    .createMessageSend("getComponent", getInstance, null);
+            MessageSend getInstance = producer.createMessageSend("getInstance", componentLocator, null);
+            MessageSend getComponent = producer.createMessageSend("getComponent", getInstance, null);
 
             ReturnStatement returnStatement = producer.createReturnStatement(getComponent);
             statements.add(returnStatement);
@@ -389,15 +375,14 @@ class NabuccoToJavaDatatypeConnectorVisitor extends NabuccoToJavaVisitorSupport 
      * 
      * @throws JavaModelException
      */
-    private void createInternalMethods(ConnectorStatement nabuccoConnector)
-            throws JavaModelException {
+    private void createInternalMethods(ConnectorStatement nabuccoConnector) throws JavaModelException {
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
-        MethodDeclaration maintain = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(
-                this.unit.getType(), SIGNATURE_INTERNAL_MAINTAIN);
+        MethodDeclaration maintain = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(this.unit.getType(),
+                SIGNATURE_INTERNAL_MAINTAIN);
 
-        MethodDeclaration resolve = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(
-                this.unit.getType(), SIGNATURE_INTERNAL_RESOLVE);
+        MethodDeclaration resolve = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(this.unit.getType(),
+                SIGNATURE_INTERNAL_RESOLVE);
 
         this.createMethod(maintain);
         this.createMethod(resolve);
@@ -414,10 +399,8 @@ class NabuccoToJavaDatatypeConnectorVisitor extends NabuccoToJavaVisitorSupport 
     private void createMethod(MethodDeclaration method) throws JavaModelException {
         JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
 
-        String applicationType = this.nabuccoApplication.nodeToken2.tokenImage
-                + COMPONENT_RELATION_TYPE;
-        TypeReference applicationTypeReference = producer.createTypeReference(applicationType,
-                false);
+        String applicationType = this.nabuccoApplication.nodeToken2.tokenImage + COMPONENT_RELATION_TYPE;
+        TypeReference applicationTypeReference = producer.createTypeReference(applicationType, false);
 
         // If Condition
         IfStatement ifStatement = (IfStatement) method.statements[0];

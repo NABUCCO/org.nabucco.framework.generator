@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.ant;
 
 import java.io.IOException;
@@ -25,6 +25,7 @@ import org.apache.tools.ant.Task;
 import org.nabucco.framework.generator.NabuccoGenerator;
 import org.nabucco.framework.generator.NabuccoGeneratorException;
 import org.nabucco.framework.generator.compiler.NabuccoCompilerOptions;
+import org.nabucco.framework.generator.compiler.NabuccoCompilerOptionType;
 import org.nabucco.framework.generator.parser.file.NabuccoFile;
 
 
@@ -195,15 +196,18 @@ public class NabuccoGeneratorTask extends Task {
         }
 
         NabuccoCompilerOptions options = NabuccoCompilerOptions.getDefaultOptions();
-        options.setOption(NabuccoCompilerOptions.ENGINE, engine);
-        options.setOption(NabuccoCompilerOptions.GEN_JAVA, String.valueOf(Boolean.FALSE));
-        options.setOption(NabuccoCompilerOptions.GEN_XML, String.valueOf(Boolean.FALSE));
-        options.setOption(NabuccoCompilerOptions.MERGE_FRAGMENTS, String.valueOf(Boolean.FALSE));
+        options.setOption(NabuccoCompilerOptionType.ENGINE, engine);
+        options.setOption(NabuccoCompilerOptionType.GEN_JAVA, String.valueOf(Boolean.FALSE));
+        options.setOption(NabuccoCompilerOptionType.GEN_XML, String.valueOf(Boolean.FALSE));
+        options.setOption(NabuccoCompilerOptionType.GEN_DOC, String.valueOf(Boolean.FALSE));
+        options.setOption(NabuccoCompilerOptionType.DISABLE_DOC_VALIDATION, String.valueOf(Boolean.TRUE));
+        options.setOption(NabuccoCompilerOptionType.MERGE_FRAGMENTS, String.valueOf(Boolean.FALSE));
+        options.setOption(NabuccoCompilerOptionType.VERBOSE, String.valueOf(Boolean.FALSE));
 
-        options.setOption(NabuccoCompilerOptions.TEMPLATE_DIR, templateSource);
+        options.setOption(NabuccoCompilerOptionType.TEMPLATE_DIR, templateSource);
 
         if (!destDir.isEmpty()) {
-            options.setOption(NabuccoCompilerOptions.OUT_DIR, destDir);
+            options.setOption(NabuccoCompilerOptionType.OUT_DIR, destDir);
         }
 
         return options;

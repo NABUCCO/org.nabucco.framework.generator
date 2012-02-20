@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler;
 
 import java.util.List;
@@ -25,11 +25,11 @@ import org.nabucco.framework.generator.compiler.transformation.engine.NabuccoTra
 import org.nabucco.framework.generator.compiler.transformation.util.file.NabuccoTargetFileCreator;
 import org.nabucco.framework.generator.compiler.visitor.NabuccoVisitor;
 import org.nabucco.framework.generator.parser.model.NabuccoModel;
-
 import org.nabucco.framework.mda.logger.MdaLogger;
 import org.nabucco.framework.mda.logger.MdaLoggingFactory;
 import org.nabucco.framework.mda.model.MdaModel;
 import org.nabucco.framework.mda.model.java.JavaModel;
+import org.nabucco.framework.mda.model.text.confluence.ConfluenceModel;
 import org.nabucco.framework.mda.model.xml.XmlModel;
 
 /**
@@ -46,8 +46,7 @@ public final class NabuccoCompiler {
 
     private NabuccoCompilerOptions options;
 
-    private static MdaLogger logger = MdaLoggingFactory.getInstance().getLogger(
-            NabuccoCompiler.class);
+    private static MdaLogger logger = MdaLoggingFactory.getInstance().getLogger(NabuccoCompiler.class);
 
     /**
      * Creates a new {@link NabuccoCompiler} instance with appropriate compiler options.
@@ -107,17 +106,46 @@ public final class NabuccoCompiler {
      * 
      * @throws NabuccoTransformationException
      */
-    private void transformModel(List<MdaModel<NabuccoModel>> modelList, String rootDir,
-            String component) throws NabuccoTransformationException {
+    private void transformModel(List<MdaModel<NabuccoModel>> modelList, String rootDir, String component)
+            throws NabuccoTransformationException {
 
-        NabuccoTransformationEngine engine = NabuccoTransformationEngineFactory.getInstance()
-                .retrieveEngine(rootDir, this.options);
+        NabuccoTransformationEngine engine = NabuccoTransformationEngineFactory.getInstance().retrieveEngine(rootDir,
+                this.options);
 
         engine.process(modelList);
 
+        this.generateConfluence(rootDir, engine.getConfluenceTarget());
         this.generateJava(rootDir, engine.getJavaTarget());
         this.generateXml(rootDir, engine.getXmlTarget());
         this.mergeFragments(rootDir, component);
+    }
+
+    /**
+     * Create Confluence files depending on the compiler option GEN_JAVA.
+     * 
+     * @param rootDir
+     *            the root directory
+     * @param mdaModel
+     *            the transformed java model
+     * 
+     * @throws NabuccoTransformationException
+     */
+    private void generateConfluence(String rootDir, MdaModel<ConfluenceModel> mdaModel)
+            throws NabuccoTransformationException {
+
+        Boolean genDoc = Boolean.valueOf(this.options.getOption(NabuccoCompilerOptionType.GEN_DOC));
+
+        if (genDoc) {
+            logger.debug("Compiler option 'GEN_DOC' is 'ENABLED'.");
+
+            NabuccoTargetFileCreator.getInstance().createConfluenceFiles(mdaModel, rootDir);
+        } else {
+            if (this.options.isVerbose()) {
+                logger.warning("Compiler option 'GEN_DOC' is 'DISABLED'.");
+            } else {
+                logger.debug("Compiler option 'GEN_DOC' is 'DISABLED'.");
+            }
+        }
     }
 
     /**
@@ -130,17 +158,20 @@ public final class NabuccoCompiler {
      * 
      * @throws NabuccoTransformationException
      */
-    private void generateJava(String rootDir, MdaModel<JavaModel> mdaModel)
-            throws NabuccoTransformationException {
+    private void generateJava(String rootDir, MdaModel<JavaModel> mdaModel) throws NabuccoTransformationException {
 
-        String formatter = this.options.getOption(NabuccoCompilerOptions.JAVA_FORMATTER_CONFIG);
-        Boolean genJava = Boolean.valueOf(this.options.getOption(NabuccoCompilerOptions.GEN_JAVA));
+        String formatter = this.options.getOption(NabuccoCompilerOptionType.JAVA_FORMATTER_CONFIG);
+        Boolean genJava = Boolean.valueOf(this.options.getOption(NabuccoCompilerOptionType.GEN_JAVA));
 
         if (genJava) {
             logger.debug("Compiler option 'GENERATE_JAVA' is 'ENABLED'.");
             NabuccoTargetFileCreator.getInstance().createJavaFiles(mdaModel, rootDir, formatter);
         } else {
-            logger.warning("Compiler option 'GENERATE_JAVA' is 'DISABLED'.");
+            if (this.options.isVerbose()) {
+                logger.warning("Compiler option 'GENERATE_JAVA' is 'DISABLED'.");
+            } else {
+                logger.debug("Compiler option 'GENERATE_JAVA' is 'DISABLED'.");
+            }
         }
     }
 
@@ -154,16 +185,19 @@ public final class NabuccoCompiler {
      * 
      * @throws NabuccoTransformationException
      */
-    private void generateXml(String rootDir, MdaModel<XmlModel> mdaModel)
-            throws NabuccoTransformationException {
+    private void generateXml(String rootDir, MdaModel<XmlModel> mdaModel) throws NabuccoTransformationException {
 
-        Boolean genXml = Boolean.valueOf(this.options.getOption(NabuccoCompilerOptions.GEN_XML));
+        Boolean genXml = Boolean.valueOf(this.options.getOption(NabuccoCompilerOptionType.GEN_XML));
 
         if (genXml) {
             logger.debug("Compiler option 'GENERATE_XML' is 'ENABLED'.");
             NabuccoTargetFileCreator.getInstance().createXmlFiles(mdaModel, rootDir);
         } else {
-            logger.warning("Compiler option 'GENERATE_XML' is 'DISABLED'.");
+            if (this.options.isVerbose()) {
+                logger.warning("Compiler option 'GENERATE_XML' is 'DISABLED'.");
+            } else {
+                logger.debug("Compiler option 'GENERATE_XML' is 'DISABLED'.");
+            }
         }
     }
 
@@ -178,17 +212,19 @@ public final class NabuccoCompiler {
      * 
      * @throws NabuccoTransformationException
      */
-    private void mergeFragments(String rootDir, String component)
-            throws NabuccoTransformationException {
+    private void mergeFragments(String rootDir, String component) throws NabuccoTransformationException {
 
-        Boolean mergeXml = Boolean.valueOf(this.options
-                .getOption(NabuccoCompilerOptions.MERGE_FRAGMENTS));
+        Boolean mergeXml = Boolean.valueOf(this.options.getOption(NabuccoCompilerOptionType.MERGE_FRAGMENTS));
 
         if (mergeXml) {
             logger.debug("Compiler option 'MERGE_FRAGMENTS' is 'ENABLED'.");
             NabuccoTargetFileCreator.getInstance().mergeFragments(rootDir, component);
         } else {
-            logger.warning("Compiler option 'MERGE_FRAGMENTS' is 'DISABLED'.");
+            if (this.options.isVerbose()) {
+                logger.warning("Compiler option 'MERGE_FRAGMENTS' is 'DISABLED'.");
+            } else {
+                logger.debug("Compiler option 'MERGE_FRAGMENTS' is 'DISABLED'.");
+            }
         }
     }
 }

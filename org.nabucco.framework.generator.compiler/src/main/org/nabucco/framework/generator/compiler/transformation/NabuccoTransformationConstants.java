@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation;
 
 import java.io.File;
@@ -40,21 +40,23 @@ public interface NabuccoTransformationConstants extends NabuccoConstants {
     final String PKG_WEB = "web";
 
     final String PKG_SERVER = "server";
-    
+
     final String PKG_BROWSER = "browser";
 
     final String PKG_CONNECTOR = "connector";
-    
+
     final String PKG_EDIT = "edit";
 
     final String PKG_LIST = "list";
 
     final String PKG_SEPARATOR = ".";
 
+    final String PATH_SEPARATOR = "/";
+    
     final String JAR_SEPARATOR = "/";
 
     final String TABLE_SEPARATOR = "_";
-    
+
     final String CONSTANT_SEPARATOR = "_";
 
     final String CONF = "conf";

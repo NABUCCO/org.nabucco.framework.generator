@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,7 +19,7 @@ package org.nabucco.framework.generator.compiler.transformation.java.exception;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
-import org.nabucco.framework.generator.compiler.template.NabuccoJavaTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoJavaTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.JavaAstSupport;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.container.JavaAstContainter;
 import org.nabucco.framework.generator.compiler.transformation.java.visitor.NabuccoToJavaVisitorContext;
@@ -67,13 +67,11 @@ class NabuccoToJavaExceptionVisitor extends NabuccoToJavaVisitorSupport {
         String name = nabuccoException.nodeToken2.tokenImage;
         String pkg = this.getVisitorContext().getPackage();
         String projectName = super.getProjectName(NabuccoModelType.EXCEPTION,
-                NabuccoModifierComponentMapper
-                        .getModifierType(nabuccoException.nodeToken.tokenImage));
+                NabuccoModifierComponentMapper.getModifierType(nabuccoException.nodeToken.tokenImage));
 
         try {
             // Load Template
-            JavaCompilationUnit unit = super
-                    .extractAst(NabuccoJavaTemplateConstants.EXCEPTION_TEMPLATE);
+            JavaCompilationUnit unit = super.extractAst(NabuccoJavaTemplateConstants.EXCEPTION_TEMPLATE);
             TypeDeclaration type = unit.getType(NabuccoJavaTemplateConstants.EXCEPTION_TEMPLATE);
 
             // Name and Package
@@ -88,8 +86,8 @@ class NabuccoToJavaExceptionVisitor extends NabuccoToJavaVisitorSupport {
             // Annotations
             JavaAstSupport.convertJavadocAnnotations(nabuccoException.annotationDeclaration, type);
 
-            JavaAstSupport.convertAstNodes(unit, this.getVisitorContext().getContainerList(), this
-                    .getVisitorContext().getImportList());
+            JavaAstSupport.convertAstNodes(unit, this.getVisitorContext().getContainerList(), this.getVisitorContext()
+                    .getImportList());
 
             // File creation
             unit.setProjectName(projectName);
@@ -109,15 +107,13 @@ class NabuccoToJavaExceptionVisitor extends NabuccoToJavaVisitorSupport {
 
         String name = nabuccoExceptionParam.nodeToken2.tokenImage;
 
-        // TODO: Implement Exception Parameters
+        // Exception Parameters
 
         JavaAstContainter<FieldDeclaration> field = JavaAstSupport.createField("String", name,
-                NabuccoModifierType.PRIVATE, false);
+                NabuccoModifierType.PRIVATE);
 
-        JavaAstContainter<MethodDeclaration> getter = JavaAstSupport.createGetter(field
-                .getAstNode());
-        JavaAstContainter<MethodDeclaration> setter = JavaAstSupport.createSetter(field
-                .getAstNode());
+        JavaAstContainter<MethodDeclaration> getter = JavaAstSupport.createGetter(field.getAstNode());
+        JavaAstContainter<MethodDeclaration> setter = JavaAstSupport.createSetter(field.getAstNode());
 
         super.getVisitorContext().getContainerList().add(field);
         super.getVisitorContext().getContainerList().add(getter);

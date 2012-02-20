@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,7 +25,6 @@ import org.nabucco.framework.generator.parser.model.NabuccoModel;
 import org.nabucco.framework.generator.parser.syntaxtree.ImportDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.PackageDeclaration;
 import org.nabucco.framework.generator.parser.visitor.GJVoidDepthFirst;
-
 import org.nabucco.framework.mda.model.MdaModel;
 
 /**
@@ -76,11 +75,11 @@ public abstract class TraversingNabuccoToJavaVisitor<A> extends GJVoidDepthFirst
         String importString = resolveImport(type);
 
         try {
-            MdaModel<NabuccoModel> model = NabuccoDependencyResolver.getInstance()
-                    .resolveDependency(this.context, this.context.getPackage(), importString);
-            
+            MdaModel<NabuccoModel> model = NabuccoDependencyResolver.getInstance().resolveDependency(this.context,
+                    this.context.getPackage(), importString);
+
             model.getModel().getUnit().accept(this, argument);
-            
+
         } catch (NabuccoTransformationException e) {
             throw new NabuccoVisitorException(e);
         }

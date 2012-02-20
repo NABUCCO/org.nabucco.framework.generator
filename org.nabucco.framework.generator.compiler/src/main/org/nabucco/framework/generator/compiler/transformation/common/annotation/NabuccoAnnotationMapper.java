@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,12 +17,13 @@
 package org.nabucco.framework.generator.compiler.transformation.common.annotation;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.nabucco.framework.generator.parser.syntaxtree.AnnotationDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.Node;
 import org.nabucco.framework.generator.parser.syntaxtree.NodeToken;
-
 import org.nabucco.framework.mda.logger.MdaLogger;
 import org.nabucco.framework.mda.logger.MdaLoggingFactory;
 
@@ -34,8 +35,7 @@ import org.nabucco.framework.mda.logger.MdaLoggingFactory;
 public class NabuccoAnnotationMapper {
 
     /** The logger */
-    private static MdaLogger logger = MdaLoggingFactory.getInstance().getLogger(
-            NabuccoAnnotationMapper.class);
+    private static MdaLogger logger = MdaLoggingFactory.getInstance().getLogger(NabuccoAnnotationMapper.class);
 
     /** Singleton instance. */
     private static NabuccoAnnotationMapper instance = new NabuccoAnnotationMapper();
@@ -64,7 +64,7 @@ public class NabuccoAnnotationMapper {
      * 
      * @return the list of annotations, probably filtered by the types
      */
-    public List<NabuccoAnnotation> mapToAnnotations(AnnotationDeclaration annotationDeclaration,
+    public List<NabuccoAnnotation> mapToAnnotationList(AnnotationDeclaration annotationDeclaration,
             NabuccoAnnotationGroupType... types) {
 
         if (annotationDeclaration == null) {
@@ -101,17 +101,16 @@ public class NabuccoAnnotationMapper {
     }
 
     /**
-     * Mapps the annotation declaration to a {@link NabuccoAnnotation}.
+     * Mapps the first annotation declaration of the given type to a {@link NabuccoAnnotation}.
      * 
      * @param annotationDeclaration
      *            the annotation declaration
      * @param type
      *            the annotation type
      * 
-     * @return the annotation, filtered by the constant name, or null
+     * @return the fist annotation, filtered by the constant name, or null if none exists
      */
-    public NabuccoAnnotation mapToAnnotation(AnnotationDeclaration annotationDeclaration,
-            NabuccoAnnotationType type) {
+    public NabuccoAnnotation mapToAnnotation(AnnotationDeclaration annotationDeclaration, NabuccoAnnotationType type) {
 
         for (Node node : annotationDeclaration.nodeListOptional.nodes) {
 
@@ -128,6 +127,67 @@ public class NabuccoAnnotationMapper {
             }
         }
         return null;
+    }
+
+    /**
+     * Converts annotation declarations to a hashmap with type as a key
+     * 
+     * @param annotationDeclaration
+     * @return
+     */
+    public Map<NabuccoAnnotationType, NabuccoAnnotation> convertAnnotationsToMap(
+            AnnotationDeclaration annotationDeclaration) {
+        Map<NabuccoAnnotationType, NabuccoAnnotation> retVal = new HashMap<NabuccoAnnotationType, NabuccoAnnotation>();
+
+        for (Node node : annotationDeclaration.nodeListOptional.nodes) {
+
+            String annotationName = ((NodeToken) node).tokenImage;
+
+            if (node instanceof NodeToken) {
+
+                NabuccoAnnotation annotation = this.mapStringToAnnotation(annotationName);
+
+                if (annotation == null) {
+                    logger.error("Cannot resolve annotation [", annotationName, "].");
+                } else {
+                    retVal.put(annotation.getType(), annotation);
+                }
+            }
+        }
+
+        return retVal;
+    }
+
+    /**
+     * Mapps all annotation declarations of a given type to a list of {@link NabuccoAnnotation}.
+     * 
+     * @param annotationDeclaration
+     *            the annotation declaration
+     * @param type
+     *            the annotation type
+     * 
+     * @return the list of annotations, filtered by the constant name, or null
+     */
+    public List<NabuccoAnnotation> mapToAnnotationList(AnnotationDeclaration annotationDeclaration,
+            NabuccoAnnotationType type) {
+
+        List<NabuccoAnnotation> annotationList = new ArrayList<NabuccoAnnotation>();
+
+        for (Node node : annotationDeclaration.nodeListOptional.nodes) {
+
+            String annotationName = ((NodeToken) node).tokenImage;
+
+            if (node instanceof NodeToken && annotationName.startsWith(type.getName())) {
+                NabuccoAnnotation annotation = this.mapStringToAnnotation(annotationName);
+
+                if (annotation == null) {
+                    logger.error("Cannot resolve annotation [", annotationName, "].");
+                }
+
+                annotationList.add(annotation);
+            }
+        }
+        return annotationList;
     }
 
     /**
@@ -162,8 +222,7 @@ public class NabuccoAnnotationMapper {
      * 
      * @return <code>true</code> only if the annotation is present, else <code>false</code>
      */
-    public boolean hasAnnotation(AnnotationDeclaration annotationDeclaration,
-            NabuccoAnnotationType... types) {
+    public boolean hasAnnotation(AnnotationDeclaration annotationDeclaration, NabuccoAnnotationType... types) {
         for (NabuccoAnnotationType type : types) {
             if (mapToAnnotation(annotationDeclaration, type) != null) {
                 return true;
@@ -241,6 +300,6 @@ public class NabuccoAnnotationMapper {
      * @return the trimmed value of the annotation
      */
     private String trim(String annotation, String key) {
-        return annotation.replace(key, "").replace("\t", "").trim().replace("\"", "");
+        return annotation.replaceFirst(key, "").replace("\t", "").trim().replace("\"", "");
     }
 }

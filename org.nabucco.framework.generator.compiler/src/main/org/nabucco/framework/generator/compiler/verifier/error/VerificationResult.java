@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,11 +16,11 @@
  */
 package org.nabucco.framework.generator.compiler.verifier.error;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.nabucco.framework.generator.parser.model.NabuccoModel;
 
@@ -33,7 +33,7 @@ public class VerificationResult {
 
     private NabuccoModel model;
 
-    private Map<VerificationErrorCriticality, List<VerificationError>> errorMap;
+    private Map<VerificationErrorCriticality, Set<VerificationError>> errorMap;
 
     /**
      * Creates a new {@link VerificationResult} instance.
@@ -46,7 +46,7 @@ public class VerificationResult {
             throw new IllegalArgumentException("Cannot verify model [null].");
         }
         this.model = model;
-        this.errorMap = new EnumMap<VerificationErrorCriticality, List<VerificationError>>(
+        this.errorMap = new EnumMap<VerificationErrorCriticality, Set<VerificationError>>(
                 VerificationErrorCriticality.class);
     }
 
@@ -70,7 +70,7 @@ public class VerificationResult {
         if (this.errorMap.containsKey(criticality)) {
             this.errorMap.get(criticality).add(error);
         } else {
-            List<VerificationError> errorList = new ArrayList<VerificationError>();
+            Set<VerificationError> errorList = new HashSet<VerificationError>();
             errorList.add(error);
             this.errorMap.put(criticality, errorList);
         }
@@ -120,55 +120,56 @@ public class VerificationResult {
      * 
      * @param criticality
      *            the error criticality
-     * @param row
-     *            the error row
-     * @param column
-     *            the error column
+     * @param beginLine
+     *            the starting error row
+     * @param endLine
+     *            the ending error row
+     * @param beginColumn
+     *            the starting error column
+     * @param endColumn
+     *            the ending error column
      * @param message
      *            the error message
      */
-    public void addError(VerificationErrorCriticality criticality, int row, int column,
-            String... message) {
-        this.addError(new VerificationError(criticality, row, column, message));
+    public void addError(VerificationErrorCriticality criticality, int beginLine, int endLine, int beginColumn,
+            int endColumn, String... message) {
+        this.addError(new VerificationError(criticality, beginLine, endLine, beginColumn, endColumn, message));
     }
 
     /**
-     * Returns the list of errors with ciriticality WARNING.
+     * Returns the set of errors with ciriticality WARNING.
      * 
-     * @return Returns the list of warnings.
+     * @return Returns the set of warnings.
      */
-    public List<VerificationError> getWarnings() {
+    public Set<VerificationError> getWarnings() {
         if (!this.hasWarnings()) {
-            return Collections.emptyList();
+            return Collections.emptySet();
         }
-        return new ArrayList<VerificationError>(
-                this.errorMap.get(VerificationErrorCriticality.WARNING));
+        return new HashSet<VerificationError>(this.errorMap.get(VerificationErrorCriticality.WARNING));
     }
 
     /**
-     * Returns the list of errors with ciriticality ERROR.
+     * Returns the set of errors with ciriticality ERROR.
      * 
-     * @return Returns the list of errors.
+     * @return Returns the set of errors.
      */
-    public List<VerificationError> getErrors() {
+    public Set<VerificationError> getErrors() {
         if (!this.hasErrors()) {
-            return Collections.emptyList();
+            return Collections.emptySet();
         }
-        return new ArrayList<VerificationError>(
-                this.errorMap.get(VerificationErrorCriticality.ERROR));
+        return new HashSet<VerificationError>(this.errorMap.get(VerificationErrorCriticality.ERROR));
     }
 
     /**
-     * Returns the list of errors with ciriticality FATAL.
+     * Returns the set of errors with ciriticality FATAL.
      * 
-     * @return Returns the list of fatals.
+     * @return Returns the set of fatals.
      */
-    public List<VerificationError> getFatals() {
+    public Set<VerificationError> getFatals() {
         if (!this.hasFatals()) {
-            return Collections.emptyList();
+            return Collections.emptySet();
         }
-        return new ArrayList<VerificationError>(
-                this.errorMap.get(VerificationErrorCriticality.FATAL));
+        return new HashSet<VerificationError>(this.errorMap.get(VerificationErrorCriticality.FATAL));
     }
 
     /**

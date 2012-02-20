@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,7 +16,9 @@
  */
 package org.nabucco.framework.generator.compiler.transformation.xml.datatype;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationException;
@@ -25,6 +27,8 @@ import org.nabucco.framework.generator.compiler.transformation.common.annotation
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationType;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.association.AssociationStrategyType;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.constraint.NabuccoConstraintAnnotationExtractor;
+import org.nabucco.framework.generator.compiler.transformation.java.constants.CollectionConstants;
+import org.nabucco.framework.generator.compiler.transformation.util.NabuccoTransformationUtility;
 import org.nabucco.framework.generator.compiler.transformation.util.dependency.NabuccoDependencyResolver;
 import org.nabucco.framework.generator.compiler.transformation.xml.constants.PersistenceConstants;
 import org.nabucco.framework.generator.compiler.transformation.xml.datatype.comparator.OrmAttributeComparator;
@@ -34,14 +38,14 @@ import org.nabucco.framework.generator.parser.model.NabuccoModel;
 import org.nabucco.framework.generator.parser.model.multiplicity.NabuccoMultiplicityType;
 import org.nabucco.framework.generator.parser.syntaxtree.AnnotationDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.BasetypeDeclaration;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
 import org.nabucco.framework.mda.logger.MdaLogger;
 import org.nabucco.framework.mda.logger.MdaLoggingFactory;
 import org.nabucco.framework.mda.model.MdaModel;
 import org.nabucco.framework.mda.template.xml.XmlTemplate;
 import org.nabucco.framework.mda.template.xml.XmlTemplateException;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * NabuccoToXmlDatatypeVisitorSupport
@@ -100,14 +104,12 @@ class NabuccoToXmlDatatypeVisitorSupport implements PersistenceConstants {
      * 
      * @throws XmlTemplateException
      */
-    public static Element resolveMapping(NabuccoMultiplicityType multiplicity,
-            AssociationStrategyType association, XmlTemplate template) throws XmlTemplateException {
+    public static Element resolveMapping(NabuccoMultiplicityType multiplicity, AssociationStrategyType association,
+            XmlTemplate template) throws XmlTemplateException {
 
         if (multiplicity == null) {
             throw new NabuccoVisitorException("Multiplicity is not valid " + multiplicity + ".");
         }
-
-        // TODO: Optional/Mandatory Annotations
 
         if (association == AssociationStrategyType.AGGREGATION) {
 
@@ -144,7 +146,7 @@ class NabuccoToXmlDatatypeVisitorSupport implements PersistenceConstants {
     }
 
     /**
-     * Resolves element tags (<id>, <version>, etc.) by attached NABUCCO annotations.
+     * Resolves element tags (id, version, etc.) by attached NABUCCO annotations.
      * 
      * @param annotationDeclaration
      *            the basetype declaration
@@ -154,27 +156,29 @@ class NabuccoToXmlDatatypeVisitorSupport implements PersistenceConstants {
      *            the column declaration name
      * @param length
      *            the column length
-     * @param immutable
-     *            whether the basetype is updatable or not
+     * @param nullable
+     *            whether the basetype is nullable or not
+     * @param addJpaSuffix
+     *            whether the basetype needs the 'JPA' suffix or not
      * 
      * @return the extracted {@link Element} instance.
      */
-    public static Element resolveElementType(AnnotationDeclaration annotationDeclaration,
-            XmlTemplate ormTemplate, String name, String length, boolean immutable) {
+    public static Element resolveElementType(AnnotationDeclaration annotationDeclaration, XmlTemplate ormTemplate,
+            String name, String length, boolean nullable, boolean addJpaSuffix) {
 
         try {
             Element element = null;
+            String tableName = NabuccoTransformationUtility.toTableName(name);
 
-            List<NabuccoAnnotation> annotationList = NabuccoAnnotationMapper.getInstance()
-                    .mapToAnnotations(annotationDeclaration);
+            List<NabuccoAnnotation> annotationList = NabuccoAnnotationMapper.getInstance().mapToAnnotationList(
+                    annotationDeclaration);
 
             for (NabuccoAnnotation annotation : annotationList) {
 
                 if (annotation.getType() == NabuccoAnnotationType.PRIMARY) {
 
                     element = (Element) ormTemplate.copyNodesByXPath(XPATH_ID).get(0);
-                    ((Element) element.getElementsByTagName(COLUMN).item(0)).setAttribute(NAME,
-                            name);
+                    ((Element) element.getElementsByTagName(COLUMN).item(0)).setAttribute(NAME, tableName);
 
                 } else if (annotation.getType() == NabuccoAnnotationType.OPTIMISTIC_LOCK) {
                     element = (Element) ormTemplate.copyNodesByXPath(XPATH_VERSION).get(0);
@@ -185,28 +189,29 @@ class NabuccoToXmlDatatypeVisitorSupport implements PersistenceConstants {
 
                 element = (Element) ormTemplate.copyNodesByXPath(XPATH_EMBEDDED).get(0);
 
-                Element attributeOverride = (Element) element.getElementsByTagName(
-                        ATTRIBUTE_OVERRIDE).item(0);
+                Element attributeOverride = (Element) element.getElementsByTagName(ATTRIBUTE_OVERRIDE).item(0);
 
                 if (length == null || length.isEmpty()) {
                     length = DEFAULT_COLUMN_LENGTH;
                 }
 
-                Element column = (Element) attributeOverride.getElementsByTagName(COLUMN).item(0);
-                column.setAttribute(NAME, name);
-                column.setAttribute(LENGTH, length);
-
-                if (immutable) {
-                    column.setAttribute(UPDATABLE, Boolean.FALSE.toString());
+                if (addJpaSuffix) {
+                    String nameValue = attributeOverride.getAttribute(NAME);
+                    attributeOverride.setAttribute(NAME, nameValue + CollectionConstants.SUFFIX_JPA);
                 }
+
+                Element column = (Element) attributeOverride.getElementsByTagName(COLUMN).item(0);
+                column.setAttribute(NAME, tableName);
+                column.setAttribute(LENGTH, length);
+                column.setAttribute(NULLABLE, String.valueOf(nullable));
+
             }
 
             element.setAttribute(NAME, name);
             return element;
 
         } catch (XmlTemplateException te) {
-            throw new NabuccoVisitorException("Error copying XML tags by XPath of '" + name + "'.",
-                    te);
+            throw new NabuccoVisitorException("Error copying XML tags by XPath of '" + name + "'.", te);
         }
     }
 
@@ -222,15 +227,15 @@ class NabuccoToXmlDatatypeVisitorSupport implements PersistenceConstants {
      * 
      * @return the column length
      */
-    public static String extractColumnLength(BasetypeDeclaration basetypeReference,
-            NabuccoVisitorContext context, String pkg, String importString) {
+    public static String extractColumnLength(BasetypeDeclaration basetypeReference, NabuccoVisitorContext context,
+            String pkg, String importString) {
 
         AnnotationDeclaration annotationDeclaration = basetypeReference.annotationDeclaration;
 
         Integer length = Integer.parseInt(DEFAULT_COLUMN_LENGTH);
 
-        NabuccoAnnotation maxLength = NabuccoAnnotationMapper.getInstance().mapToAnnotation(
-                annotationDeclaration, NabuccoAnnotationType.MAX_LENGTH);
+        NabuccoAnnotation maxLength = NabuccoAnnotationMapper.getInstance().mapToAnnotation(annotationDeclaration,
+                NabuccoAnnotationType.MAX_LENGTH);
 
         if (maxLength != null && maxLength.getValue() != null) {
 
@@ -244,8 +249,7 @@ class NabuccoToXmlDatatypeVisitorSupport implements PersistenceConstants {
                 }
 
             } catch (NumberFormatException e) {
-                logger.error("Cannot parse @MaxLength [", maxLength.getValue(), "]. ",
-                        e.getMessage());
+                logger.error("Cannot parse @MaxLength [", maxLength.getValue(), "]. ", e.getMessage());
             }
 
             return length.toString();
@@ -254,8 +258,8 @@ class NabuccoToXmlDatatypeVisitorSupport implements PersistenceConstants {
         try {
             NabuccoConstraintAnnotationExtractor extractor = new NabuccoConstraintAnnotationExtractor();
 
-            MdaModel<NabuccoModel> model = NabuccoDependencyResolver.getInstance()
-                    .resolveDependency(new NabuccoVisitorContext(context), pkg, importString);
+            MdaModel<NabuccoModel> model = NabuccoDependencyResolver.getInstance().resolveDependency(
+                    new NabuccoVisitorContext(context), pkg, importString);
 
             model.getModel().getUnit().accept(extractor);
 
@@ -277,17 +281,60 @@ class NabuccoToXmlDatatypeVisitorSupport implements PersistenceConstants {
      *            attribute list of new attributes
      */
     public static void mergeAttributeNodes(Element attributes, List<Node> attributeList) {
+        mergeNodes(attributes, attributeList, OrmAttributeComparator.getInstance());
+    }
 
-        while (attributes.hasChildNodes()) {
-            Node oldChild = attributes.getFirstChild();
-            attributeList.add(attributes.removeChild(oldChild));
+    /**
+     * Load all child nodes of an xml element.
+     * 
+     * @param entity
+     *            the child nodes of an element as list
+     * 
+     * @return the children as list
+     */
+    public static List<Node> loadChildren(Element entity) {
+        List<Node> entityNodes = new ArrayList<Node>();
+        NodeList nodes = entity.getChildNodes();
+        for (int i = 0; i < nodes.getLength(); i++) {
+            Node node = nodes.item(i);
+            entityNodes.add(node);
+        }
+        return entityNodes;
+    }
+
+    /**
+     * Merge the list of nodes by the given comparator.
+     * 
+     * @param parent
+     *            the parent element
+     * @param comparator
+     *            the comparator to sort
+     */
+    public static void sortNodes(Element parent, Comparator<Node> comparator) {
+        mergeNodes(parent, loadChildren(parent), comparator);
+    }
+
+    /**
+     * Merge the list of nodes by the given comparator.
+     * 
+     * @param parent
+     *            the parent element
+     * @param children
+     *            the list of children
+     * @param comparator
+     *            the comparator to sort
+     */
+    public static void mergeNodes(Element parent, List<Node> children, Comparator<Node> comparator) {
+        while (parent.hasChildNodes()) {
+            Node oldChild = parent.getFirstChild();
+            children.add(parent.removeChild(oldChild));
         }
 
-        Collections.sort(attributeList, OrmAttributeComparator.getInstance());
+        Collections.sort(children, comparator);
 
         // Add new nodes
-        for (Node attribute : attributeList) {
-            attributes.appendChild(attribute);
+        for (Node attribute : children) {
+            parent.appendChild(attribute);
         }
     }
 

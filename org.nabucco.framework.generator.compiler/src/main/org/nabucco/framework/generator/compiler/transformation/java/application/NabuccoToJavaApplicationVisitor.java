@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,7 +17,7 @@
 package org.nabucco.framework.generator.compiler.transformation.java.application;
 
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
-import org.nabucco.framework.generator.compiler.template.NabuccoJavaTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoJavaTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.java.application.connector.NabuccoToJavaConnectorVisitor;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.JavaAstSupport;
 import org.nabucco.framework.generator.compiler.transformation.java.visitor.NabuccoToJavaVisitorContext;
@@ -39,8 +39,7 @@ import org.nabucco.framework.mda.template.java.JavaTemplateException;
  * 
  * @author Nicolas Moser, PRODYNA AG
  */
-class NabuccoToJavaApplicationVisitor extends NabuccoToJavaVisitorSupport implements
-        NabuccoJavaTemplateConstants {
+class NabuccoToJavaApplicationVisitor extends NabuccoToJavaVisitorSupport implements NabuccoJavaTemplateConstants {
 
     /**
      * Creates a new {@link NabuccoToJavaApplicationVisitor} instance.
@@ -70,12 +69,10 @@ class NabuccoToJavaApplicationVisitor extends NabuccoToJavaVisitorSupport implem
             TypeDeclaration type = unit.getType(APPLICATION_TEMPLATE);
 
             javaFactory.getJavaAstType().setTypeName(type, name);
-            javaFactory.getJavaAstUnit().setPackage(unit.getUnitDeclaration(),
-                    super.getVisitorContext().getPackage());
+            javaFactory.getJavaAstUnit().setPackage(unit.getUnitDeclaration(), super.getVisitorContext().getPackage());
 
             // Annotations
-            JavaAstSupport
-                    .convertJavadocAnnotations(nabuccoApplication.annotationDeclaration, type);
+            JavaAstSupport.convertJavadocAnnotations(nabuccoApplication.annotationDeclaration, type);
 
             // File creation
             unit.setProjectName(projectName);
@@ -83,8 +80,8 @@ class NabuccoToJavaApplicationVisitor extends NabuccoToJavaVisitorSupport implem
 
             target.getModel().getUnitList().add(unit);
 
-            NabuccoToJavaConnectorVisitor visitor = new NabuccoToJavaConnectorVisitor(
-                    super.getVisitorContext(), nabuccoApplication);
+            NabuccoToJavaConnectorVisitor visitor = new NabuccoToJavaConnectorVisitor(super.getVisitorContext(),
+                    nabuccoApplication);
 
             nabuccoApplication.accept(visitor, target);
 

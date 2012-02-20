@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java.common.constraint;
 
 /**
@@ -27,9 +27,17 @@ final class NabuccoToJavaBasetypeConstraint extends NabuccoToJavaConstraint {
 
     private static String DEFAULT_MAX_LENGTH = "n";
 
+    private static String DEFAULT_MIN_VALUE = "0";
+
+    private static String DEFAULT_MAX_VALUE = "n";
+
     private String minLength;
 
     private String maxLength;
+
+    private String minValue;
+
+    private String maxValue;
 
     private String pattern;
 
@@ -43,6 +51,8 @@ final class NabuccoToJavaBasetypeConstraint extends NabuccoToJavaConstraint {
         super(isFieldConstraint);
         this.minLength = DEFAULT_MIN_LENGTH;
         this.maxLength = DEFAULT_MAX_LENGTH;
+        this.minValue = DEFAULT_MIN_VALUE;
+        this.maxValue = DEFAULT_MAX_VALUE;
     }
 
     @Override
@@ -55,6 +65,13 @@ final class NabuccoToJavaBasetypeConstraint extends NabuccoToJavaConstraint {
         value.append(this.minLength);
         value.append(",");
         value.append(this.maxLength);
+        value.append(SEPARATOR);
+
+        /* Value Constraints */
+        value.append(VALUE_CONSTRAINT);
+        value.append(this.minValue);
+        value.append(",");
+        value.append(this.maxValue);
         value.append(SEPARATOR);
 
         /* Pattern Constraints */
@@ -86,7 +103,25 @@ final class NabuccoToJavaBasetypeConstraint extends NabuccoToJavaConstraint {
             maxLength = DEFAULT_MAX_LENGTH;
         }
     }
-    
+
+    @Override
+    public void appendMinValueConstraint(String minValue) {
+        if (minValue != null) {
+            this.minValue = minValue;
+        } else {
+            minValue = DEFAULT_MIN_VALUE;
+        }
+    }
+
+    @Override
+    public void appendMaxValueConstraint(String maxValue) {
+        if (maxValue != null) {
+            this.maxValue = maxValue;
+        } else {
+            maxValue = DEFAULT_MAX_VALUE;
+        }
+    }
+
     @Override
     public void appendPatternConstraint(String pattern) {
         this.pattern = pattern;

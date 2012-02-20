@@ -1,23 +1,22 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java.common.constraint;
 
 import org.nabucco.framework.generator.parser.model.multiplicity.NabuccoMultiplicityType;
-
 import org.nabucco.framework.mda.logger.MdaLogger;
 import org.nabucco.framework.mda.logger.MdaLoggingFactory;
 
@@ -29,10 +28,9 @@ import org.nabucco.framework.mda.logger.MdaLoggingFactory;
 abstract class NabuccoToJavaConstraint implements NabuccoToJavaConstraintConstants {
 
     protected static String SEPARATOR = ";";
-    
-    private static MdaLogger logger = MdaLoggingFactory.getInstance().getLogger(
-            NabuccoToJavaConstraint.class);
-    
+
+    private static MdaLogger logger = MdaLoggingFactory.getInstance().getLogger(NabuccoToJavaConstraint.class);
+
     private NabuccoMultiplicityType multiplicity;
 
     private boolean field;
@@ -56,13 +54,12 @@ abstract class NabuccoToJavaConstraint implements NabuccoToJavaConstraintConstan
 
         StringBuilder value = new StringBuilder();
 
-        if (field) {
+        if (this.field) {
 
-            if (multiplicity == null) {
-                throw new IllegalStateException(
-                        "Multiplicity must be defined for Field constraint.");
+            if (this.multiplicity == null) {
+                throw new IllegalStateException("Multiplicity must be defined for Field constraint.");
             }
-            
+
             /* Multiplicity Constraints */
             value.append(MULTIPLICITY_CONSTRAINT);
             value.append(this.multiplicity.getConstraint());
@@ -91,6 +88,24 @@ abstract class NabuccoToJavaConstraint implements NabuccoToJavaConstraintConstan
     }
 
     /**
+     * Appends min value to the constraint.
+     * 
+     * @param minValue
+     *            the min value
+     */
+    public void appendMinValueConstraint(String minValue) {
+    }
+
+    /**
+     * Appends max value to the constraint.
+     * 
+     * @param maxValue
+     *            the max value
+     */
+    public void appendMaxValueConstraint(String maxValue) {
+    }
+
+    /**
      * Appends the multiplicity type to the constraint.
      * 
      * @param multiplicity
@@ -115,7 +130,7 @@ abstract class NabuccoToJavaConstraint implements NabuccoToJavaConstraintConstan
     public String toString() {
         return this.getValue();
     }
-    
+
     /**
      * Getter for the logger.
      * 

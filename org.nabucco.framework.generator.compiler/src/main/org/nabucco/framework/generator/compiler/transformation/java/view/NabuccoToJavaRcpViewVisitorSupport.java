@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -55,7 +55,7 @@ import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.ast.UnaryExpression;
 import org.eclipse.jdt.internal.compiler.ast.WhileStatement;
-import org.nabucco.framework.generator.compiler.template.NabuccoJavaTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoJavaTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationException;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.container.JavaAstContainter;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.container.JavaAstType;
@@ -69,7 +69,6 @@ import org.nabucco.framework.generator.compiler.transformation.util.dependency.N
 import org.nabucco.framework.generator.compiler.visitor.NabuccoVisitorException;
 import org.nabucco.framework.generator.parser.syntaxtree.DatatypeDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.NodeToken;
-
 import org.nabucco.framework.mda.model.java.JavaCompilationUnit;
 import org.nabucco.framework.mda.model.java.JavaModelException;
 import org.nabucco.framework.mda.model.java.ast.element.JavaAstElementFactory;
@@ -84,8 +83,8 @@ import org.nabucco.framework.mda.template.java.JavaTemplateException;
  * 
  * @author Silas Schwarz, Stefanie Feld, PRODYNA AG
  */
-public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupport implements
-        ViewConstants, CollectionConstants {
+public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupport implements ViewConstants,
+        CollectionConstants {
 
     /** Import String for DatatypeState. */
     private static final String COM_PRODYNA_NABUCCO_BASE_FACADE_DATATYPE_DATATYPE_STATE = "org.nabucco.framework.base.facade.datatype.DatatypeState";
@@ -159,8 +158,7 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
             try {
                 result.add(JavaAstModelProducer.getInstance().createImportReference(currentImport));
             } catch (JavaModelException e) {
-                throw new NabuccoVisitorException(
-                        "Error creating import reference for view support.", e);
+                throw new NabuccoVisitorException("Error creating import reference for view support.", e);
             }
         }
         return result;
@@ -178,8 +176,8 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
      * 
      * @throws JavaModelException
      */
-    public void changeSetter(MethodDeclaration setter, String mappedField)
-            throws NabuccoVisitorException, JavaModelException {
+    public void changeSetter(MethodDeclaration setter, String mappedField) throws NabuccoVisitorException,
+            JavaModelException {
         String[] accessPath = mappedField.split(FIELD_SEPARATOR);
         String localField = accessPath[0];
         String referencedFieldTypeKey = accessPath[1];
@@ -187,8 +185,7 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
         JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
-        String parameterName = NEW
-                + NabuccoTransformationUtility.firstToUpper(referencedFieldTypeKey);
+        String parameterName = NEW + NabuccoTransformationUtility.firstToUpper(referencedFieldTypeKey);
 
         // method signature
         String setterName = PREFIX_SETTER
@@ -214,15 +211,14 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
 
         JavaAstContainter<TypeReference> container;
 
-        Map<String, JavaAstContainter<TypeReference>> basetypeMap = this.fieldNameToFieldTypeProperties
-                .get(localField).get(BASETYPE);
-        Map<String, JavaAstContainter<TypeReference>> enumerationMap = this.fieldNameToFieldTypeProperties
-                .get(localField).get(ENUMERATION);
+        Map<String, JavaAstContainter<TypeReference>> basetypeMap = this.fieldNameToFieldTypeProperties.get(localField)
+                .get(BASETYPE);
+        Map<String, JavaAstContainter<TypeReference>> enumerationMap = this.fieldNameToFieldTypeProperties.get(
+                localField).get(ENUMERATION);
         if (basetypeMap != null && basetypeMap.containsKey(referencedFieldTypeKey)) {
             createNew.type = this.fieldNameToFieldTypeProperties.get(localField).get(BASETYPE)
                     .get(referencedFieldTypeKey).getAstNode();
-            container = this.fieldNameToFieldTypeProperties.get(localField).get(BASETYPE)
-                    .get(referencedFieldTypeKey);
+            container = this.fieldNameToFieldTypeProperties.get(localField).get(BASETYPE).get(referencedFieldTypeKey);
         } else if (enumerationMap != null && enumerationMap.containsKey(referencedFieldTypeKey)) {
             createNew.type = this.fieldNameToFieldTypeProperties.get(localField).get(ENUMERATION)
                     .get(referencedFieldTypeKey).getAstNode();
@@ -230,8 +226,7 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
                     .get(referencedFieldTypeKey);
         } else {
             throw new NabuccoVisitorException("Used MappedField \""
-                    + referencedFieldTypeKey
-                    + "\" is no Basetype or Enumeration.");
+                    + referencedFieldTypeKey + "\" is no Basetype or Enumeration.");
         }
 
         createNew.name = referencedFieldTypeKey.toCharArray();
@@ -241,8 +236,7 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
         }
 
         ((AllocationExpression) createNew.initialization).type = container.getAstNode();
-        ((SingleNameReference) ((MessageSend) ifBlock.statements[1]).receiver).token = localField
-                .toCharArray();
+        ((SingleNameReference) ((MessageSend) ifBlock.statements[1]).receiver).token = localField.toCharArray();
         ((MessageSend) ifBlock.statements[1]).selector = (PREFIX_SETTER + NabuccoTransformationUtility
                 .firstToUpper(referencedFieldTypeKey)).toCharArray();
         ((SingleNameReference) ((MessageSend) ifBlock.statements[1]).arguments[0]).token = referencedFieldTypeKey
@@ -252,22 +246,18 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
         // getting old value
         MessageSend gettingOldValue = (MessageSend) ((LocalDeclaration) setter.statements[1]).initialization;
 
-        ((SingleNameReference) (((MessageSend) gettingOldValue.receiver)).receiver).token = localField
-                .toCharArray();
+        ((SingleNameReference) (((MessageSend) gettingOldValue.receiver)).receiver).token = localField.toCharArray();
         ((MessageSend) (((MessageSend) ((LocalDeclaration) setter.statements[1]).initialization).receiver)).selector = (GET + NabuccoTransformationUtility
                 .firstToUpper(referencedFieldTypeKey)).toCharArray();
         // setting new value
         MessageSend settingNewValue = ((MessageSend) setter.statements[2]);
-        ((SingleNameReference) ((MessageSend) settingNewValue.receiver).receiver).token = localField
-                .toCharArray();
+        ((SingleNameReference) ((MessageSend) settingNewValue.receiver).receiver).token = localField.toCharArray();
         ((MessageSend) settingNewValue.receiver).selector = (GET + NabuccoTransformationUtility
                 .firstToUpper(referencedFieldTypeKey)).toCharArray();
         ((SingleNameReference) settingNewValue.arguments[0]).token = parameterName.toCharArray();
-        ((SingleNameReference) ((MessageSend) setter.statements[3]).arguments[0]).token = (PROPERTY
-                + UNDERSCORE + mappedField.toUpperCase().replace(PKG_SEPARATOR, UNDERSCORE))
-                .toCharArray();
-        ((SingleNameReference) ((MessageSend) setter.statements[3]).arguments[2]).token = parameterName
-                .toCharArray();
+        ((SingleNameReference) ((MessageSend) setter.statements[3]).arguments[0]).token = (PROPERTY + UNDERSCORE + mappedField
+                .toUpperCase().replace(PKG_SEPARATOR, UNDERSCORE)).toCharArray();
+        ((SingleNameReference) ((MessageSend) setter.statements[3]).arguments[2]).token = parameterName.toCharArray();
         AND_AND_Expression lateIfConfition = ((AND_AND_Expression) ((IfStatement) setter.statements[4]).condition);
         ((SingleNameReference) ((MessageSend) ((UnaryExpression) lateIfConfition.left).expression).arguments[0]).token = parameterName
                 .toCharArray();
@@ -278,8 +268,8 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
 
     }
 
-    public void changeSetterDatatype(MethodDeclaration setter, String mappedField)
-            throws NabuccoVisitorException, JavaModelException {
+    public void changeSetterDatatype(MethodDeclaration setter, String mappedField) throws NabuccoVisitorException,
+            JavaModelException {
         JavaAstModelProducer jamp = JavaAstModelProducer.getInstance();
 
         String[] accessPath = mappedField.split(FIELD_SEPARATOR);
@@ -296,11 +286,9 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
 
         SingleNameReference localFieldReference = jamp.createSingleNameReference(localField);
         MessageSend leftOfElseCondition = jamp.createMessageSend(
-                GET + NabuccoTransformationUtility.firstToUpper(referencedFieldTypeKey),
-                localFieldReference, null);
-        MessageSend third = jamp.createMessageSend(
-                GET + NabuccoTransformationUtility.firstToUpper(basetype), leftOfElseCondition,
-                null);
+                GET + NabuccoTransformationUtility.firstToUpper(referencedFieldTypeKey), localFieldReference, null);
+        MessageSend third = jamp.createMessageSend(GET + NabuccoTransformationUtility.firstToUpper(basetype),
+                leftOfElseCondition, null);
         MessageSend fourth = jamp.createMessageSend(GET_VALUE, third, null);
         SingleNameReference fieldValueReference = jamp.createSingleNameReference(FIELD_VALUE);
 
@@ -314,29 +302,24 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
         propertyString = propertyString + basetype.toUpperCase();
         SingleNameReference property = jamp.createSingleNameReference(propertyString);
 
-        MessageSend datatypeStateMS = jamp.createMessageSend(GET_DATATYPE_STATE,
-                leftOfElseCondition, null);
+        MessageSend datatypeStateMS = jamp.createMessageSend(GET_DATATYPE_STATE, leftOfElseCondition, null);
         List<Expression> arguments = new ArrayList<Expression>();
-        SingleNameReference datatypeStateReference = jamp
-                .createSingleNameReference(DATATYPE_STATE_PERSISTENT);
+        SingleNameReference datatypeStateReference = jamp.createSingleNameReference(DATATYPE_STATE_PERSISTENT);
         arguments.add(datatypeStateReference);
-        MessageSend fifthStatementConditionMS = jamp.createMessageSend(EQUALS, datatypeStateMS,
-                arguments);
+        MessageSend fifthStatementConditionMS = jamp.createMessageSend(EQUALS, datatypeStateMS, arguments);
         datatypeStateReference = jamp.createSingleNameReference(DATATYPE_STATE_MODIFIED);
         arguments.clear();
         arguments.add(datatypeStateReference);
-        MessageSend fifthStatementThenStatementMS = jamp.createMessageSend(SET_DATATYPE_STATE,
-                leftOfElseCondition, arguments);
+        MessageSend fifthStatementThenStatementMS = jamp.createMessageSend(SET_DATATYPE_STATE, leftOfElseCondition,
+                arguments);
 
         TypeReference fieldReference = jamp.createTypeReference(basetypeType, false);
-        AllocationExpression initializationExpression = jamp.createAllocationExpression(
-                fieldReference, null);
+        AllocationExpression initializationExpression = jamp.createAllocationExpression(fieldReference, null);
         datatypeStateReference = jamp.createSingleNameReference(FIELD);
         arguments.clear();
         arguments.add(datatypeStateReference);
-        MessageSend setFieldMS = jamp.createMessageSend(PREFIX_SETTER
-                + NabuccoTransformationUtility.firstToUpper(basetype), leftOfElseCondition,
-                arguments);
+        MessageSend setFieldMS = jamp.createMessageSend(
+                PREFIX_SETTER + NabuccoTransformationUtility.firstToUpper(basetype), leftOfElseCondition, arguments);
 
         IfStatement ifStatement = (IfStatement) setter.statements[0];
         OR_OR_Expression ifStatementCondition = (OR_OR_Expression) ifStatement.condition;
@@ -387,8 +370,7 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
      *            a mapped field
      * @throws JavaModelException
      */
-    public void changeGetter(MethodDeclaration getterMethod, String mappedField)
-            throws JavaModelException {
+    public void changeGetter(MethodDeclaration getterMethod, String mappedField) throws JavaModelException {
         String[] accessPath = mappedField.split(FIELD_SEPARATOR);
         String localField = accessPath[0];
         String referencedFieldTypeKey = accessPath[1];
@@ -436,8 +418,7 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
         javaFactory.getJavaAstMethodCall().setMethodName(methodName, getFieldCall);
     }
 
-    public void changeGetterDatatype(MethodDeclaration getterMethod, String mappedField)
-            throws JavaModelException {
+    public void changeGetterDatatype(MethodDeclaration getterMethod, String mappedField) throws JavaModelException {
         JavaAstModelProducer jamp = JavaAstModelProducer.getInstance();
 
         String[] accessPath = mappedField.split(FIELD_SEPARATOR);
@@ -462,10 +443,9 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
 
         SingleNameReference datatypeReference = jamp.createSingleNameReference(localField);
         MessageSend second = jamp.createMessageSend(
-                GET + NabuccoTransformationUtility.firstToUpper(referencedFieldTypeKey),
-                datatypeReference, null);
-        MessageSend third = jamp.createMessageSend(
-                GET + NabuccoTransformationUtility.firstToUpper(basetype), second, null);
+                GET + NabuccoTransformationUtility.firstToUpper(referencedFieldTypeKey), datatypeReference, null);
+        MessageSend third = jamp.createMessageSend(GET + NabuccoTransformationUtility.firstToUpper(basetype), second,
+                null);
         MessageSend fourth = jamp.createMessageSend(GET_VALUE, third, null);
 
         // change first expression
@@ -512,8 +492,7 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
         MessageSend expression = ((MessageSend) ((ReturnStatement) getterMethod.statements[1]).expression);
         MessageSend receiver = ((MessageSend) expression.receiver);
         ((SingleNameReference) receiver.receiver).token = localField.toCharArray();
-        receiver.selector = (GET + NabuccoTransformationUtility
-                .firstToUpper(referencedFieldTypeKey)).toCharArray();
+        receiver.selector = (GET + NabuccoTransformationUtility.firstToUpper(referencedFieldTypeKey)).toCharArray();
     }
 
     /**
@@ -527,8 +506,8 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
      *             if the manipulation fails
      * @throws JavaModelException
      */
-    public void changeSetterCombo(MethodDeclaration setter, String mappedField)
-            throws NabuccoVisitorException, JavaModelException {
+    public void changeSetterCombo(MethodDeclaration setter, String mappedField) throws NabuccoVisitorException,
+            JavaModelException {
         String[] accessPath = mappedField.split(FIELD_SEPARATOR);
         String localField = accessPath[0];
         String referencedFieldTypeKey = accessPath[1];
@@ -536,8 +515,7 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
         JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
-        String parameterName = NEW
-                + NabuccoTransformationUtility.firstToUpper(referencedFieldTypeKey);
+        String parameterName = NEW + NabuccoTransformationUtility.firstToUpper(referencedFieldTypeKey);
 
         // Signature
         StringBuilder setterName = new StringBuilder();
@@ -551,7 +529,7 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
         String enumPropertyName = NabuccoTransformationUtility.firstToUpper(referencedFieldTypeKey);
         JavaAstContainter<TypeReference> enumAstNode = this.fieldNameToFieldTypeProperties.get(localField)
                 .get("Enumeration").get(referencedFieldTypeKey);
-        
+
         TypeReference enumType = enumAstNode.getAstNode();
 
         // 1. Statement
@@ -560,8 +538,7 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
 
         BinaryExpression checkCondition = (BinaryExpression) ifChecks.condition;
         MessageSend callGetEnum = ((MessageSend) checkCondition.left);
-        javaFactory.getJavaAstMethodCall().setMethodName(PREFIX_GETTER + enumPropertyName,
-                callGetEnum);
+        javaFactory.getJavaAstMethodCall().setMethodName(PREFIX_GETTER + enumPropertyName, callGetEnum);
         callGetEnum.receiver = producer.createFieldThisReference(localField);
 
         Block thenBlock = (Block) ifChecks.thenStatement;
@@ -571,8 +548,7 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
 
         // 2. Statement
         MessageSend callSetEnum = (MessageSend) setter.statements[2];
-        javaFactory.getJavaAstMethodCall().setMethodName(PREFIX_SETTER + enumPropertyName,
-                callSetEnum);
+        javaFactory.getJavaAstMethodCall().setMethodName(PREFIX_SETTER + enumPropertyName, callSetEnum);
         callSetEnum.receiver = producer.createFieldThisReference(localField);
         SingleNameReference parameterReference = producer.createSingleNameReference(parameterName);
         callSetEnum.arguments[0] = producer.createMessageSend("valueOf", enumType,
@@ -618,8 +594,7 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
      * @param context
      *            current visitors context
      */
-    public void createMappingInformation(DatatypeDeclaration datatypeDeclaration,
-            NabuccoToJavaVisitorContext context) {
+    public void createMappingInformation(DatatypeDeclaration datatypeDeclaration, NabuccoToJavaVisitorContext context) {
 
         String fieldName = datatypeDeclaration.nodeToken2.tokenImage;
         String fieldType = ((NodeToken) datatypeDeclaration.nodeChoice1.choice).tokenImage;
@@ -627,7 +602,6 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
 
         this.fieldTypeMap.put(fieldName, fieldType);
 
-        // TODO: Create clone() method in visitor context!
         NabuccoToJavaVisitorContext iterationContext = new NabuccoToJavaVisitorContext();
         iterationContext.setRootDir(context.getRootDir());
         iterationContext.setOutDir(context.getOutDir());
@@ -637,8 +611,8 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
 
         try {
             String pkg = super.getVisitorContext().getPackage();
-            NabuccoDependencyResolver.getInstance().resolveDependency(context, pkg, importString)
-                    .getModel().getUnit().accept(visitor, this.getFieldNameToTypeReference());
+            NabuccoDependencyResolver.getInstance().resolveDependency(context, pkg, importString).getModel().getUnit()
+                    .accept(visitor, this.getFieldNameToTypeReference());
             this.getFieldNameToFieldTypeProperties().put(datatypeDeclaration.nodeToken2.tokenImage,
                     this.getFieldNameToTypeReference());
             context.getContainerList().addAll(iterationContext.getContainerList());
@@ -668,35 +642,28 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
             createGetterSetterForFieldHelper(visitorContext, fieldName, fieldType);
 
         } catch (JavaModelException e) {
-            throw new NabuccoVisitorException("Error creating getter and setter for field "
-                    + fieldName
-                    + ".", e);
+            throw new NabuccoVisitorException("Error creating getter and setter for field " + fieldName + ".", e);
         } catch (JavaTemplateException e) {
-            throw new NabuccoVisitorException("Error creating getter and setter for field "
-                    + fieldName
-                    + ".", e);
+            throw new NabuccoVisitorException("Error creating getter and setter for field " + fieldName + ".", e);
         }
     }
 
-    private void createGetterSetterForFieldHelper(NabuccoToJavaVisitorContext visitorContext,
-            String fieldName, String fieldType) throws JavaTemplateException, JavaModelException {
+    private void createGetterSetterForFieldHelper(NabuccoToJavaVisitorContext visitorContext, String fieldName,
+            String fieldType) throws JavaTemplateException, JavaModelException {
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
         JavaCompilationUnit dataTypeUnit = super
                 .extractAst(NabuccoJavaTemplateConstants.COMMON_VIEW_MODEL_METHOD_TEMPLATE);
         TypeDeclaration dataTypeType = dataTypeUnit
                 .getType(NabuccoJavaTemplateConstants.COMMON_VIEW_MODEL_METHOD_TEMPLATE);
-        MethodDeclaration setterMethod = (MethodDeclaration) javaFactory.getJavaAstType()
-                .getMethod(dataTypeType, new JavaAstMethodSignature(SET_DATATYPE, DATATYPE));
-        setterMethod.selector = (PREFIX_SETTER + NabuccoTransformationUtility
-                .firstToUpper(fieldName)).toCharArray();
+        MethodDeclaration setterMethod = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(dataTypeType,
+                new JavaAstMethodSignature(SET_DATATYPE, DATATYPE));
+        setterMethod.selector = (PREFIX_SETTER + NabuccoTransformationUtility.firstToUpper(fieldName)).toCharArray();
         ((SingleTypeReference) setterMethod.arguments[0].type).token = fieldType.toCharArray();
-        ((SingleTypeReference) ((LocalDeclaration) setterMethod.statements[0]).type).token = fieldType
-                .toCharArray();
+        ((SingleTypeReference) ((LocalDeclaration) setterMethod.statements[0]).type).token = fieldType.toCharArray();
         ((FieldReference) ((LocalDeclaration) setterMethod.statements[0]).initialization).token = fieldName
                 .toCharArray();
-        ((FieldReference) ((Assignment) setterMethod.statements[1]).lhs).token = fieldName
-                .toCharArray();
+        ((FieldReference) ((Assignment) setterMethod.statements[1]).lhs).token = fieldName.toCharArray();
         // add foreach property one update-statement
 
         // FIXME: Potential null-pointer!!!
@@ -706,11 +673,7 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
         int position = setterMethod.statements.length;
         for (String property : usedSubSet.keySet()) {
             JavaAstModelProducer jamp = JavaAstModelProducer.getInstance();
-            String prop = PROPERTY
-                    + UNDERSCORE
-                    + fieldName.toUpperCase()
-                    + UNDERSCORE
-                    + property.toUpperCase();
+            String prop = PROPERTY + UNDERSCORE + fieldName.toUpperCase() + UNDERSCORE + property.toUpperCase();
 
             List<Expression> args = new LinkedList<Expression>();
 
@@ -718,39 +681,36 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
             // second param
             SingleNameReference left = jamp.createSingleNameReference(OLD_VALUE);
             Literal right = jamp.createLiteral(NULL, LiteralType.NULL_LITERAL);
-            Expression condition = jamp.createBinaryExpression(
-                    BinaryExpressionType.EQUAL_EXPRESSION, left, right, EqualExpression.NOT_EQUAL);
+            Expression condition = jamp.createBinaryExpression(BinaryExpressionType.EQUAL_EXPRESSION, left, right,
+                    EqualExpression.NOT_EQUAL);
             SingleNameReference receiver = jamp.createSingleNameReference(OLD_VALUE);
-            Expression valueIfTrue = jamp.createMessageSend(
-                    GET + NabuccoTransformationUtility.firstToUpper(property), receiver, null);
+            Expression valueIfTrue = jamp.createMessageSend(GET + NabuccoTransformationUtility.firstToUpper(property),
+                    receiver, null);
             Expression valueIfFalse = jamp.createLiteral(EMPTY_STRING, LiteralType.STRING_LITERAL);
-            ConditionalExpression ceOld = jamp.createConditionalExpression(condition, valueIfTrue,
-                    valueIfFalse);
+            ConditionalExpression ceOld = jamp.createConditionalExpression(condition, valueIfTrue, valueIfFalse);
             // third param
             left = jamp.createSingleNameReference(NEW_VALUE);
-            condition = jamp.createBinaryExpression(BinaryExpressionType.EQUAL_EXPRESSION, left,
-                    right, EqualExpression.NOT_EQUAL);
+            condition = jamp.createBinaryExpression(BinaryExpressionType.EQUAL_EXPRESSION, left, right,
+                    EqualExpression.NOT_EQUAL);
             receiver = jamp.createSingleNameReference(NEW_VALUE);
-            valueIfTrue = jamp.createMessageSend(
-                    GET + NabuccoTransformationUtility.firstToUpper(property), receiver, null);
+            valueIfTrue = jamp.createMessageSend(GET + NabuccoTransformationUtility.firstToUpper(property), receiver,
+                    null);
             valueIfFalse = jamp.createLiteral(EMPTY_STRING, LiteralType.STRING_LITERAL);
-            ConditionalExpression ceNew = jamp.createConditionalExpression(condition, valueIfTrue,
-                    valueIfFalse);
+            ConditionalExpression ceNew = jamp.createConditionalExpression(condition, valueIfTrue, valueIfFalse);
 
             args.add(snr);
             args.add(ceOld);
             args.add(ceNew);
 
             Expression newStatementExpression = jamp.createSingleNameReference(THIS);
-            Statement newStatement = jamp.createMessageSend(UPDATE_PROPERTY,
-                    newStatementExpression, args);
+            Statement newStatement = jamp.createMessageSend(UPDATE_PROPERTY, newStatementExpression, args);
             newArray[position] = newStatement;
 
             position++;
         }
         setterMethod.statements = newArray;
-        JavaAstContainter<MethodDeclaration> container = new JavaAstContainter<MethodDeclaration>(
-                setterMethod, JavaAstType.METHOD);
+        JavaAstContainter<MethodDeclaration> container = new JavaAstContainter<MethodDeclaration>(setterMethod,
+                JavaAstType.METHOD);
 
         visitorContext.getContainerList().add(container);
     }
@@ -765,12 +725,10 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
      * 
      * @return the setter container
      */
-    public JavaAstContainter<MethodDeclaration> createSetterForModelSet(FieldDeclaration field,
-            String constantName) {
+    public JavaAstContainter<MethodDeclaration> createSetterForModelSet(FieldDeclaration field, String constantName) {
 
         try {
-            MethodDeclaration setter = JavaAstGetterSetterProducer.getInstance().produceSetter(
-                    field);
+            MethodDeclaration setter = JavaAstGetterSetterProducer.getInstance().produceSetter(field);
 
             JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
             JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
@@ -779,8 +737,7 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
             FieldReference fieldReference = producer.createFieldThisReference(fieldName);
             SingleNameReference nameReference = producer.createSingleNameReference(fieldName);
 
-            SingleNameReference propertyReference = producer.createSingleNameReference(constantName
-                    .toUpperCase());
+            SingleNameReference propertyReference = producer.createSingleNameReference(constantName.toUpperCase());
 
             Assignment assignment = producer.createAssignment(fieldReference, nameReference);
 
@@ -792,8 +749,8 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
 
             // Container
 
-            JavaAstContainter<MethodDeclaration> containter = new JavaAstContainter<MethodDeclaration>(
-                    setter, JavaAstType.METHOD);
+            JavaAstContainter<MethodDeclaration> containter = new JavaAstContainter<MethodDeclaration>(setter,
+                    JavaAstType.METHOD);
 
             return containter;
 
@@ -802,9 +759,8 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
         }
     }
 
-    public void createSetterForFieldDatatype(NabuccoToJavaVisitorContext visitorContext,
-            String localField, String fieldName, String fieldType, String property)
-            throws JavaTemplateException, JavaModelException {
+    public void createSetterForFieldDatatype(NabuccoToJavaVisitorContext visitorContext, String localField,
+            String fieldName, String fieldType, String property) throws JavaTemplateException, JavaModelException {
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
         JavaAstModelProducer jamp = JavaAstModelProducer.getInstance();
 
@@ -814,60 +770,48 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
                 .getType(NabuccoJavaTemplateConstants.COMMON_VIEW_MODEL_METHOD_TEMPLATE);
 
         // select the method
-        MethodDeclaration setterMethod = (MethodDeclaration) javaFactory.getJavaAstType()
-                .getMethod(dataTypeType,
-                        new JavaAstMethodSignature(SET_DATATYPE_DATATYPE, DATATYPE));
+        MethodDeclaration setterMethod = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(dataTypeType,
+                new JavaAstMethodSignature(SET_DATATYPE_DATATYPE, DATATYPE));
         // change the name
-        setterMethod.selector = (PREFIX_SETTER + NabuccoTransformationUtility
-                .firstToUpper(fieldName)).toCharArray();
+        setterMethod.selector = (PREFIX_SETTER + NabuccoTransformationUtility.firstToUpper(fieldName)).toCharArray();
 
         TypeReference datatypeReference = jamp.createTypeReference(fieldType, false);
         FieldReference localFieldReference = jamp.createFieldThisReference(localField);
-        MessageSend localFieldGetProperty = jamp.createMessageSend(GET
-                + NabuccoTransformationUtility.firstToUpper(fieldName), localFieldReference, null);
+        MessageSend localFieldGetProperty = jamp.createMessageSend(
+                GET + NabuccoTransformationUtility.firstToUpper(fieldName), localFieldReference, null);
         ThisReference thisReference = jamp.createThisReference();
-        MessageSend getLocalField = jamp.createMessageSend(
-                GET + NabuccoTransformationUtility.firstToUpper(localField), thisReference, null);
+        MessageSend getLocalField = jamp.createMessageSend(GET + NabuccoTransformationUtility.firstToUpper(localField),
+                thisReference, null);
         SingleNameReference newValue = jamp.createSingleNameReference(NEW_VALUE);
         List<Expression> arguments = new ArrayList<Expression>();
         arguments.add(newValue);
-        MessageSend getLocalFieldSetProperty = jamp.createMessageSend(PREFIX_SETTER
-                + NabuccoTransformationUtility.firstToUpper(fieldName), getLocalField, arguments);
+        MessageSend getLocalFieldSetProperty = jamp.createMessageSend(
+                PREFIX_SETTER + NabuccoTransformationUtility.firstToUpper(fieldName), getLocalField, arguments);
 
-        MessageSend localFieldSetProperty = jamp.createMessageSend(PREFIX_SETTER
-                + NabuccoTransformationUtility.firstToUpper(fieldName), localFieldReference,
-                arguments);
+        MessageSend localFieldSetProperty = jamp.createMessageSend(
+                PREFIX_SETTER + NabuccoTransformationUtility.firstToUpper(fieldName), localFieldReference, arguments);
 
         SingleNameReference oldValue = jamp.createSingleNameReference(OLD_VALUE);
         MessageSend oldValueGetProperty = jamp.createMessageSend(
                 GET + NabuccoTransformationUtility.firstToUpper(property), oldValue, null);
-        MessageSend oldValueGetPropertyGetValue = jamp.createMessageSend(GET_VALUE,
-                oldValueGetProperty, null);
+        MessageSend oldValueGetPropertyGetValue = jamp.createMessageSend(GET_VALUE, oldValueGetProperty, null);
 
         MessageSend newValueGetProperty = jamp.createMessageSend(
                 GET + NabuccoTransformationUtility.firstToUpper(property), newValue, null);
-        MessageSend newValueGetPropertyGetValue = jamp.createMessageSend(GET_VALUE,
-                newValueGetProperty, null);
+        MessageSend newValueGetPropertyGetValue = jamp.createMessageSend(GET_VALUE, newValueGetProperty, null);
 
         arguments.clear();
         String propertyString = PROPERTY
-                + UNDERSCORE
-                + localField.toUpperCase()
-                + UNDERSCORE
-                + fieldName.toUpperCase()
-                + UNDERSCORE
+                + UNDERSCORE + localField.toUpperCase() + UNDERSCORE + fieldName.toUpperCase() + UNDERSCORE
                 + property.toUpperCase();
 
         SingleNameReference propertyReference = jamp.createSingleNameReference(propertyString);
-        SingleNameReference oldValueStringReference = jamp.createSingleNameReference(OLD_VALUE
-                + STRING);
-        SingleNameReference newValueStringReference = jamp.createSingleNameReference(NEW_VALUE
-                + STRING);
+        SingleNameReference oldValueStringReference = jamp.createSingleNameReference(OLD_VALUE + STRING);
+        SingleNameReference newValueStringReference = jamp.createSingleNameReference(NEW_VALUE + STRING);
         arguments.add(propertyReference);
         arguments.add(oldValueStringReference);
         arguments.add(newValueStringReference);
-        MessageSend updateProperty = jamp.createMessageSend(UPDATE_PROPERTY, thisReference,
-                arguments);
+        MessageSend updateProperty = jamp.createMessageSend(UPDATE_PROPERTY, thisReference, arguments);
 
         // change argument type
         Argument methodArgument = setterMethod.arguments[0];
@@ -913,8 +857,8 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
         // change eighth statement
         setterMethod.statements[7] = updateProperty;
 
-        JavaAstContainter<MethodDeclaration> container = new JavaAstContainter<MethodDeclaration>(
-                setterMethod, JavaAstType.METHOD);
+        JavaAstContainter<MethodDeclaration> container = new JavaAstContainter<MethodDeclaration>(setterMethod,
+                JavaAstType.METHOD);
 
         visitorContext.getContainerList().add(container);
     }
@@ -949,8 +893,8 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
                 }
                 return currentMap;
             }
-            for (Map.Entry<String, JavaAstContainter<TypeReference>> currentDatatype : current
-                    .getValue().get(DATATYPE).entrySet()) {
+            for (Map.Entry<String, JavaAstContainter<TypeReference>> currentDatatype : current.getValue().get(DATATYPE)
+                    .entrySet()) {
                 if (currentDatatype.getKey().compareTo(entry) == 0) {
                     Map<String, JavaAstContainter<TypeReference>> currentMap = new HashMap<String, JavaAstContainter<TypeReference>>();
                     currentMap.put(currentDatatype.getKey(),
@@ -963,8 +907,7 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
         return null;
     }
 
-    public void changeSetterSet(MethodDeclaration setter, String mappedField)
-            throws JavaModelException {
+    public void changeSetterSet(MethodDeclaration setter, String mappedField) throws JavaModelException {
 
         JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
@@ -972,8 +915,7 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
         String[] accessPath = mappedField.split(FIELD_SEPARATOR);
         String localField = accessPath[0];
         String childName = accessPath[1];
-        String childGetterName = PREFIX_GETTER
-                + NabuccoTransformationUtility.firstToUpper(childName);
+        String childGetterName = PREFIX_GETTER + NabuccoTransformationUtility.firstToUpper(childName);
 
         String setterName = PREFIX_SETTER + NabuccoTransformationUtility.firstToUpper(localField);
 
@@ -985,8 +927,7 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
             delegateSetterName.append(name);
         }
 
-        TypeReference typeReference = producer.createTypeReference(
-                this.fieldTypeMap.get(localField), false);
+        TypeReference typeReference = producer.createTypeReference(this.fieldTypeMap.get(localField), false);
 
         FieldReference fieldReference = producer.createFieldThisReference(localField);
 
@@ -994,8 +935,8 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
 
         javaFactory.getJavaAstMethod().setMethodName(setter, setterName);
 
-        ParameterizedSingleTypeReference typeRef = (ParameterizedSingleTypeReference) javaFactory
-                .getJavaAstArgument().getType(setter.arguments[0]);
+        ParameterizedSingleTypeReference typeRef = (ParameterizedSingleTypeReference) javaFactory.getJavaAstArgument()
+                .getType(setter.arguments[0]);
 
         typeRef.typeArguments[0] = typeReference;
 
@@ -1037,8 +978,7 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
 
         // 6. Statement
         MessageSend callSetString = (MessageSend) setter.statements[5];
-        javaFactory.getJavaAstMethodCall().setMethodName(delegateSetterName.toString(),
-                callSetString);
+        javaFactory.getJavaAstMethodCall().setMethodName(delegateSetterName.toString(), callSetString);
 
     }
 
@@ -1070,11 +1010,10 @@ public class NabuccoToJavaRcpViewVisitorSupport extends NabuccoToJavaVisitorSupp
         JavaAstModelProducer modelProducer = JavaAstModelProducer.getInstance();
         ThisReference thisReference = modelProducer.createThisReference();
         SingleNameReference methodResult = modelProducer.createSingleNameReference(RESULT);
-        SingleNameReference propertyName = modelProducer.createSingleNameReference(propertyToken
-                .toString());
+        SingleNameReference propertyName = modelProducer.createSingleNameReference(propertyToken.toString());
 
-        MessageSend operationCall = modelProducer.createMessageSend(methodName.toString(),
-                thisReference, Collections.<Expression> emptyList());
+        MessageSend operationCall = modelProducer.createMessageSend(methodName.toString(), thisReference,
+                Collections.<Expression> emptyList());
         newStatements[index] = modelProducer.createMessageSend("put", methodResult,
                 Arrays.asList(new Expression[] { propertyName, operationCall }));
 

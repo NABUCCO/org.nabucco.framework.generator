@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,11 +16,11 @@
  */
 package org.nabucco.framework.generator.compiler.transformation.java.component;
 
-import org.nabucco.framework.generator.compiler.template.NabuccoJavaTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoJavaTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationContext;
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationException;
 import org.nabucco.framework.generator.compiler.transformation.java.NabuccoToJavaTransformation;
-import org.nabucco.framework.generator.compiler.transformation.java.visitor.NabuccoToJavaModelVisitor;
+import org.nabucco.framework.generator.compiler.transformation.java.visitor.NabuccoToJavaVisitor;
 import org.nabucco.framework.generator.compiler.transformation.java.visitor.NabuccoToJavaVisitorContext;
 import org.nabucco.framework.generator.compiler.visitor.NabuccoVisitorException;
 import org.nabucco.framework.generator.parser.model.NabuccoModel;
@@ -48,8 +48,8 @@ public class NabuccoToJavaComponentTransformation extends NabuccoToJavaTransform
      * @param context
      *            the transformation context
      */
-    public NabuccoToJavaComponentTransformation(MdaModel<NabuccoModel> source,
-            MdaModel<JavaModel> target, NabuccoTransformationContext context) {
+    public NabuccoToJavaComponentTransformation(MdaModel<NabuccoModel> source, MdaModel<JavaModel> target,
+            NabuccoTransformationContext context) {
         super(source, target, context);
     }
 
@@ -60,12 +60,27 @@ public class NabuccoToJavaComponentTransformation extends NabuccoToJavaTransform
         NabuccoModel nabuccoModel = source.getModel();
 
         NabuccoToJavaVisitorContext visitorContext = super.createVisitorContext(context);
-        NabuccoToJavaModelVisitor visitor = new NabuccoToJavaComponentInterfaceVisitor(
-                visitorContext);
+        NabuccoToJavaVisitor visitor = new NabuccoToJavaComponentInterfaceVisitor(visitorContext);
+        nabuccoModel.getUnit().accept(visitor, target);
+        
+        visitorContext = super.createVisitorContext(context);
+        visitor = new NabuccoToJavaComponentRemoteInterfaceVisitor(visitorContext);
+        nabuccoModel.getUnit().accept(visitor, target);
+        
+        visitorContext = super.createVisitorContext(context);
+        visitor = new NabuccoToJavaComponentLocalInterfaceVisitor(visitorContext);
+        nabuccoModel.getUnit().accept(visitor, target);
+        
+        visitorContext = super.createVisitorContext(context);
+        visitor = new NabuccoToJavaComponentLocalProxyVisitor(visitorContext);
         nabuccoModel.getUnit().accept(visitor, target);
 
         visitorContext = super.createVisitorContext(context);
         visitor = new NabuccoToJavaComponentImplementationVisitor(visitorContext);
+        nabuccoModel.getUnit().accept(visitor, target);
+        
+        visitorContext = super.createVisitorContext(context);
+        visitor = new NabuccoToJavaComponentJndiInterfaceVisitor(visitorContext);
         nabuccoModel.getUnit().accept(visitor, target);
 
         visitorContext = super.createVisitorContext(context);
@@ -79,37 +94,47 @@ public class NabuccoToJavaComponentTransformation extends NabuccoToJavaTransform
         visitorContext = super.createVisitorContext(context);
         visitor = new NabuccoToJavaComponentServiceDelegateFactoryWebVisitor(visitorContext);
         nabuccoModel.getUnit().accept(visitor, target);
-        
+
         visitorContext = super.createVisitorContext(context);
         visitor = new NabuccoToJavaComponentRelationVisitor(visitorContext);
         nabuccoModel.getUnit().accept(visitor, target);
     }
 
     @Override
-    protected void loadTemplates(NabuccoToJavaVisitorContext visitorContext)
-            throws NabuccoVisitorException {
+    protected void loadTemplates(NabuccoToJavaVisitorContext visitorContext) throws NabuccoVisitorException {
 
         try {
             JavaTemplateLoader loader = JavaTemplateLoader.getInstance();
 
             JavaTemplate template = loader.loadTemplate(COMPONENT_INTERFACE_TEMPLATE);
             visitorContext.putTemplate(COMPONENT_INTERFACE_TEMPLATE, template);
+            
+            template = loader.loadTemplate(COMPONENT_REMOTE_INTERFACE_TEMPLATE);
+            visitorContext.putTemplate(COMPONENT_REMOTE_INTERFACE_TEMPLATE, template);
+            
+            template = loader.loadTemplate(COMPONENT_LOCAL_INTERFACE_TEMPLATE);
+            visitorContext.putTemplate(COMPONENT_LOCAL_INTERFACE_TEMPLATE, template);
+            
+            template = loader.loadTemplate(COMPONENT_LOCAL_PROXY_TEMPLATE);
+            visitorContext.putTemplate(COMPONENT_LOCAL_PROXY_TEMPLATE, template);
 
             template = loader.loadTemplate(COMPONENT_IMPLEMENTATION_TEMPLATE);
             visitorContext.putTemplate(COMPONENT_IMPLEMENTATION_TEMPLATE, template);
+            
+            template = loader.loadTemplate(COMPONENT_JNDI_INTERFACE_TEMPLATE);
+            visitorContext.putTemplate(COMPONENT_JNDI_INTERFACE_TEMPLATE, template);
 
             template = loader.loadTemplate(COMPONENT_OPERATION_TEMPLATE);
             visitorContext.putTemplate(COMPONENT_OPERATION_TEMPLATE, template);
 
             template = loader.loadTemplate(COMPONENT_LOCATOR_TEMPLATE);
             visitorContext.putTemplate(COMPONENT_LOCATOR_TEMPLATE, template);
-            
+
             template = loader.loadTemplate(COMPONENT_RELATION_TEMPLATE);
             visitorContext.putTemplate(COMPONENT_RELATION_TEMPLATE, template);
 
             template = loader.loadTemplate(SERVICE_COMPONENT_DELEGATE_FACTORY_PROVIDER_TEMPLATE);
-            visitorContext.putTemplate(SERVICE_COMPONENT_DELEGATE_FACTORY_PROVIDER_TEMPLATE,
-                    template);
+            visitorContext.putTemplate(SERVICE_COMPONENT_DELEGATE_FACTORY_PROVIDER_TEMPLATE, template);
 
         } catch (MdaExeception e) {
             throw new NabuccoVisitorException("Error loading java component templates.", e);

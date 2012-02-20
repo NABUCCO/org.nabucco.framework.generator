@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,9 +27,13 @@ public class VerificationError {
 
     private VerificationErrorCriticality criticality;
 
-    private int rowNumber;
+    private int beginLine;
 
-    private int columnNumber;
+    private int endLine;
+
+    private int beginColumn;
+
+    private int endColumn;
 
     /**
      * Creates a new {@link VerificationError} instance.
@@ -40,7 +44,7 @@ public class VerificationError {
      *            a specific error message
      */
     public VerificationError(VerificationErrorCriticality criticality, String... message) {
-        this(criticality, 0, 0, message);
+        this(criticality, 0, 0, 0, 0, message);
     }
 
     /**
@@ -48,19 +52,25 @@ public class VerificationError {
      * 
      * @param criticality
      *            the error criticality
-     * @param row
-     *            the row number
-     * @param column
-     *            the column number
+     * @param beginLine
+     *            the starting row number
+     * @param endLine
+     *            the ending row number
+     * @param beginColumn
+     *            the starting column number
+     * @param endColumn
+     *            the ending column number
      * @param message
      *            a specific error message
      */
-    public VerificationError(VerificationErrorCriticality criticality, int row,
-            int column, String... message) {
+    public VerificationError(VerificationErrorCriticality criticality, int beginLine, int endLine, int beginColumn,
+            int endColumn, String... message) {
         this.message = this.formatMessage(message);
         this.criticality = criticality;
-        this.rowNumber = row;
-        this.columnNumber = column;
+        this.beginLine = beginLine;
+        this.endLine = endLine;
+        this.beginColumn = beginColumn;
+        this.endColumn = endColumn;
     }
 
     /**
@@ -85,21 +95,39 @@ public class VerificationError {
     }
 
     /**
-     * Getter for the rowNumber.
+     * Getter for the beginLine.
      * 
-     * @return Returns the rowNumber.
+     * @return Returns the beginLine.
      */
-    public int getRowNumber() {
-        return this.rowNumber;
+    public int getBeginLine() {
+        return this.beginLine;
     }
 
     /**
-     * Getter for the columnNumber.
+     * Getter for the endLine.
      * 
-     * @return Returns the columnNumber.
+     * @return Returns the endLine.
      */
-    public int getColumnNumber() {
-        return this.columnNumber;
+    public int getEndLine() {
+        return this.endLine;
+    }
+
+    /**
+     * Getter for the beginColumn.
+     * 
+     * @return Returns the beginColumn.
+     */
+    public int getBeginColumn() {
+        return this.beginColumn;
+    }
+
+    /**
+     * Getter for the endColumn.
+     * 
+     * @return Returns the endColumn.
+     */
+    public int getEndColumn() {
+        return this.endColumn;
     }
 
     /**
@@ -119,13 +147,53 @@ public class VerificationError {
     }
 
     @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + this.beginColumn;
+        result = prime * result + this.beginLine;
+        result = prime * result + ((this.criticality == null) ? 0 : this.criticality.hashCode());
+        result = prime * result + this.endColumn;
+        result = prime * result + this.endLine;
+        result = prime * result + ((this.message == null) ? 0 : this.message.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (!(obj instanceof VerificationError))
+            return false;
+        VerificationError other = (VerificationError) obj;
+        if (this.beginColumn != other.beginColumn)
+            return false;
+        if (this.beginLine != other.beginLine)
+            return false;
+        if (this.criticality != other.criticality)
+            return false;
+        if (this.endColumn != other.endColumn)
+            return false;
+        if (this.endLine != other.endLine)
+            return false;
+        if (this.message == null) {
+            if (other.message != null)
+                return false;
+        } else if (!this.message.equals(other.message))
+            return false;
+        return true;
+    }
+
+    @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
         result.append(this.getMessage());
         result.append(" In row ");
-        result.append(this.getRowNumber());
+        result.append(this.getBeginLine());
         result.append(", column ");
-        result.append(this.getColumnNumber());
+        result.append(this.getBeginColumn());
         result.append(".");
         return result.toString();
     }

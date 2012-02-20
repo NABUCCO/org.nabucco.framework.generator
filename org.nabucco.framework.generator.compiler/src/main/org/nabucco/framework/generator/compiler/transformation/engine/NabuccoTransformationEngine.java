@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,6 +28,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.nabucco.framework.generator.compiler.NabuccoCompilerOptions;
+import org.nabucco.framework.generator.compiler.NabuccoCompilerOptionType;
 import org.nabucco.framework.generator.compiler.precompiler.NabuccoPreCompilerInstance;
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformation;
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationException;
@@ -35,11 +36,12 @@ import org.nabucco.framework.generator.compiler.transformation.NabuccoTransforma
 import org.nabucco.framework.generator.compiler.transformation.util.dependency.NabuccoDependencyResolver;
 import org.nabucco.framework.generator.compiler.transformation.util.dependency.NabuccoDependencyThread;
 import org.nabucco.framework.generator.parser.model.NabuccoModel;
-import org.nabucco.framework.generator.parser.model.NabuccoModelType;
 import org.nabucco.framework.generator.parser.model.NabuccoModelResourceType;
+import org.nabucco.framework.generator.parser.model.NabuccoModelType;
 import org.nabucco.framework.mda.model.MdaModel;
 import org.nabucco.framework.mda.model.ModelException;
 import org.nabucco.framework.mda.model.java.JavaModel;
+import org.nabucco.framework.mda.model.text.confluence.ConfluenceModel;
 import org.nabucco.framework.mda.model.xml.XmlModel;
 import org.nabucco.framework.mda.template.MdaTemplateException;
 import org.nabucco.framework.mda.template.java.JavaTemplateLoader;
@@ -66,6 +68,8 @@ public abstract class NabuccoTransformationEngine implements TransformationEngin
 
     private String outDir;
 
+    private MdaModel<ConfluenceModel> confluenceTarget;
+
     private MdaModel<JavaModel> javaTarget;
 
     private MdaModel<XmlModel> xmlTarget;
@@ -88,13 +92,14 @@ public abstract class NabuccoTransformationEngine implements TransformationEngin
         this.rootDir = rootDir;
         this.options = options;
 
-        this.outDir = this.options.getOption(NabuccoCompilerOptions.OUT_DIR);
+        this.outDir = this.options.getOption(NabuccoCompilerOptionType.OUT_DIR);
 
         try {
+            this.confluenceTarget = new MdaModel<ConfluenceModel>(new ConfluenceModel());
             this.javaTarget = new MdaModel<JavaModel>(new JavaModel());
             this.xmlTarget = new MdaModel<XmlModel>(new XmlModel());
 
-            String templateLocation = this.options.getOption(NabuccoCompilerOptions.TEMPLATE_DIR);
+            String templateLocation = this.options.getOption(NabuccoCompilerOptionType.TEMPLATE_DIR);
 
             this.init(templateLocation);
 
@@ -113,10 +118,8 @@ public abstract class NabuccoTransformationEngine implements TransformationEngin
      */
     private void init(String templateLocation) throws NabuccoTransformationException {
         try {
-            JavaTemplateLoader.getInstance().setTemplateProvider(
-                    new JavaTemplateFileProvider(templateLocation));
-            XmlTemplateLoader.getInstance().setTemplateProvider(
-                    new XmlTemplateFileProvider(templateLocation));
+            JavaTemplateLoader.getInstance().setTemplateProvider(new JavaTemplateFileProvider(templateLocation));
+            XmlTemplateLoader.getInstance().setTemplateProvider(new XmlTemplateFileProvider(templateLocation));
         } catch (MdaTemplateException e) {
             throw new NabuccoTransformationException("Cannot configure generator templates.", e);
         }
@@ -133,8 +136,7 @@ public abstract class NabuccoTransformationEngine implements TransformationEngin
      * @throws NabuccoTransformationException
      */
     @Override
-    public final void process(MdaModel<NabuccoModel> sourceModel)
-            throws NabuccoTransformationException {
+    public final void process(MdaModel<NabuccoModel> sourceModel) throws NabuccoTransformationException {
 
         Queue<MdaModel<NabuccoModel>> modelQueue = new LinkedList<MdaModel<NabuccoModel>>();
         Queue<MdaModel<NabuccoModel>> dependencyQueue = new LinkedList<MdaModel<NabuccoModel>>();
@@ -156,8 +158,7 @@ public abstract class NabuccoTransformationEngine implements TransformationEngin
      * @throws NabuccoTransformationException
      */
     @Override
-    public final void process(List<MdaModel<NabuccoModel>> sourcemodels)
-            throws NabuccoTransformationException {
+    public final void process(List<MdaModel<NabuccoModel>> sourcemodels) throws NabuccoTransformationException {
 
         Queue<MdaModel<NabuccoModel>> modelQueue = new LinkedList<MdaModel<NabuccoModel>>();
         Queue<MdaModel<NabuccoModel>> dependencyQueue = new LinkedList<MdaModel<NabuccoModel>>();
@@ -203,8 +204,8 @@ public abstract class NabuccoTransformationEngine implements TransformationEngin
                     NabuccoPreCompilerInstance.getInstance().preCompile(source.getModel());
 
                     // Resolve Dependencies
-                    NabuccoDependencyThread dependencyResolver = new NabuccoDependencyThread(
-                            source, this.rootDir, this.outDir);
+                    NabuccoDependencyThread dependencyResolver = new NabuccoDependencyThread(source, this.options,
+                            this.rootDir);
                     dependencyResult = EXECUTOR_SERVICE.submit(dependencyResolver);
                 }
 
@@ -324,6 +325,15 @@ public abstract class NabuccoTransformationEngine implements TransformationEngin
      */
     protected NabuccoCompilerOptions getOptions() {
         return this.options;
+    }
+
+    /**
+     * Returns the Confluence target model.
+     * 
+     * @return the Confluence target model
+     */
+    public MdaModel<ConfluenceModel> getConfluenceTarget() {
+        return this.confluenceTarget;
     }
 
     /**

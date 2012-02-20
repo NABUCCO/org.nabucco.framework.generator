@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,13 +16,13 @@
  */
 package org.nabucco.framework.generator.compiler.transformation.java.view.edit;
 
-import org.nabucco.framework.generator.compiler.template.NabuccoJavaTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoJavaTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationContext;
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationException;
 import org.nabucco.framework.generator.compiler.transformation.java.NabuccoToJavaTransformation;
 import org.nabucco.framework.generator.compiler.transformation.java.view.common.combobox.NabuccoToJavaRcpViewComboBoxVisitor;
 import org.nabucco.framework.generator.compiler.transformation.java.view.common.picker.NabuccoToJavaRcpViewPickerVisitor;
-import org.nabucco.framework.generator.compiler.transformation.java.visitor.NabuccoToJavaModelVisitor;
+import org.nabucco.framework.generator.compiler.transformation.java.visitor.NabuccoToJavaVisitor;
 import org.nabucco.framework.generator.compiler.transformation.java.visitor.NabuccoToJavaVisitorContext;
 import org.nabucco.framework.generator.parser.model.NabuccoModel;
 import org.nabucco.framework.mda.model.MdaModel;
@@ -49,8 +49,8 @@ public class NabuccoToJavaViewEditTransformation extends NabuccoToJavaTransforma
      * @param context
      *            the context of the visitor.
      */
-    public NabuccoToJavaViewEditTransformation(MdaModel<NabuccoModel> source,
-            MdaModel<JavaModel> target, NabuccoTransformationContext context) {
+    public NabuccoToJavaViewEditTransformation(MdaModel<NabuccoModel> source, MdaModel<JavaModel> target,
+            NabuccoTransformationContext context) {
         super(source, target, context);
     }
 
@@ -59,7 +59,7 @@ public class NabuccoToJavaViewEditTransformation extends NabuccoToJavaTransforma
             NabuccoTransformationContext context) throws NabuccoTransformationException {
 
         NabuccoToJavaVisitorContext visitorContext = super.createVisitorContext(context);
-        NabuccoToJavaModelVisitor visitor = new NabuccoToJavaRcpViewEditVisitor(visitorContext);
+        NabuccoToJavaVisitor visitor = new NabuccoToJavaRcpViewEditVisitor(visitorContext);
         source.getModel().getUnit().accept(visitor, target);
 
         visitorContext = super.createVisitorContext(context);
@@ -89,35 +89,29 @@ public class NabuccoToJavaViewEditTransformation extends NabuccoToJavaTransforma
     }
 
     @Override
-    protected void loadTemplates(NabuccoToJavaVisitorContext visitorContext)
-            throws NabuccoTransformationException {
+    protected void loadTemplates(NabuccoToJavaVisitorContext visitorContext) throws NabuccoTransformationException {
 
         try {
-            JavaTemplate template = JavaTemplateLoader.getInstance().loadTemplate(
-                    EDIT_VIEW_TEMPLATE);
+            JavaTemplate template = JavaTemplateLoader.getInstance().loadTemplate(EDIT_VIEW_TEMPLATE);
             visitorContext.putTemplate(EDIT_VIEW_TEMPLATE, template);
 
             template = JavaTemplateLoader.getInstance().loadTemplate(EDIT_WIDGET_FACTORY_TEMPLATE);
             visitorContext.putTemplate(EDIT_WIDGET_FACTORY_TEMPLATE, template);
 
-            template = JavaTemplateLoader.getInstance().loadTemplate(
-                    EDIT_WIDGET_FACTORY_WIDGET_DECLARATION_TEMPLATE);
+            template = JavaTemplateLoader.getInstance().loadTemplate(EDIT_WIDGET_FACTORY_WIDGET_DECLARATION_TEMPLATE);
             visitorContext.putTemplate(EDIT_WIDGET_FACTORY_WIDGET_DECLARATION_TEMPLATE, template);
 
-            template = JavaTemplateLoader.getInstance().loadTemplate(
-                    EDIT_VIEW_PICKER_CONTENT_PROVIDER_TEMPLATE);
+            template = JavaTemplateLoader.getInstance().loadTemplate(EDIT_VIEW_PICKER_CONTENT_PROVIDER_TEMPLATE);
             visitorContext.putTemplate(EDIT_VIEW_PICKER_CONTENT_PROVIDER_TEMPLATE, template);
 
-            template = JavaTemplateLoader.getInstance().loadTemplate(
-                    EDIT_VIEW_PICKER_CONTENT_PROVIDER_HANDLER_TEMPLATE);
-            visitorContext
-                    .putTemplate(EDIT_VIEW_PICKER_CONTENT_PROVIDER_HANDLER_TEMPLATE, template);
+            template = JavaTemplateLoader.getInstance()
+                    .loadTemplate(EDIT_VIEW_PICKER_CONTENT_PROVIDER_HANDLER_TEMPLATE);
+            visitorContext.putTemplate(EDIT_VIEW_PICKER_CONTENT_PROVIDER_HANDLER_TEMPLATE, template);
 
             template = JavaTemplateLoader.getInstance().loadTemplate(COMMON_VIEW_MODEL_TEMPLATE);
             visitorContext.putTemplate(COMMON_VIEW_MODEL_TEMPLATE, template);
 
-            template = JavaTemplateLoader.getInstance().loadTemplate(
-                    COMMON_VIEW_MODEL_METHOD_TEMPLATE);
+            template = JavaTemplateLoader.getInstance().loadTemplate(COMMON_VIEW_MODEL_METHOD_TEMPLATE);
             visitorContext.putTemplate(COMMON_VIEW_MODEL_METHOD_TEMPLATE, template);
 
             template = JavaTemplateLoader.getInstance().loadTemplate(COMMON_VIEW_VIEW_TEMPLATE);
@@ -126,29 +120,23 @@ public class NabuccoToJavaViewEditTransformation extends NabuccoToJavaTransforma
             template = JavaTemplateLoader.getInstance().loadTemplate(EDIT_VIEW_MODEL_TEMPLATE);
             visitorContext.putTemplate(EDIT_VIEW_MODEL_TEMPLATE, template);
 
-            template = JavaTemplateLoader.getInstance().loadTemplate(
-                    EDIT_VIEW_PICKER_HANDLER_TEMPLATE);
+            template = JavaTemplateLoader.getInstance().loadTemplate(EDIT_VIEW_PICKER_HANDLER_TEMPLATE);
             visitorContext.putTemplate(EDIT_VIEW_PICKER_HANDLER_TEMPLATE, template);
 
-            template = JavaTemplateLoader.getInstance().loadTemplate(
-                    COMMON_VIEW_COMBO_BOX_CONTENT_PROVIDER_TEMPLATE);
+            template = JavaTemplateLoader.getInstance().loadTemplate(COMMON_VIEW_COMBO_BOX_CONTENT_PROVIDER_TEMPLATE);
             visitorContext.putTemplate(COMMON_VIEW_COMBO_BOX_CONTENT_PROVIDER_TEMPLATE, template);
 
-            template = JavaTemplateLoader.getInstance().loadTemplate(
-                    COMMON_VIEW_COMBO_BOX_HANDLER_TEMPLATE);
+            template = JavaTemplateLoader.getInstance().loadTemplate(COMMON_VIEW_COMBO_BOX_HANDLER_TEMPLATE);
             visitorContext.putTemplate(COMMON_VIEW_COMBO_BOX_HANDLER_TEMPLATE, template);
 
-            template = JavaTemplateLoader.getInstance().loadTemplate(
-                    COMMON_VIEW_COMBO_BOX_LABEL_PROVIDER_TEMPLATE);
+            template = JavaTemplateLoader.getInstance().loadTemplate(COMMON_VIEW_COMBO_BOX_LABEL_PROVIDER_TEMPLATE);
             visitorContext.putTemplate(COMMON_VIEW_COMBO_BOX_LABEL_PROVIDER_TEMPLATE, template);
 
             // only needed for datatype-picker
-            template = JavaTemplateLoader.getInstance().loadTemplate(
-                    EDIT_VIEW_PICKER_COMPARATOR_TEMPLATE);
+            template = JavaTemplateLoader.getInstance().loadTemplate(EDIT_VIEW_PICKER_COMPARATOR_TEMPLATE);
             visitorContext.putTemplate(EDIT_VIEW_PICKER_COMPARATOR_TEMPLATE, template);
 
-            template = JavaTemplateLoader.getInstance().loadTemplate(
-                    LIST_VIEW_LABEL_PROVIDER_TEMPLATE);
+            template = JavaTemplateLoader.getInstance().loadTemplate(LIST_VIEW_LABEL_PROVIDER_TEMPLATE);
             visitorContext.putTemplate(LIST_VIEW_LABEL_PROVIDER_TEMPLATE, template);
 
             // browser element
@@ -158,8 +146,7 @@ public class NabuccoToJavaViewEditTransformation extends NabuccoToJavaTransforma
             template = JavaTemplateLoader.getInstance().loadTemplate(BROWSER_VIEW_HELPER_TEMPLATE);
             visitorContext.putTemplate(BROWSER_VIEW_HELPER_TEMPLATE, template);
 
-            template = JavaTemplateLoader.getInstance().loadTemplate(
-                    BROWSER_VIEW_ELEMENT_HANDLER_TEMPLATE);
+            template = JavaTemplateLoader.getInstance().loadTemplate(BROWSER_VIEW_ELEMENT_HANDLER_TEMPLATE);
             visitorContext.putTemplate(BROWSER_VIEW_ELEMENT_HANDLER_TEMPLATE, template);
 
         } catch (JavaTemplateException e) {

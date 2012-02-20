@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator;
 
 import java.io.File;
@@ -25,10 +25,10 @@ import org.nabucco.framework.generator.compiler.NabuccoCompilationTarget;
 import org.nabucco.framework.generator.compiler.NabuccoCompiler;
 import org.nabucco.framework.generator.compiler.NabuccoCompilerException;
 import org.nabucco.framework.generator.compiler.NabuccoCompilerOptions;
+import org.nabucco.framework.generator.compiler.NabuccoCompilerOptionType;
 import org.nabucco.framework.generator.parser.file.NabuccoFile;
 import org.nabucco.framework.generator.parser.model.NabuccoModel;
 import org.nabucco.framework.generator.parser.model.NabuccoModelLoader;
-
 import org.nabucco.framework.mda.logger.MdaLogger;
 import org.nabucco.framework.mda.logger.MdaLoggingFactory;
 import org.nabucco.framework.mda.model.MdaModel;
@@ -52,8 +52,7 @@ public final class NabuccoGenerator {
 
     private List<NabuccoFile> nabuccoFileList = new ArrayList<NabuccoFile>();
 
-    private static MdaLogger logger = MdaLoggingFactory.getInstance().getLogger(
-            NabuccoGenerator.class);
+    private static MdaLogger logger = MdaLoggingFactory.getInstance().getLogger(NabuccoGenerator.class);
 
     /**
      * Creates a new {@link NabuccoGenerator} instance for an appropriate .nbc file.
@@ -165,8 +164,8 @@ public final class NabuccoGenerator {
             try {
                 this.options = new NabuccoCompilerOptions(propertiesFile);
             } catch (IOException e) {
-                logger.warning("Compiler properties [", propertiesFile.getName() + "] not valid. ",
-                        e.getMessage(), " Using default NABUCCO properties.");
+                logger.warning("Compiler properties [", propertiesFile.getName() + "] not valid. ", e.getMessage(),
+                        " Using default NABUCCO properties.");
                 this.options = NabuccoCompilerOptions.getDefaultOptions();
             }
         }
@@ -178,29 +177,32 @@ public final class NabuccoGenerator {
      * @throws NabuccoGeneratorException
      */
     public void generate() throws NabuccoGeneratorException {
-        
+
         this.printHeading();
 
         this.validateFileList();
 
-        logger.info("Start generating NABUCCO: " + this.nabuccoFileList);
-        
+        logger.info("Start generating NABUCCO:");
+        logger.info("Compiling in project '", this.projectName, "'.");
+
+        if (this.nabuccoFileList.isEmpty()) {
+            logger.warning("No NABUCCO files selected for generation.");
+            return;
+        }
+
         try {
             this.generateFileList();
             this.isRun = true;
 
         } catch (ModelException me) {
             logger.error(me, "Error loading NABUCCO model.");
-            throw new NabuccoGeneratorException("Error loading NABUCCO model: " + nabuccoFileList,
-                    me);
+            throw new NabuccoGeneratorException("Error loading NABUCCO model: " + nabuccoFileList, me);
         } catch (NabuccoCompilerException ce) {
             logger.error(ce, "Error compiling NABUCCO model.");
-            throw new NabuccoGeneratorException(
-                    "Error compiling NABUCCO model: " + nabuccoFileList, ce);
+            throw new NabuccoGeneratorException("Error compiling NABUCCO model: " + nabuccoFileList, ce);
         } catch (Exception e) {
             logger.error(e, "Error generating NABUCCO model.");
-            throw new NabuccoGeneratorException("Error generating NABUCCO model: "
-                    + nabuccoFileList, e);
+            throw new NabuccoGeneratorException("Error generating NABUCCO model: " + nabuccoFileList, e);
         }
     }
 
@@ -209,11 +211,13 @@ public final class NabuccoGenerator {
      */
     private void printHeading() {
         StringBuilder heading = new StringBuilder();
-        
+
         heading.append("\n\n");
         heading.append(" ###############################################################################\n");
         heading.append(" #                                                                             #\n");
-        heading.append(" #    NABUCCO Generator - (c)2010 PRODYNA AG, Germany. All rights reserved.    #\n");
+        heading.append(" #    NABUCCO Framework Generator - (2009-2011) PRODYNA AG, Germany.           #\n");
+        heading.append(" #                                                                             #\n");
+        heading.append(" #    http://nabuccosource.org/          https://github.com/nabucco/           #\n");
         heading.append(" #                                                                             #\n");
         heading.append(" ###############################################################################\n");
 
@@ -257,6 +261,20 @@ public final class NabuccoGenerator {
                 fileList.add(nabuccoFile);
             }
         }
+        
+        if (fileList.isEmpty()) {
+            logger.warning("No NABUCCO files selected for generation.");
+            return;
+        }
+
+        int size = fileList.size();
+        String target = this.options.getOption(NabuccoCompilerOptionType.OUT_DIR);
+
+        if (size > 1) {
+            logger.info("Compiling ", String.valueOf(size), " NABUCCO files to '", target, "'.");
+        } else {
+            logger.info("Compiling ", String.valueOf(size), " NABUCCO file to '", target, "'.");
+        }
 
         List<MdaModel<NabuccoModel>> modelList = new ArrayList<MdaModel<NabuccoModel>>();
 
@@ -268,7 +286,7 @@ public final class NabuccoGenerator {
         this.compileModel(modelList);
         long after = System.currentTimeMillis();
 
-        logger.info("Generation finished successfully in: " + ((after - before) / 1000.0) + "s.");
+        logger.info("Generation finished successfully after " + ((after - before) / 1000.0) + "s.");
     }
 
     /**
@@ -283,7 +301,7 @@ public final class NabuccoGenerator {
      */
     private MdaModel<NabuccoModel> loadModel(NabuccoFile file) throws ModelException {
 
-        String targetDirectory = this.options.getOption(NabuccoCompilerOptions.OUT_DIR);
+        String targetDirectory = this.options.getOption(NabuccoCompilerOptionType.OUT_DIR);
 
         NabuccoModelLoader modelLoader = new NabuccoModelLoader(targetDirectory);
         NabuccoModel nabuccoModel = modelLoader.loadModel(file);
@@ -299,8 +317,8 @@ public final class NabuccoGenerator {
      * 
      * @throws NabuccoCompilerException
      */
-    private void compileModel(List<MdaModel<NabuccoModel>> modelList)
-            throws NabuccoCompilerException, NabuccoGeneratorException {
+    private void compileModel(List<MdaModel<NabuccoModel>> modelList) throws NabuccoCompilerException,
+            NabuccoGeneratorException {
 
         String component = this.projectName;
         for (NabuccoFile nabuccoFile : nabuccoFileList) {
@@ -314,8 +332,7 @@ public final class NabuccoGenerator {
         rootDir.append(File.separatorChar);
         rootDir.append("..");
 
-        NabuccoCompilationTarget target = new NabuccoCompilationTarget(modelList, rootDir
-                .toString(), component);
+        NabuccoCompilationTarget target = new NabuccoCompilationTarget(modelList, rootDir.toString(), component);
 
         NabuccoCompiler compiler = new NabuccoCompiler(this.options);
         compiler.compile(target);

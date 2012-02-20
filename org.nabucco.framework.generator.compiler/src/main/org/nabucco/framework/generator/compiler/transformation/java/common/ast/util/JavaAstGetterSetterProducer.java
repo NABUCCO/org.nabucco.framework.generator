@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -104,16 +104,15 @@ public class JavaAstGetterSetterProducer implements CollectionConstants {
      * 
      * @throws JavaModelException
      */
-    public MethodDeclaration produceGetter(FieldDeclaration field, GetterSetterOptions options)
-            throws JavaModelException {
+    public MethodDeclaration produceGetter(FieldDeclaration field, FieldOptions options) throws JavaModelException {
 
         if (options == null) {
-            options = new GetterSetterOptions();
+            options = new FieldOptions();
         }
 
         String fieldName = fieldFactory.getFieldName(field);
-        MethodDeclaration method = modelProducer.createMethodDeclaration(
-                createMethodName(field, PREFIX_GETTER), null, false);
+        MethodDeclaration method = modelProducer.createMethodDeclaration(createMethodName(field, PREFIX_GETTER), null,
+                false);
 
         methodFactory.setReturnType(method, field.type);
 
@@ -170,17 +169,17 @@ public class JavaAstGetterSetterProducer implements CollectionConstants {
     /**
      * Create the default getter implementation.
      * 
-     * @param setter
-     *            the setter
+     * @param getter
+     *            the getter
      * @param fieldReference
      *            the field reference
      * 
      * @throws JavaModelException
      */
-    private void produceDefaultGetter(MethodDeclaration setter, FieldReference fieldReference)
+    private void produceDefaultGetter(MethodDeclaration getter, FieldReference fieldReference)
             throws JavaModelException {
         ReturnStatement returnStatement = modelProducer.createReturnStatement(fieldReference);
-        setter.statements = new Statement[] { returnStatement };
+        getter.statements = new Statement[] { returnStatement };
     }
 
     /**
@@ -193,7 +192,7 @@ public class JavaAstGetterSetterProducer implements CollectionConstants {
      * @param fieldReference
      *            the field reference
      * 
-     * @see CollectionConstants#NABUCCO_LIST
+     * @see CollectionConstants#NABUCCO_LIST_IMPL
      * 
      * @throws JavaModelException
      */
@@ -202,18 +201,16 @@ public class JavaAstGetterSetterProducer implements CollectionConstants {
 
         Literal nullLiteral = modelProducer.createLiteral(null, LiteralType.NULL_LITERAL);
 
-        BinaryExpression condition = modelProducer.createBinaryExpression(
-                BinaryExpressionType.EQUAL_EXPRESSION, fieldReference, nullLiteral,
-                EqualExpression.EQUAL_EQUAL);
+        BinaryExpression condition = modelProducer.createBinaryExpression(BinaryExpressionType.EQUAL_EXPRESSION,
+                fieldReference, nullLiteral, EqualExpression.EQUAL_EQUAL);
 
-        TypeReference list = modelProducer.createParameterizedTypeReference(NABUCCO_LIST, false,
+        TypeReference list = modelProducer.createParameterizedTypeReference(NABUCCO_LIST_IMPL, false,
                 Arrays.asList(((ParameterizedSingleTypeReference) field.type).typeArguments));
 
-        QualifiedNameReference state = JavaAstModelProducer.getInstance()
-                .createQualifiedNameReference(COLLECTION_STATE, COLLECTION_STATE_INIT);
+        QualifiedNameReference state = JavaAstModelProducer.getInstance().createQualifiedNameReference(
+                COLLECTION_STATE, COLLECTION_STATE_INIT);
 
-        AllocationExpression constructor = modelProducer.createAllocationExpression(list,
-                Arrays.asList(state));
+        AllocationExpression constructor = modelProducer.createAllocationExpression(list, Arrays.asList(state));
 
         Assignment assignment = modelProducer.createAssignment(fieldReference, constructor);
         Block then = modelProducer.createBlock(assignment);
@@ -243,9 +240,8 @@ public class JavaAstGetterSetterProducer implements CollectionConstants {
 
         Literal nullLiteral = modelProducer.createLiteral(null, LiteralType.NULL_LITERAL);
 
-        BinaryExpression condition = modelProducer.createBinaryExpression(
-                BinaryExpressionType.EQUAL_EXPRESSION, fieldReference, nullLiteral,
-                EqualExpression.EQUAL_EQUAL);
+        BinaryExpression condition = modelProducer.createBinaryExpression(BinaryExpressionType.EQUAL_EXPRESSION,
+                fieldReference, nullLiteral, EqualExpression.EQUAL_EQUAL);
 
         TypeReference list = modelProducer.createParameterizedTypeReference(DEFAULT_LIST, false,
                 Arrays.asList(((ParameterizedSingleTypeReference) field.type).typeArguments));
@@ -270,27 +266,25 @@ public class JavaAstGetterSetterProducer implements CollectionConstants {
      * @param fieldReference
      *            the field reference
      * 
-     * @see CollectionConstants#NABUCCO_SET
+     * @see CollectionConstants#NABUCCO_SET_IMPL
      * 
      * @throws JavaModelException
      */
-    private void produceNabuccoSetGetter(FieldDeclaration field, MethodDeclaration method,
-            FieldReference fieldReference) throws JavaModelException {
+    private void produceNabuccoSetGetter(FieldDeclaration field, MethodDeclaration method, FieldReference fieldReference)
+            throws JavaModelException {
 
         Literal nullLiteral = modelProducer.createLiteral(null, LiteralType.NULL_LITERAL);
 
-        BinaryExpression condition = modelProducer.createBinaryExpression(
-                BinaryExpressionType.EQUAL_EXPRESSION, fieldReference, nullLiteral,
-                EqualExpression.EQUAL_EQUAL);
+        BinaryExpression condition = modelProducer.createBinaryExpression(BinaryExpressionType.EQUAL_EXPRESSION,
+                fieldReference, nullLiteral, EqualExpression.EQUAL_EQUAL);
 
-        TypeReference list = modelProducer.createParameterizedTypeReference(NABUCCO_SET, false,
+        TypeReference list = modelProducer.createParameterizedTypeReference(NABUCCO_SET_IMPL, false,
                 Arrays.asList(((ParameterizedSingleTypeReference) field.type).typeArguments));
 
-        QualifiedNameReference state = JavaAstModelProducer.getInstance()
-                .createQualifiedNameReference(COLLECTION_STATE, COLLECTION_STATE_INIT);
+        QualifiedNameReference state = JavaAstModelProducer.getInstance().createQualifiedNameReference(
+                COLLECTION_STATE, COLLECTION_STATE_INIT);
 
-        AllocationExpression constructor = modelProducer.createAllocationExpression(list,
-                Arrays.asList(state));
+        AllocationExpression constructor = modelProducer.createAllocationExpression(list, Arrays.asList(state));
 
         Assignment assignment = modelProducer.createAssignment(fieldReference, constructor);
         Block then = modelProducer.createBlock(assignment);
@@ -315,14 +309,13 @@ public class JavaAstGetterSetterProducer implements CollectionConstants {
      * 
      * @throws JavaModelException
      */
-    private void produceDefaultSetGetter(FieldDeclaration field, MethodDeclaration method,
-            FieldReference fieldReference) throws JavaModelException {
+    private void produceDefaultSetGetter(FieldDeclaration field, MethodDeclaration method, FieldReference fieldReference)
+            throws JavaModelException {
 
         Literal nullLiteral = modelProducer.createLiteral(null, LiteralType.NULL_LITERAL);
 
-        BinaryExpression condition = modelProducer.createBinaryExpression(
-                BinaryExpressionType.EQUAL_EXPRESSION, fieldReference, nullLiteral,
-                EqualExpression.EQUAL_EQUAL);
+        BinaryExpression condition = modelProducer.createBinaryExpression(BinaryExpressionType.EQUAL_EXPRESSION,
+                fieldReference, nullLiteral, EqualExpression.EQUAL_EQUAL);
 
         TypeReference list = modelProducer.createParameterizedTypeReference(DEFAULT_SET, false,
                 Arrays.asList(((ParameterizedSingleTypeReference) field.type).typeArguments));
@@ -347,20 +340,19 @@ public class JavaAstGetterSetterProducer implements CollectionConstants {
      * @param fieldReference
      *            the field reference
      * 
-     * @see CollectionConstants#NABUCCO_MAP
+     * @see CollectionConstants#NABUCCO_MAP_IMPL
      * 
      * @throws JavaModelException
      */
-    private void produceNabuccoMapGetter(FieldDeclaration field, MethodDeclaration method,
-            FieldReference fieldReference) throws JavaModelException {
+    private void produceNabuccoMapGetter(FieldDeclaration field, MethodDeclaration method, FieldReference fieldReference)
+            throws JavaModelException {
 
         Literal nullLiteral = modelProducer.createLiteral(null, LiteralType.NULL_LITERAL);
 
-        BinaryExpression condition = modelProducer.createBinaryExpression(
-                BinaryExpressionType.EQUAL_EXPRESSION, fieldReference, nullLiteral,
-                EqualExpression.EQUAL_EQUAL);
+        BinaryExpression condition = modelProducer.createBinaryExpression(BinaryExpressionType.EQUAL_EXPRESSION,
+                fieldReference, nullLiteral, EqualExpression.EQUAL_EQUAL);
 
-        TypeReference map = modelProducer.createParameterizedTypeReference(NABUCCO_MAP, false,
+        TypeReference map = modelProducer.createParameterizedTypeReference(NABUCCO_MAP_IMPL, false,
                 Arrays.asList(((ParameterizedSingleTypeReference) field.type).typeArguments));
 
         AllocationExpression constructor = modelProducer.createAllocationExpression(map, null);
@@ -387,14 +379,13 @@ public class JavaAstGetterSetterProducer implements CollectionConstants {
      * 
      * @throws JavaModelException
      */
-    private void produceDefaultMapGetter(FieldDeclaration field, MethodDeclaration method,
-            FieldReference fieldReference) throws JavaModelException {
+    private void produceDefaultMapGetter(FieldDeclaration field, MethodDeclaration method, FieldReference fieldReference)
+            throws JavaModelException {
 
         Literal nullLiteral = modelProducer.createLiteral(null, LiteralType.NULL_LITERAL);
 
-        BinaryExpression condition = modelProducer.createBinaryExpression(
-                BinaryExpressionType.EQUAL_EXPRESSION, fieldReference, nullLiteral,
-                EqualExpression.EQUAL_EQUAL);
+        BinaryExpression condition = modelProducer.createBinaryExpression(BinaryExpressionType.EQUAL_EXPRESSION,
+                fieldReference, nullLiteral, EqualExpression.EQUAL_EQUAL);
 
         TypeReference map = modelProducer.createParameterizedTypeReference(DEFAULT_MAP, false,
                 Arrays.asList(((ParameterizedSingleTypeReference) field.type).typeArguments));
@@ -434,7 +425,7 @@ public class JavaAstGetterSetterProducer implements CollectionConstants {
         if (collectionType == null) {
             this.produceDefaultSetter(fieldName, setter);
         } else {
-            
+
             switch (collectionType) {
             case LIST:
                 this.produceDefaultListSetter(field, fieldName, setter);
@@ -461,8 +452,7 @@ public class JavaAstGetterSetterProducer implements CollectionConstants {
      * 
      * @throws JavaModelException
      */
-    private void produceDefaultSetter(String fieldName, MethodDeclaration setter)
-            throws JavaModelException {
+    private void produceDefaultSetter(String fieldName, MethodDeclaration setter) throws JavaModelException {
 
         FieldReference fieldReference = modelProducer.createFieldThisReference(fieldName);
         SingleNameReference nameReference = modelProducer.createSingleNameReference(fieldName);
@@ -485,8 +475,8 @@ public class JavaAstGetterSetterProducer implements CollectionConstants {
      * 
      * @throws JavaModelException
      */
-    private void produceDefaultListSetter(FieldDeclaration field, String fieldName,
-            MethodDeclaration setter) throws JavaModelException {
+    private void produceDefaultListSetter(FieldDeclaration field, String fieldName, MethodDeclaration setter)
+            throws JavaModelException {
 
         FieldReference fieldReference = modelProducer.createFieldThisReference(fieldName);
         SingleNameReference nameReference = modelProducer.createSingleNameReference(fieldName);
@@ -494,11 +484,9 @@ public class JavaAstGetterSetterProducer implements CollectionConstants {
         TypeReference list = modelProducer.createParameterizedTypeReference(DEFAULT_LIST, false,
                 Arrays.asList(((ParameterizedSingleTypeReference) field.type).typeArguments));
 
-        AllocationExpression constructor = modelProducer.createAllocationExpression(list,
-                Arrays.asList(nameReference));
+        AllocationExpression constructor = modelProducer.createAllocationExpression(list, Arrays.asList(nameReference));
 
-        setter.statements = new Statement[] { modelProducer.createAssignment(fieldReference,
-                constructor) };
+        setter.statements = new Statement[] { modelProducer.createAssignment(fieldReference, constructor) };
     }
 
     /**
@@ -515,8 +503,8 @@ public class JavaAstGetterSetterProducer implements CollectionConstants {
      * 
      * @throws JavaModelException
      */
-    private void produceDefaultSetSetter(FieldDeclaration field, String fieldName,
-            MethodDeclaration setter) throws JavaModelException {
+    private void produceDefaultSetSetter(FieldDeclaration field, String fieldName, MethodDeclaration setter)
+            throws JavaModelException {
 
         FieldReference fieldReference = modelProducer.createFieldThisReference(fieldName);
         SingleNameReference nameReference = modelProducer.createSingleNameReference(fieldName);
@@ -524,11 +512,9 @@ public class JavaAstGetterSetterProducer implements CollectionConstants {
         TypeReference list = modelProducer.createParameterizedTypeReference(DEFAULT_SET, false,
                 Arrays.asList(((ParameterizedSingleTypeReference) field.type).typeArguments));
 
-        AllocationExpression constructor = modelProducer.createAllocationExpression(list,
-                Arrays.asList(nameReference));
+        AllocationExpression constructor = modelProducer.createAllocationExpression(list, Arrays.asList(nameReference));
 
-        setter.statements = new Statement[] { modelProducer.createAssignment(fieldReference,
-                constructor) };
+        setter.statements = new Statement[] { modelProducer.createAssignment(fieldReference, constructor) };
     }
 
     /**
@@ -545,8 +531,8 @@ public class JavaAstGetterSetterProducer implements CollectionConstants {
      * 
      * @throws JavaModelException
      */
-    private void produceDefaultMapSetter(FieldDeclaration field, String fieldName,
-            MethodDeclaration setter) throws JavaModelException {
+    private void produceDefaultMapSetter(FieldDeclaration field, String fieldName, MethodDeclaration setter)
+            throws JavaModelException {
 
         FieldReference fieldReference = modelProducer.createFieldThisReference(fieldName);
         SingleNameReference nameReference = modelProducer.createSingleNameReference(fieldName);
@@ -554,8 +540,7 @@ public class JavaAstGetterSetterProducer implements CollectionConstants {
         TypeReference map = modelProducer.createParameterizedTypeReference(DEFAULT_MAP, false,
                 Arrays.asList(((ParameterizedSingleTypeReference) field.type).typeArguments));
 
-        AllocationExpression constructor = modelProducer.createAllocationExpression(map,
-                Arrays.asList(nameReference));
+        AllocationExpression constructor = modelProducer.createAllocationExpression(map, Arrays.asList(nameReference));
 
         Assignment assignment = modelProducer.createAssignment(fieldReference, constructor);
 
@@ -575,10 +560,19 @@ public class JavaAstGetterSetterProducer implements CollectionConstants {
         if (Arrays.equals(field.type.getLastToken(), LIST.toCharArray())) {
             return CollectionType.LIST;
         }
+        if (Arrays.equals(field.type.getLastToken(), NABUCCO_LIST.toCharArray())) {
+            return CollectionType.LIST;
+        }
         if (Arrays.equals(field.type.getLastToken(), SET.toCharArray())) {
             return CollectionType.SET;
         }
+        if (Arrays.equals(field.type.getLastToken(), NABUCCO_SET.toCharArray())) {
+            return CollectionType.SET;
+        }
         if (Arrays.equals(field.type.getLastToken(), MAP.toCharArray())) {
+            return CollectionType.MAP;
+        }
+        if (Arrays.equals(field.type.getLastToken(), NABUCCO_MAP.toCharArray())) {
             return CollectionType.MAP;
         }
 

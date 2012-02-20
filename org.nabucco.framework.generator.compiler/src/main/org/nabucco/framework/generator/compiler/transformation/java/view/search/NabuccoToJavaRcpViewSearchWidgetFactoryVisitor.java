@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java.view.search;
 
 import java.util.HashMap;
@@ -25,7 +25,7 @@ import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ImportReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
-import org.nabucco.framework.generator.compiler.template.NabuccoJavaTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoJavaTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotation;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationMapper;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.JavaAstSupport;
@@ -42,7 +42,6 @@ import org.nabucco.framework.generator.parser.syntaxtree.LabeledComboBoxDeclarat
 import org.nabucco.framework.generator.parser.syntaxtree.LabeledInputFieldDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.NodeToken;
 import org.nabucco.framework.generator.parser.syntaxtree.SearchViewStatement;
-
 import org.nabucco.framework.mda.logger.MdaLogger;
 import org.nabucco.framework.mda.logger.MdaLoggingFactory;
 import org.nabucco.framework.mda.model.MdaModel;
@@ -81,9 +80,8 @@ class NabuccoToJavaRcpViewSearchWidgetFactoryVisitor extends NabuccoToJavaVisito
     @Override
     public void visit(SearchViewStatement searchViewStatement, MdaModel<JavaModel> target) {
 
-        modelType = searchViewStatement.nodeToken2.tokenImage.replace(
-                NabuccoJavaTemplateConstants.VIEW, NabuccoJavaTemplateConstants.VIEW
-                        + ViewConstants.MODEL);
+        modelType = searchViewStatement.nodeToken2.tokenImage.replace(NabuccoJavaTemplateConstants.VIEW,
+                NabuccoJavaTemplateConstants.VIEW + ViewConstants.MODEL);
         view = searchViewStatement.nodeToken2.tokenImage;
         // visit children first
         super.visit(searchViewStatement, target);
@@ -91,18 +89,15 @@ class NabuccoToJavaRcpViewSearchWidgetFactoryVisitor extends NabuccoToJavaVisito
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
         String projectName = super.getComponentName(NabuccoClientType.RCP);
-        String name = searchViewStatement.nodeToken2.tokenImage
-                + NabuccoJavaTemplateConstants.WIDGET_FACTORY;
+        String name = searchViewStatement.nodeToken2.tokenImage + NabuccoJavaTemplateConstants.WIDGET_FACTORY;
 
-        String mainPath = super.getVisitorContext().getPackage().replace(ViewConstants.UI,
-                ViewConstants.UI_RCP);
+        String mainPath = super.getVisitorContext().getPackage().replace(ViewConstants.UI, ViewConstants.UI_RCP);
         String pkg = mainPath + ViewConstants.PKG_SEPARATOR + ViewConstants.VIEW_PACKAGE;
 
         try {
             JavaCompilationUnit unit = super
                     .extractAst(NabuccoJavaTemplateConstants.SEARCH_VIEW_WIDGET_FACTORY_TEMPLATE);
-            TypeDeclaration type = unit
-                    .getType(NabuccoJavaTemplateConstants.SEARCH_VIEW_WIDGET_FACTORY_TEMPLATE);
+            TypeDeclaration type = unit.getType(NabuccoJavaTemplateConstants.SEARCH_VIEW_WIDGET_FACTORY_TEMPLATE);
             javaFactory.getJavaAstType().setTypeName(type, name);
             javaFactory.getJavaAstUnit().setPackage(unit.getUnitDeclaration(), pkg);
 
@@ -110,36 +105,32 @@ class NabuccoToJavaRcpViewSearchWidgetFactoryVisitor extends NabuccoToJavaVisito
 
             // change type of the attribute model
 
-            FieldDeclaration modelField = javaFactory.getJavaAstType().getField(type,
-                    ViewConstants.MODEL_FIELD);
+            FieldDeclaration modelField = javaFactory.getJavaAstType().getField(type, ViewConstants.MODEL_FIELD);
             String modelPath = mainPath + ViewConstants.PKG_SEPARATOR + ViewConstants.MODEL_PACKAGE;
 
-            modelField.type = JavaAstModelProducer.getInstance().createTypeReference(modelType,
-                    false);
+            modelField.type = JavaAstModelProducer.getInstance().createTypeReference(modelType, false);
 
             javaFactory.getJavaAstField().setFieldType(modelField, modelField.type);
 
-            ImportReference importReference = JavaAstModelProducer.getInstance()
-                    .createImportReference(modelPath + ViewConstants.PKG_SEPARATOR + modelType);
+            ImportReference importReference = JavaAstModelProducer.getInstance().createImportReference(
+                    modelPath + ViewConstants.PKG_SEPARATOR + modelType);
 
             javaFactory.getJavaAstUnit().addImport(unit.getUnitDeclaration(), importReference);
 
             // change second param of the constructor
 
-            JavaAstMethodSignature signature = new JavaAstMethodSignature(name,
-                    ViewConstants.NABUCCO_FORM_TOOLKIT, ViewConstants.SEARCH_MODEL);
+            JavaAstMethodSignature signature = new JavaAstMethodSignature(name, ViewConstants.NABUCCO_FORM_TOOLKIT,
+                    ViewConstants.SEARCH_MODEL);
 
-            ConstructorDeclaration constructor = javaFactory.getJavaAstType().getConstructor(type,
-                    signature);
+            ConstructorDeclaration constructor = javaFactory.getJavaAstType().getConstructor(type, signature);
 
             ((SingleTypeReference) (constructor.arguments[1]).type).token = modelType.toCharArray();
 
             // Annotations
-            JavaAstSupport.convertJavadocAnnotations(searchViewStatement.annotationDeclaration,
-                    type);
+            JavaAstSupport.convertJavadocAnnotations(searchViewStatement.annotationDeclaration, type);
 
-            JavaAstSupport.convertAstNodes(unit, super.getVisitorContext().getContainerList(),
-                    super.getVisitorContext().getImportList());
+            JavaAstSupport.convertAstNodes(unit, super.getVisitorContext().getContainerList(), super
+                    .getVisitorContext().getImportList());
 
             unit.setProjectName(projectName);
             unit.setSourceFolder(super.getSourceFolder());
@@ -166,12 +157,13 @@ class NabuccoToJavaRcpViewSearchWidgetFactoryVisitor extends NabuccoToJavaVisito
             JavaCompilationUnit unit = super
                     .extractAst(NabuccoJavaTemplateConstants.EDIT_WIDGET_FACTORY_WIDGET_DECLARATION_TEMPLATE);
 
-            List<NabuccoAnnotation> annotationDeclarationList = NabuccoAnnotationMapper
-                    .getInstance().mapToAnnotations(labeledInputField.annotationDeclaration);
+            List<NabuccoAnnotation> annotationDeclarationList = NabuccoAnnotationMapper.getInstance()
+                    .mapToAnnotationList(labeledInputField.annotationDeclaration);
             String name = labeledInputField.nodeToken2.tokenImage;
-            super.getVisitorContext().getContainerList().addAll(
-                    NabuccoToJavaRcpViewWidgetFactory.createInputField(annotationDeclarationList,
-                            name, true, unit, typeRefMap, view));
+            super.getVisitorContext()
+                    .getContainerList()
+                    .addAll(NabuccoToJavaRcpViewWidgetFactory.createInputField(annotationDeclarationList, name, true,
+                            unit, typeRefMap, view));
         } catch (JavaTemplateException te) {
             logger.error(te, "Error during Java template editview processing.");
             throw new NabuccoVisitorException("Error during Java template editview processing.", te);
@@ -185,12 +177,13 @@ class NabuccoToJavaRcpViewSearchWidgetFactoryVisitor extends NabuccoToJavaVisito
             JavaCompilationUnit unit = super
                     .extractAst(NabuccoJavaTemplateConstants.EDIT_WIDGET_FACTORY_WIDGET_DECLARATION_TEMPLATE);
 
-            List<NabuccoAnnotation> annotationDeclarationList = NabuccoAnnotationMapper
-                    .getInstance().mapToAnnotations(inputField.annotationDeclaration);
+            List<NabuccoAnnotation> annotationDeclarationList = NabuccoAnnotationMapper.getInstance()
+                    .mapToAnnotationList(inputField.annotationDeclaration);
             String name = inputField.nodeToken2.tokenImage;
-            super.getVisitorContext().getContainerList().addAll(
-                    NabuccoToJavaRcpViewWidgetFactory.createInputField(annotationDeclarationList,
-                            name, false, unit, typeRefMap, view));
+            super.getVisitorContext()
+                    .getContainerList()
+                    .addAll(NabuccoToJavaRcpViewWidgetFactory.createInputField(annotationDeclarationList, name, false,
+                            unit, typeRefMap, view));
         } catch (JavaTemplateException te) {
             logger.error(te, "Error during Java template editview processing.");
             throw new NabuccoVisitorException("Error during Java template editview processing.", te);
@@ -204,12 +197,13 @@ class NabuccoToJavaRcpViewSearchWidgetFactoryVisitor extends NabuccoToJavaVisito
             JavaCompilationUnit unit = super
                     .extractAst(NabuccoJavaTemplateConstants.EDIT_WIDGET_FACTORY_WIDGET_DECLARATION_TEMPLATE);
 
-            List<NabuccoAnnotation> annotationDeclarationList = NabuccoAnnotationMapper
-                    .getInstance().mapToAnnotations(labeledComboBox.annotationDeclaration);
+            List<NabuccoAnnotation> annotationDeclarationList = NabuccoAnnotationMapper.getInstance()
+                    .mapToAnnotationList(labeledComboBox.annotationDeclaration);
             String name = labeledComboBox.nodeToken2.tokenImage;
-            super.getVisitorContext().getContainerList().addAll(
-                    NabuccoToJavaRcpViewWidgetFactory.createComboBox(annotationDeclarationList,
-                            name, true, unit, typeRefMap, view));
+            super.getVisitorContext()
+                    .getContainerList()
+                    .addAll(NabuccoToJavaRcpViewWidgetFactory.createComboBox(annotationDeclarationList, name, true,
+                            unit, typeRefMap, view));
         } catch (JavaTemplateException te) {
             logger.error(te, "Error during Java template editview processing.");
             throw new NabuccoVisitorException("Error during Java template editview processing.", te);
@@ -223,12 +217,13 @@ class NabuccoToJavaRcpViewSearchWidgetFactoryVisitor extends NabuccoToJavaVisito
             JavaCompilationUnit unit = super
                     .extractAst(NabuccoJavaTemplateConstants.EDIT_WIDGET_FACTORY_WIDGET_DECLARATION_TEMPLATE);
 
-            List<NabuccoAnnotation> annotationDeclarationList = NabuccoAnnotationMapper
-                    .getInstance().mapToAnnotations(comboBox.annotationDeclaration);
+            List<NabuccoAnnotation> annotationDeclarationList = NabuccoAnnotationMapper.getInstance()
+                    .mapToAnnotationList(comboBox.annotationDeclaration);
             String name = comboBox.nodeToken2.tokenImage;
-            super.getVisitorContext().getContainerList().addAll(
-                    NabuccoToJavaRcpViewWidgetFactory.createComboBox(annotationDeclarationList,
-                            name, false, unit, typeRefMap, view));
+            super.getVisitorContext()
+                    .getContainerList()
+                    .addAll(NabuccoToJavaRcpViewWidgetFactory.createComboBox(annotationDeclarationList, name, false,
+                            unit, typeRefMap, view));
         } catch (JavaTemplateException te) {
             logger.error(te, "Error during Java template editview processing.");
             throw new NabuccoVisitorException("Error during Java template editview processing.", te);

@@ -1,0 +1,16 @@
+/*
+ * Sample NABUCCO File
+ */
+package org.nabucco.framework;
+
+import x.y.z.Other;
+
+public Datatype User {
+	
+	private Basetype Description[0..1] description;
+
+	private Datatype User[0..*] children;
+
+	private Enumeration Type[1] type;
+
+}

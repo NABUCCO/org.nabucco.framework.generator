@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java.view.browsersupport;
 
 import java.util.ArrayList;
@@ -38,11 +38,10 @@ import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
-import org.nabucco.framework.generator.compiler.template.NabuccoJavaTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoJavaTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotation;
 import org.nabucco.framework.generator.compiler.transformation.java.constants.ViewConstants;
 import org.nabucco.framework.generator.compiler.transformation.util.NabuccoTransformationUtility;
-
 import org.nabucco.framework.mda.model.java.JavaCompilationUnit;
 import org.nabucco.framework.mda.model.java.JavaModelException;
 import org.nabucco.framework.mda.model.java.ast.element.JavaAstElementFactory;
@@ -80,14 +79,13 @@ public class BrowserElementSupport implements ViewConstants {
      */
     @Deprecated
     public static void addGetValuesStatements(String datatypeName, String viewName,
-            List<NabuccoAnnotation> annotationDeclarationList, TypeDeclaration type,
-            JavaCompilationUnit helperUnit) throws JavaModelException, JavaTemplateException {
+            List<NabuccoAnnotation> annotationDeclarationList, TypeDeclaration type, JavaCompilationUnit helperUnit)
+            throws JavaModelException, JavaTemplateException {
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
         // select getValues()
         JavaAstMethodSignature signature = new JavaAstMethodSignature(GET_VALUES);
-        MethodDeclaration getValues = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(
-                type, signature);
+        MethodDeclaration getValues = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(type, signature);
 
         // count how many statements are from the datatype
         int length = 0;
@@ -120,13 +118,13 @@ public class BrowserElementSupport implements ViewConstants {
 
                 // select helper method getValues
                 JavaAstMethodSignature helperSignature = new JavaAstMethodSignature(GET_VALUES);
-                MethodDeclaration getValuesHelper = (MethodDeclaration) javaFactory
-                        .getJavaAstType().getMethod(helperType, helperSignature);
+                MethodDeclaration getValuesHelper = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(
+                        helperType, helperSignature);
 
-                JavaAstStatementExtractor statementExtractor = JavaAstExtractorFactory
-                        .getInstance().getStatementExtractor();
-                MessageSend messageSendStatement = (MessageSend) statementExtractor
-                        .extractStatement(getValuesHelper.statements[0], getValuesHelper.scope);
+                JavaAstStatementExtractor statementExtractor = JavaAstExtractorFactory.getInstance()
+                        .getStatementExtractor();
+                MessageSend messageSendStatement = (MessageSend) statementExtractor.extractStatement(
+                        getValuesHelper.statements[0], getValuesHelper.scope);
 
                 modifyGetValuesStatement(viewName, annotationDeclaration, messageSendStatement);
 
@@ -151,9 +149,8 @@ public class BrowserElementSupport implements ViewConstants {
      * @throws JavaModelException
      *             if an error occurred transforming the model.
      */
-    private static void modifyGetValuesStatement(String viewName,
-            NabuccoAnnotation annotationDeclaration, MessageSend messageSendStatement)
-            throws JavaModelException {
+    private static void modifyGetValuesStatement(String viewName, NabuccoAnnotation annotationDeclaration,
+            MessageSend messageSendStatement) throws JavaModelException {
         JavaAstModelProducer jamp = JavaAstModelProducer.getInstance();
 
         String property = PROPERTY;
@@ -167,8 +164,7 @@ public class BrowserElementSupport implements ViewConstants {
         }
 
         // change first argument
-        QualifiedNameReference firstArgument = jamp.createQualifiedNameReference(viewName + MODEL,
-                property);
+        QualifiedNameReference firstArgument = jamp.createQualifiedNameReference(viewName + MODEL, property);
         messageSendStatement.arguments[0] = firstArgument;
 
         // change second argument
@@ -190,12 +186,10 @@ public class BrowserElementSupport implements ViewConstants {
      * @throws JavaModelException
      *             if an error occurred transforming the model.
      */
-    public static void addImport(String importString, JavaCompilationUnit unit)
-            throws JavaModelException {
+    public static void addImport(String importString, JavaCompilationUnit unit) throws JavaModelException {
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
-        ImportReference importReference = JavaAstModelProducer.getInstance().createImportReference(
-                importString);
+        ImportReference importReference = JavaAstModelProducer.getInstance().createImportReference(importString);
         javaFactory.getJavaAstUnit().addImport(unit.getUnitDeclaration(), importReference);
     }
 
@@ -213,15 +207,14 @@ public class BrowserElementSupport implements ViewConstants {
      * @throws JavaModelException
      *             if an error occurred transforming the model.
      */
-    public static void changeConstructor(String viewName, String datatypeName, String datatype,
-            String name, TypeDeclaration type) throws JavaModelException {
+    public static void changeConstructor(String viewName, String datatypeName, String datatype, String name,
+            TypeDeclaration type) throws JavaModelException {
         JavaAstModelProducer jamp = JavaAstModelProducer.getInstance();
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
         // select the constructor
         JavaAstMethodSignature signature = new JavaAstMethodSignature(name, DATATYPE);
-        ConstructorDeclaration constructor = javaFactory.getJavaAstType().getConstructor(type,
-                signature);
+        ConstructorDeclaration constructor = javaFactory.getJavaAstType().getConstructor(type, signature);
 
         Argument parameter = constructor.arguments[0];
 
@@ -232,8 +225,7 @@ public class BrowserElementSupport implements ViewConstants {
         // change argument of first statement
         LocalDeclaration firstStatement = (LocalDeclaration) constructor.statements[0];
         MessageSend initialization = (MessageSend) firstStatement.initialization;
-        ClassLiteralAccess browserElement = jamp.createClassLiteralAccess(datatype
-                + EDIT_VIEW_BROWSER_ELEMENT);
+        ClassLiteralAccess browserElement = jamp.createClassLiteralAccess(datatype + EDIT_VIEW_BROWSER_ELEMENT);
         initialization.arguments[0] = browserElement;
 
         // change second statement
@@ -246,8 +238,7 @@ public class BrowserElementSupport implements ViewConstants {
         // change third statement
         Assignment thirdStatement = (Assignment) constructor.statements[2];
         TypeReference viewModelReference = jamp.createTypeReference(viewName + MODEL, false);
-        AllocationExpression allocationExpression = jamp.createAllocationExpression(
-                viewModelReference, null);
+        AllocationExpression allocationExpression = jamp.createAllocationExpression(viewModelReference, null);
         thirdStatement.expression = allocationExpression;
 
         // change fourth statement
@@ -255,8 +246,8 @@ public class BrowserElementSupport implements ViewConstants {
         SingleNameReference datatypeReference = jamp.createSingleNameReference(DATATYPE_FIELD);
         List<Expression> arguments = new ArrayList<Expression>();
         arguments.add(datatypeReference);
-        MessageSend fourthStatement = jamp.createMessageSend(PREFIX_SETTER
-                + NabuccoTransformationUtility.firstToUpper(datatypeName), viewModel, arguments);
+        MessageSend fourthStatement = jamp.createMessageSend(
+                PREFIX_SETTER + NabuccoTransformationUtility.firstToUpper(datatypeName), viewModel, arguments);
         constructor.statements[3] = fourthStatement;
 
     }
@@ -271,15 +262,13 @@ public class BrowserElementSupport implements ViewConstants {
      * @throws JavaModelException
      *             if an error occurred transforming the model.
      */
-    public static void changeGetViewModel(String viewName, TypeDeclaration type)
-            throws JavaModelException {
+    public static void changeGetViewModel(String viewName, TypeDeclaration type) throws JavaModelException {
         JavaAstModelProducer jamp = JavaAstModelProducer.getInstance();
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
         // select method getViewModel()
         JavaAstMethodSignature signature = new JavaAstMethodSignature(GET_VIEW_MODEL);
-        MethodDeclaration getViewModel = (MethodDeclaration) javaFactory.getJavaAstType()
-                .getMethod(type, signature);
+        MethodDeclaration getViewModel = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(type, signature);
 
         // change returnType
         TypeReference typeReference = jamp.createTypeReference(viewName + MODEL, false);
@@ -296,16 +285,13 @@ public class BrowserElementSupport implements ViewConstants {
      * @throws JavaModelException
      *             if an error occurred transforming the model.
      */
-    public static void changeSetViewModel(String viewName, TypeDeclaration type)
-            throws JavaModelException {
+    public static void changeSetViewModel(String viewName, TypeDeclaration type) throws JavaModelException {
         JavaAstModelProducer jamp = JavaAstModelProducer.getInstance();
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
         // select method getViewModel()
-        JavaAstMethodSignature signature = new JavaAstMethodSignature(SET_VIEW_MODEL,
-                EDIT_VIEW_MODEL);
-        MethodDeclaration getViewModel = (MethodDeclaration) javaFactory.getJavaAstType()
-                .getMethod(type, signature);
+        JavaAstMethodSignature signature = new JavaAstMethodSignature(SET_VIEW_MODEL, EDIT_VIEW_MODEL);
+        MethodDeclaration getViewModel = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(type, signature);
 
         // change type of argument
         TypeReference typeReference = jamp.createTypeReference(viewName + MODEL, false);
@@ -322,18 +308,15 @@ public class BrowserElementSupport implements ViewConstants {
      * @throws JavaModelException
      *             if an error occurred transforming the model.
      */
-    public static void changeSetter(String datatype, TypeDeclaration type)
-            throws JavaModelException {
+    public static void changeSetter(String datatype, TypeDeclaration type) throws JavaModelException {
         JavaAstModelProducer jamp = JavaAstModelProducer.getInstance();
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
         String datatypeName = NabuccoTransformationUtility.firstToLower(datatype);
 
         // select method setDatatype()
-        JavaAstMethodSignature signature = new JavaAstMethodSignature(PREFIX_SETTER + DATATYPE,
-                DATATYPE);
-        MethodDeclaration setter = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(type,
-                signature);
+        JavaAstMethodSignature signature = new JavaAstMethodSignature(PREFIX_SETTER + DATATYPE, DATATYPE);
+        MethodDeclaration setter = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(type, signature);
 
         // change name
         setter.selector = (PREFIX_SETTER + datatype).toCharArray();
@@ -363,8 +346,7 @@ public class BrowserElementSupport implements ViewConstants {
      * @throws JavaModelException
      *             if an error occurred transforming the model.
      */
-    public static void changeGetter(String datatype, TypeDeclaration type)
-            throws JavaModelException {
+    public static void changeGetter(String datatype, TypeDeclaration type) throws JavaModelException {
         JavaAstModelProducer jamp = JavaAstModelProducer.getInstance();
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
@@ -372,8 +354,7 @@ public class BrowserElementSupport implements ViewConstants {
 
         // select method getDatatype()
         JavaAstMethodSignature signature = new JavaAstMethodSignature(GET + DATATYPE);
-        MethodDeclaration getter = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(type,
-                signature);
+        MethodDeclaration getter = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(type, signature);
 
         // change returnType
         TypeReference typeReference = jamp.createTypeReference(datatype, false);
@@ -396,14 +377,12 @@ public class BrowserElementSupport implements ViewConstants {
      * @throws JavaModelException
      *             if an error occurred transforming the model.
      */
-    public static void changeFieldViewModel(String viewName, TypeDeclaration type)
-            throws JavaModelException {
+    public static void changeFieldViewModel(String viewName, TypeDeclaration type) throws JavaModelException {
         JavaAstModelProducer jamp = JavaAstModelProducer.getInstance();
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
         // select field datatype
-        FieldDeclaration datatypeField = javaFactory.getJavaAstType().getField(type,
-                VIEW_MODEL_FIELD);
+        FieldDeclaration datatypeField = javaFactory.getJavaAstType().getField(type, VIEW_MODEL_FIELD);
 
         // change type
         TypeReference reference = jamp.createTypeReference(viewName + MODEL, false);
@@ -420,18 +399,15 @@ public class BrowserElementSupport implements ViewConstants {
      * @throws JavaModelException
      *             if an error occurred transforming the model.
      */
-    public static void changeFieldBrowserHandler(String datatype, TypeDeclaration type)
-            throws JavaModelException {
+    public static void changeFieldBrowserHandler(String datatype, TypeDeclaration type) throws JavaModelException {
         JavaAstModelProducer jamp = JavaAstModelProducer.getInstance();
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
         // select field datatype
-        FieldDeclaration datatypeField = javaFactory.getJavaAstType().getField(type,
-                BROWSER_HANDLER_FIELD);
+        FieldDeclaration datatypeField = javaFactory.getJavaAstType().getField(type, BROWSER_HANDLER_FIELD);
 
         // change type
-        TypeReference reference = jamp.createTypeReference(datatype
-                + EDIT_VIEW_BROWSER_ELEMENT_HANDLER, false);
+        TypeReference reference = jamp.createTypeReference(datatype + EDIT_VIEW_BROWSER_ELEMENT_HANDLER, false);
         datatypeField.type = reference;
     }
 }

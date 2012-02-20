@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -96,7 +96,7 @@ public class NabuccoFileVerification extends NabuccoModelVerificationVisitor {
     public void visit(CommandStatement statement, VerificationResult result) {
         verify(statement.nodeToken2, result);
     }
-    
+
     /**
      * Verifies the statement name.
      * 
@@ -113,9 +113,12 @@ public class NabuccoFileVerification extends NabuccoModelVerificationVisitor {
         String modelName = token.tokenImage;
 
         if (!(fileName.equals(modelName))) {
-            int line = token.beginLine;
-            int column = token.beginColumn;
-            result.addError(VerificationErrorCriticality.WARNING, line, column,
+            int beginLine = token.beginLine;
+            int endLine = token.endLine;
+            int beginColumn = token.beginColumn;
+            int endColumn = token.endColumn;
+
+            result.addError(VerificationErrorCriticality.WARNING, beginLine, endLine, beginColumn, endColumn,
                     "Name of NABUCCO compilation unit does not match to its filename");
         }
     }
@@ -147,11 +150,9 @@ public class NabuccoFileVerification extends NabuccoModelVerificationVisitor {
         }
         String lowerCase = path.toLowerCase();
         if (!lowerCase.contains(".nbc")) {
-            throw new IllegalArgumentException(
-                    "Path to NABUCCO model does not point to a valid .nbc file.");
+            throw new IllegalArgumentException("Path to NABUCCO model does not point to a valid .nbc file.");
         }
-        return path.substring(0, lowerCase.lastIndexOf(".nbc")).replace(File.separatorChar, '.')
-                .replace('/', '.');
+        return path.substring(0, lowerCase.lastIndexOf(".nbc")).replace(File.separatorChar, '.').replace('/', '.');
     }
 
 }

@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java.service;
 
 import java.text.MessageFormat;
@@ -29,6 +29,7 @@ import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.IfStatement;
+import org.eclipse.jdt.internal.compiler.ast.ImportReference;
 import org.eclipse.jdt.internal.compiler.ast.Literal;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
@@ -43,6 +44,7 @@ import org.eclipse.jdt.internal.compiler.ast.ThrowStatement;
 import org.eclipse.jdt.internal.compiler.ast.TryStatement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
+import org.nabucco.framework.generator.compiler.transformation.common.annotation.service.NabuccoServiceType;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.JavaAstSupport;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.container.JavaAstContainter;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.container.JavaAstMethodStatementContainer;
@@ -52,7 +54,8 @@ import org.nabucco.framework.generator.compiler.transformation.java.constants.Se
 import org.nabucco.framework.generator.compiler.transformation.util.NabuccoTransformationUtility;
 import org.nabucco.framework.generator.compiler.transformation.util.mapper.NabuccoModifierComponentMapper;
 import org.nabucco.framework.generator.parser.model.modifier.NabuccoModifierType;
-
+import org.nabucco.framework.generator.parser.syntaxtree.ServiceStatement;
+import org.nabucco.framework.mda.model.java.JavaCompilationUnit;
 import org.nabucco.framework.mda.model.java.JavaModelException;
 import org.nabucco.framework.mda.model.java.ast.JavaAstMethod;
 import org.nabucco.framework.mda.model.java.ast.element.JavaAstElementFactory;
@@ -70,11 +73,13 @@ import org.nabucco.framework.mda.model.java.ast.produce.JavaAstModelProducer;
  */
 class NabuccoToJavaServiceVisitorSupport implements ServerConstants {
 
-    private static final String EMPTY_SERVICE_MSG_IMPORT = "org.nabucco.framework.base.facade.message.EmptyServiceMessage";
+    private static final String METHOD_CREATE_PM = "createPersistenceManager";
 
-    private static final String SERVICE_EXCEPTION = "org.nabucco.framework.base.facade.exception.service.ServiceException";
+    private static final String METHOD_CREATE_RM = "createResourceManager";
 
-    private static final String METHOD_SET_EM = "setEntityManager";
+    private static final String METHOD_SET_PM = "setPersistenceManager";
+
+    private static final String METHOD_SET_RM = "setResourceManager";
 
     private static final String METHOD_SET_LOGGER = "setLogger";
 
@@ -97,11 +102,10 @@ class NabuccoToJavaServiceVisitorSupport implements ServerConstants {
     private static final JavaAstMethodSignature HANDLER_SIGNATURE = new JavaAstMethodSignature(
             "serviceHandlerOperation", SERVICE_MESSAGE);
 
-    private static final JavaAstMethodSignature HANDLER_INVOKE_SIGNATURE = new JavaAstMethodSignature(
-            "invoke", SERVICE_REQUEST);
+    private static final JavaAstMethodSignature HANDLER_INVOKE_SIGNATURE = new JavaAstMethodSignature("invoke",
+            SERVICE_REQUEST);
 
-    private static final JavaAstMethodSignature POST_CONSTRUCT_SIGNATURE = new JavaAstMethodSignature(
-            "postConstruct");
+    private static final JavaAstMethodSignature POST_CONSTRUCT_SIGNATURE = new JavaAstMethodSignature("postConstruct");
 
     /**
      * Private constructor must not be invoked.
@@ -125,8 +129,8 @@ class NabuccoToJavaServiceVisitorSupport implements ServerConstants {
      * 
      * @throws JavaModelException
      */
-    public static JavaAstContainter<MethodDeclaration> createServiceInterfaceOperation(String name,
-            String requestMsg, String responseMsg, TypeDeclaration type) throws JavaModelException {
+    public static JavaAstContainter<MethodDeclaration> createServiceInterfaceOperation(String name, String requestMsg,
+            String responseMsg, TypeDeclaration type) throws JavaModelException {
         return createServiceInterfaceOperation(name, requestMsg, responseMsg, null, type);
     }
 
@@ -148,15 +152,14 @@ class NabuccoToJavaServiceVisitorSupport implements ServerConstants {
      * 
      * @throws JavaModelException
      */
-    public static JavaAstContainter<MethodDeclaration> createServiceInterfaceOperation(String name,
-            String requestMsg, String responseMsg, String exception, TypeDeclaration type)
-            throws JavaModelException {
+    public static JavaAstContainter<MethodDeclaration> createServiceInterfaceOperation(String name, String requestMsg,
+            String responseMsg, String exception, TypeDeclaration type) throws JavaModelException {
 
         // Extract method
         MethodDeclaration method = createServiceOperation(type, SERVICE_INTERFACE_SIGNATURE);
 
-        JavaAstContainter<MethodDeclaration> container = new JavaAstContainter<MethodDeclaration>(
-                method, JavaAstType.METHOD);
+        JavaAstContainter<MethodDeclaration> container = new JavaAstContainter<MethodDeclaration>(method,
+                JavaAstType.METHOD);
 
         // Name and modifier
         JavaAstMethod methodFactory = JavaAstElementFactory.getInstance().getJavaAstMethod();
@@ -167,25 +170,24 @@ class NabuccoToJavaServiceVisitorSupport implements ServerConstants {
                 .getReturnType(method);
 
         if (responseMsg == null || responseMsg.equalsIgnoreCase(VOID)) {
-            responseMsg = EMPTY_SERVICE_MSG;
-            container.getImports().add(EMPTY_SERVICE_MSG_IMPORT);
+            responseMsg = EMPTY_SERVICE_MESSAGE;
+            container.getImports().add(IMPORT_EMPTY_SERVICE_MESSAGE);
         }
 
-        serviceResponse.typeArguments = new TypeReference[] { JavaAstModelProducer.getInstance()
-                .createTypeReference(responseMsg, false) };
+        serviceResponse.typeArguments = new TypeReference[] { JavaAstModelProducer.getInstance().createTypeReference(
+                responseMsg, false) };
 
         // ServiceRequest
         ParameterizedSingleTypeReference serviceRequest = (ParameterizedSingleTypeReference) JavaAstElementFactory
-                .getInstance().getJavaAstArgument().getType(
-                        methodFactory.getAllArguments(method).get(0));
+                .getInstance().getJavaAstArgument().getType(methodFactory.getAllArguments(method).get(0));
 
-        if (requestMsg == null || requestMsg.equals(EMPTY) || requestMsg.equals(EMPTY_SERVICE_MSG)) {
-            requestMsg = EMPTY_SERVICE_MSG;
-            container.getImports().add(EMPTY_SERVICE_MSG_IMPORT);
+        if (requestMsg == null || requestMsg.equals(EMPTY) || requestMsg.equals(EMPTY_SERVICE_MESSAGE)) {
+            requestMsg = EMPTY_SERVICE_MESSAGE;
+            container.getImports().add(IMPORT_EMPTY_SERVICE_MESSAGE);
         }
 
-        serviceRequest.typeArguments = new TypeReference[] { JavaAstModelProducer.getInstance()
-                .createTypeReference(requestMsg, false) };
+        serviceRequest.typeArguments = new TypeReference[] { JavaAstModelProducer.getInstance().createTypeReference(
+                requestMsg, false) };
 
         createException(exception, method, container);
 
@@ -211,8 +213,8 @@ class NabuccoToJavaServiceVisitorSupport implements ServerConstants {
      * 
      * @throws JavaModelException
      */
-    public static JavaAstContainter<MethodDeclaration> createServiceOperation(String name,
-            String requestMsg, String responseMsg, TypeDeclaration type) throws JavaModelException {
+    public static JavaAstContainter<MethodDeclaration> createServiceOperation(String name, String requestMsg,
+            String responseMsg, TypeDeclaration type) throws JavaModelException {
         return createServiceOperation(name, requestMsg, responseMsg, null, type);
     }
 
@@ -234,8 +236,8 @@ class NabuccoToJavaServiceVisitorSupport implements ServerConstants {
      * 
      * @throws JavaModelException
      */
-    public static JavaAstContainter<MethodDeclaration> createServiceOperation(String name,
-            String rq, String rs, String exception, TypeDeclaration type) throws JavaModelException {
+    public static JavaAstContainter<MethodDeclaration> createServiceOperation(String name, String rq, String rs,
+            String exception, TypeDeclaration type) throws JavaModelException {
 
         JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
@@ -244,21 +246,21 @@ class NabuccoToJavaServiceVisitorSupport implements ServerConstants {
         // Extract method
         MethodDeclaration method = createServiceOperation(type, SERVICE_IMPL_SIGNATURE);
 
-        JavaAstContainter<MethodDeclaration> container = new JavaAstContainter<MethodDeclaration>(
-                method, JavaAstType.METHOD);
+        JavaAstContainter<MethodDeclaration> container = new JavaAstContainter<MethodDeclaration>(method,
+                JavaAstType.METHOD);
 
         // Name and modifier
         methodFactory.setMethodName(method, name);
-        methodFactory.setModifier(method, NabuccoModifierComponentMapper.mapModifierToJava(
-                NabuccoModifierType.PUBLIC, false));
+        methodFactory.setModifier(method,
+                NabuccoModifierComponentMapper.mapModifierToJava(NabuccoModifierType.PUBLIC, false));
 
         // ServiceResponse
         ParameterizedSingleTypeReference serviceResponse = (ParameterizedSingleTypeReference) methodFactory
                 .getReturnType(method);
 
         if (rs == null || rs.equalsIgnoreCase(VOID)) {
-            rs = EMPTY_SERVICE_MSG;
-            container.getImports().add(EMPTY_SERVICE_MSG_IMPORT);
+            rs = EMPTY_SERVICE_MESSAGE;
+            container.getImports().add(IMPORT_EMPTY_SERVICE_MESSAGE);
         }
 
         TypeReference rsType = producer.createTypeReference(rs, false);
@@ -269,13 +271,12 @@ class NabuccoToJavaServiceVisitorSupport implements ServerConstants {
         ParameterizedSingleTypeReference serviceRequest = (ParameterizedSingleTypeReference) javaFactory
                 .getJavaAstArgument().getType(methodFactory.getAllArguments(method).get(0));
 
-        if (rq == null || rq.equals(EMPTY) || rq.equals(EMPTY_SERVICE_MSG)) {
-            rq = EMPTY_SERVICE_MSG;
-            container.getImports().add(EMPTY_SERVICE_MSG_IMPORT);
+        if (rq == null || rq.equals(EMPTY) || rq.equals(EMPTY_SERVICE_MESSAGE)) {
+            rq = EMPTY_SERVICE_MESSAGE;
+            container.getImports().add(IMPORT_EMPTY_SERVICE_MESSAGE);
         }
 
-        serviceRequest.typeArguments = new TypeReference[] { producer
-                .createTypeReference(rq, false) };
+        serviceRequest.typeArguments = new TypeReference[] { producer.createTypeReference(rq, false) };
 
         createException(exception, method, container);
         createServiceOperationBody(method, rsType);
@@ -304,34 +305,34 @@ class NabuccoToJavaServiceVisitorSupport implements ServerConstants {
      * 
      * @throws JavaModelException
      */
-    public static JavaAstContainter<MethodDeclaration> createServiceHandlerMethod(String name,
-            String requestMsg, String responseMsg, String exception, TypeDeclaration type)
-            throws JavaModelException {
+    public static JavaAstContainter<MethodDeclaration> createServiceHandlerMethod(String name, String requestMsg,
+            String responseMsg, String exception, TypeDeclaration type) throws JavaModelException {
 
-        MethodDeclaration method = (MethodDeclaration) JavaAstElementFactory.getInstance()
-                .getJavaAstType().getMethod(type, HANDLER_SIGNATURE);
+        MethodDeclaration method = (MethodDeclaration) JavaAstElementFactory.getInstance().getJavaAstType()
+                .getMethod(type, HANDLER_SIGNATURE);
 
-        JavaAstContainter<MethodDeclaration> container = new JavaAstContainter<MethodDeclaration>(
-                method, JavaAstType.METHOD);
+        JavaAstContainter<MethodDeclaration> container = new JavaAstContainter<MethodDeclaration>(method,
+                JavaAstType.METHOD);
         JavaAstMethod methodFactory = JavaAstElementFactory.getInstance().getJavaAstMethod();
         methodFactory.setMethodName(method, name);
 
         if (responseMsg == null || responseMsg.equalsIgnoreCase(VOID)) {
-            responseMsg = EMPTY_SERVICE_MSG;
-            container.getImports().add(EMPTY_SERVICE_MSG_IMPORT);
+            responseMsg = EMPTY_SERVICE_MESSAGE;
+            container.getImports().add(IMPORT_EMPTY_SERVICE_MESSAGE);
         }
 
-        methodFactory.setReturnType(method, JavaAstModelProducer.getInstance().createTypeReference(
-                responseMsg, false));
+        methodFactory.setReturnType(method, JavaAstModelProducer.getInstance().createTypeReference(responseMsg, false));
 
-        if (requestMsg == null || requestMsg.equals(EMPTY) || requestMsg.equals(EMPTY_SERVICE_MSG)) {
-            requestMsg = EMPTY_SERVICE_MSG;
-            container.getImports().add(EMPTY_SERVICE_MSG_IMPORT);
+        if (requestMsg == null || requestMsg.equals(EMPTY) || requestMsg.equals(EMPTY_SERVICE_MESSAGE)) {
+            requestMsg = EMPTY_SERVICE_MESSAGE;
+            container.getImports().add(IMPORT_EMPTY_SERVICE_MESSAGE);
         }
 
-        JavaAstElementFactory.getInstance().getJavaAstArgument().setType(
-                methodFactory.getAllArguments(method).get(0),
-                JavaAstModelProducer.getInstance().createTypeReference(requestMsg, false));
+        JavaAstElementFactory
+                .getInstance()
+                .getJavaAstArgument()
+                .setType(methodFactory.getAllArguments(method).get(0),
+                        JavaAstModelProducer.getInstance().createTypeReference(requestMsg, false));
 
         createException(exception, method, container);
 
@@ -349,28 +350,27 @@ class NabuccoToJavaServiceVisitorSupport implements ServerConstants {
      * 
      * @param serviceOperation
      *            name of the operation
-     * @param entityManager
-     *            name of the entityManager if one must be injected, null for no injection
+     * @param serviceType
+     *            type of the service
      * 
      * @return the list of ast elements
      * 
      * @throws JavaModelException
      */
     public static List<JavaAstContainter<?>> createPostConstructStatements(String serviceOperation,
-            String entityManager) throws JavaModelException {
+            NabuccoServiceType serviceType) throws JavaModelException {
 
         JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
-        
+
         String handlerType = convertMethodToHandler(serviceOperation);
         String handlerName = NabuccoTransformationUtility.firstToLower(handlerType);
-        
+
         NameReference receiver = producer.createSingleNameReference(handlerType);
         FieldReference handler = producer.createFieldThisReference(handlerName);
 
         List<JavaAstContainter<?>> containers = new ArrayList<JavaAstContainter<?>>();
 
-        containers.add(JavaAstSupport.createField(handlerType, handlerName,
-                NabuccoModifierType.PRIVATE, false));
+        containers.add(JavaAstSupport.createField(handlerType, handlerName, NabuccoModifierType.PRIVATE));
 
         // Injection
         SingleNameReference injector = producer.createSingleNameReference(INJECTOR_NAME);
@@ -378,47 +378,55 @@ class NabuccoToJavaServiceVisitorSupport implements ServerConstants {
         MessageSend injectCall = producer.createMessageSend(INJECTOR_METHOD, injector, Arrays.asList(argument));
         Assignment injection = producer.createAssignment(handler, injectCall);
 
-        containers.add(new JavaAstMethodStatementContainer<Statement>(injection,
-                POST_CONSTRUCT_SIGNATURE));
+        containers.add(new JavaAstMethodStatementContainer<Statement>(injection, POST_CONSTRUCT_SIGNATURE));
 
-        IfStatement ifStatement = createHandlerInitialization(handler, entityManager);
+        IfStatement ifStatement = createHandlerInitialization(handler, serviceType);
 
-        containers.add(new JavaAstMethodStatementContainer<Statement>(ifStatement,
-                POST_CONSTRUCT_SIGNATURE));
-        
+        containers.add(new JavaAstMethodStatementContainer<Statement>(ifStatement, POST_CONSTRUCT_SIGNATURE));
+
         return containers;
     }
 
-    private static IfStatement createHandlerInitialization(FieldReference handler,
-            String entityManager) throws JavaModelException {
-        
+    private static IfStatement createHandlerInitialization(FieldReference handler, NabuccoServiceType serviceType)
+            throws JavaModelException {
+
         JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
-        
+
         Literal nullLiteral = producer.createLiteral(null, LiteralType.NULL_LITERAL);
 
-        BinaryExpression condition = producer.createBinaryExpression(
-                BinaryExpressionType.EQUAL_EXPRESSION, handler, nullLiteral,
-                BinaryExpression.NOT_EQUAL);
+        BinaryExpression condition = producer.createBinaryExpression(BinaryExpressionType.EQUAL_EXPRESSION, handler,
+                nullLiteral, BinaryExpression.NOT_EQUAL);
 
-        // Entity Manager
-        
-        Expression em;
-        if (entityManager == null) {
-            em = nullLiteral;
-        } else {
-            em = producer.createFieldThisReference(entityManager);
+        List<Statement> blockStatements = new ArrayList<Statement>();
+
+        switch (serviceType) {
+        case PERSISTENCE: {
+            String persistenceManager = NabuccoTransformationUtility.firstToLower(PERSISTENCE_MANAGER);
+            SingleNameReference pm = producer.createSingleNameReference(persistenceManager);
+            MessageSend setPersistenceManager = producer.createMessageSend(METHOD_SET_PM, handler, Arrays.asList(pm));
+
+            blockStatements.add(setPersistenceManager);
+            break;
         }
-        MessageSend setEntityManager = producer.createMessageSend(METHOD_SET_EM, handler, Arrays
-                .asList(em));
+
+        case RESOURCE: {
+            String resourceManager = NabuccoTransformationUtility.firstToLower(RESOURCE_MANAGER);
+            SingleNameReference rm = producer.createSingleNameReference(resourceManager);
+            MessageSend setResourceManager = producer.createMessageSend(METHOD_SET_RM, handler, Arrays.asList(rm));
+
+            blockStatements.add(setResourceManager);
+
+            break;
+        }
+        }
 
         // Logger
-        
+
         SuperReference superReference = producer.createSuperReference();
         MessageSend getLogger = producer.createMessageSend(METHOD_GET_LOGGER, superReference, null);
-        MessageSend setLogger = producer.createMessageSend(METHOD_SET_LOGGER, handler, Arrays
-                .asList(getLogger));
-        
-        Block thenStatement = producer.createBlock(setEntityManager, setLogger);
+        blockStatements.add(producer.createMessageSend(METHOD_SET_LOGGER, handler, Arrays.asList(getLogger)));
+
+        Block thenStatement = producer.createBlock(blockStatements.toArray(new Statement[blockStatements.size()]));
 
         return producer.createIfStatement(condition, thenStatement);
     }
@@ -437,8 +445,8 @@ class NabuccoToJavaServiceVisitorSupport implements ServerConstants {
      * @param type
      *            the type declaration to modify
      */
-    public static void prepareInvokeMethod(String methodName, String requestMsg,
-            String responseMsg, String exception, TypeDeclaration type) throws JavaModelException {
+    public static void prepareInvokeMethod(String methodName, String requestMsg, String responseMsg, String exception,
+            TypeDeclaration type) throws JavaModelException {
 
         JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
@@ -450,24 +458,24 @@ class NabuccoToJavaServiceVisitorSupport implements ServerConstants {
         TypeReference rsType = producer.createTypeReference(responseMsg, false);
         TypeReference exType = producer.createTypeReference(exception, false);
 
-        ParameterizedSingleTypeReference argument = (ParameterizedSingleTypeReference) javaFactory
-                .getJavaAstArgument().getType(method.arguments[0]);
+        ParameterizedSingleTypeReference argument = (ParameterizedSingleTypeReference) javaFactory.getJavaAstArgument()
+                .getType(method.arguments[0]);
 
-        ParameterizedSingleTypeReference returnType = (ParameterizedSingleTypeReference) javaFactory
-                .getJavaAstMethod().getReturnType(method);
-        
+        ParameterizedSingleTypeReference returnType = (ParameterizedSingleTypeReference) javaFactory.getJavaAstMethod()
+                .getReturnType(method);
+
         argument.typeArguments[0] = rqType;
         returnType.typeArguments[0] = rsType;
-        
+
         javaFactory.getJavaAstMethod().setException(method, exType);
-        
+
         // 1. Statement
-        
+
         LocalDeclaration responseDeclaration = (LocalDeclaration) method.statements[0];
-        ((ParameterizedSingleTypeReference)responseDeclaration.type).typeArguments[0] = rsType;
-        
+        ((ParameterizedSingleTypeReference) responseDeclaration.type).typeArguments[0] = rsType;
+
         // 2. Statement
-        
+
         LocalDeclaration msgDeclaration = (LocalDeclaration) method.statements[1];
         msgDeclaration.type = rsType;
 
@@ -475,23 +483,23 @@ class NabuccoToJavaServiceVisitorSupport implements ServerConstants {
         TryStatement tryBlock = (TryStatement) method.statements[2];
 
         // 3. Try Statement
-        
+
         Assignment msgAssignment = (Assignment) tryBlock.tryBlock.statements[2];
         MessageSend concreteMethodCall = (MessageSend) msgAssignment.expression;
         javaFactory.getJavaAstMethodCall().setMethodName(methodName, concreteMethodCall);
-        
+
         // 3. Try Statement
         Assignment rsAssignment = (Assignment) tryBlock.tryBlock.statements[4];
         AllocationExpression rsAllocation = (AllocationExpression) rsAssignment.expression;
         rsAllocation.type = returnType;
-        
+
         // Catch Block
         javaFactory.getJavaAstArgument().setType(tryBlock.catchArguments[0], exType);
 
         LocalDeclaration wrappedException = (LocalDeclaration) tryBlock.catchBlocks[1].statements[1];
         wrappedException.type = exType;
         ((AllocationExpression) wrappedException.initialization).type = exType;
-        
+
         ThrowStatement throwStatement = (ThrowStatement) tryBlock.catchBlocks[2].statements[1];
         ((AllocationExpression) throwStatement.exception).type = exType;
 
@@ -501,13 +509,125 @@ class NabuccoToJavaServiceVisitorSupport implements ServerConstants {
     /**
      * Prepares the post construct method of the service implementation.
      * 
-     * @param type
-     *            the type declaration
+     * @param nabuccoService
+     *            the nabucco service statement
+     * @param unit
+     *            the compilation unit declaration
      * 
      * @throws JavaModelException
      */
-    public static void preparePostConstruct(TypeDeclaration type) throws JavaModelException {
-        // Nothing to do here!
+    public static void preparePostConstruct(ServiceStatement nabuccoService, JavaCompilationUnit unit)
+            throws JavaModelException {
+
+        NabuccoServiceType serviceType = NabuccoServiceType.valueOf(nabuccoService);
+
+        switch (serviceType) {
+
+        case PERSISTENCE:
+            createPersistenceManager(unit);
+            break;
+
+        case RESOURCE:
+            createResourceManager(unit);
+            break;
+        }
+
+    }
+
+    /**
+     * Create the persistence manager initialization for post construct.
+     * 
+     * @param unit
+     *            the java compilation unit
+     * 
+     * @throws JavaModelException
+     */
+    private static void createPersistenceManager(JavaCompilationUnit unit) throws JavaModelException {
+
+        JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
+        JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
+
+        TypeDeclaration type = unit.getType();
+
+        MethodDeclaration postConstruct = (MethodDeclaration) JavaAstElementFactory.getInstance().getJavaAstType()
+                .getMethod(type, POST_CONSTRUCT_SIGNATURE);
+
+        TypeReference persistenceManager = producer.createTypeReference(PERSISTENCE_MANAGER, false);
+        TypeReference persistenceManagerFactory = producer.createTypeReference(PERSISTENCE_MANAGER_FACTORY, false);
+
+        FieldReference em = producer
+                .createFieldThisReference(NabuccoTransformationUtility.firstToLower(ENTITY_MANAGER));
+
+        MessageSend logger = producer.createMessageSend(METHOD_GET_LOGGER, producer.createSuperReference(), null);
+
+        MessageSend getInstance = producer.createMessageSend(SINGLETON_GETTER, persistenceManagerFactory, null);
+        MessageSend createManager = producer.createMessageSend(METHOD_CREATE_PM, getInstance,
+                Arrays.<Expression> asList(em, logger));
+
+        LocalDeclaration declaration = producer.createLocalDeclaration(persistenceManager,
+                NabuccoTransformationUtility.firstToLower(PERSISTENCE_MANAGER));
+
+        declaration.initialization = createManager;
+
+        javaFactory.getJavaAstMethod().addStatement(postConstruct, declaration);
+
+        {
+            ImportReference importReference = producer.createImportReference(IMPORT_PERSISTENCE_MANAGER);
+            javaFactory.getJavaAstUnit().addImport(unit.getUnitDeclaration(), importReference);
+        }
+
+        {
+            ImportReference importReference = producer.createImportReference(IMPORT_PERSISTENCE_MANAGER_FACTORY);
+            javaFactory.getJavaAstUnit().addImport(unit.getUnitDeclaration(), importReference);
+        }
+    }
+
+    /**
+     * Create the resource manager initialization for post construct.
+     * 
+     * @param unit
+     *            the java compilation unit
+     * 
+     * @throws JavaModelException
+     */
+    private static void createResourceManager(JavaCompilationUnit unit) throws JavaModelException {
+
+        JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
+        JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
+
+        TypeDeclaration type = unit.getType();
+
+        MethodDeclaration postConstruct = (MethodDeclaration) JavaAstElementFactory.getInstance().getJavaAstType()
+                .getMethod(type, POST_CONSTRUCT_SIGNATURE);
+
+        TypeReference persistenceManager = producer.createTypeReference(RESOURCE_MANAGER, false);
+        TypeReference persistenceManagerFactory = producer.createTypeReference(RESOURCE_MANAGER_FACTORY, false);
+
+        FieldReference em = producer
+                .createFieldThisReference(NabuccoTransformationUtility.firstToLower(SESSION_CONTEXT));
+
+        MessageSend logger = producer.createMessageSend(METHOD_GET_LOGGER, producer.createSuperReference(), null);
+
+        MessageSend getInstance = producer.createMessageSend(SINGLETON_GETTER, persistenceManagerFactory, null);
+        MessageSend createManager = producer.createMessageSend(METHOD_CREATE_RM, getInstance,
+                Arrays.<Expression> asList(em, logger));
+
+        LocalDeclaration declaration = producer.createLocalDeclaration(persistenceManager,
+                NabuccoTransformationUtility.firstToLower(RESOURCE_MANAGER));
+
+        declaration.initialization = createManager;
+
+        javaFactory.getJavaAstMethod().addStatement(postConstruct, declaration);
+
+        {
+            ImportReference importReference = producer.createImportReference(IMPORT_RESOURCE_MANAGER);
+            javaFactory.getJavaAstUnit().addImport(unit.getUnitDeclaration(), importReference);
+        }
+
+        {
+            ImportReference importReference = producer.createImportReference(IMPORT_RESOURCE_MANAGER_FACTORY);
+            javaFactory.getJavaAstUnit().addImport(unit.getUnitDeclaration(), importReference);
+        }
     }
 
     /**
@@ -547,23 +667,22 @@ class NabuccoToJavaServiceVisitorSupport implements ServerConstants {
      * 
      * @throws JavaModelException
      */
-    private static void createServiceOperationBody(MethodDeclaration method,
-            TypeReference responseType) throws JavaModelException {
+    private static void createServiceOperationBody(MethodDeclaration method, TypeReference responseType)
+            throws JavaModelException {
 
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
         JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
 
         String methodName = javaFactory.getJavaAstMethod().getMethodName(method);
-        String fieldName = NabuccoTransformationUtility
-                .firstToLower(convertMethodToHandler(methodName));
+        String fieldName = NabuccoTransformationUtility.firstToLower(convertMethodToHandler(methodName));
 
         // 1. Statement
-        
+
         IfStatement ifStatement = (IfStatement) method.statements[0];
         EqualExpression condition = (EqualExpression) ifStatement.condition;
         FieldReference handler = (FieldReference) condition.left;
         javaFactory.getJavaAstReference().setName(fieldName, handler);
-        
+
         Block then = (Block) ifStatement.thenStatement;
         MessageSend loggerCall = (MessageSend) then.statements[0];
         String message = new String(((StringLiteral) loggerCall.arguments[0]).source());
@@ -571,11 +690,11 @@ class NabuccoToJavaServiceVisitorSupport implements ServerConstants {
 
         Literal literal = producer.createLiteral(message, LiteralType.STRING_LITERAL);
         loggerCall.arguments[0] = literal;
-        
+
         ThrowStatement exception = (ThrowStatement) then.statements[1];
         AllocationExpression exceptionAllocation = (AllocationExpression) exception.exception;
         exceptionAllocation.arguments[0] = literal;
-        
+
         // 2. Statement
 
         LocalDeclaration msgDeclaration = (LocalDeclaration) method.statements[1];
@@ -586,12 +705,11 @@ class NabuccoToJavaServiceVisitorSupport implements ServerConstants {
 
         MessageSend init = (MessageSend) method.statements[2];
         javaFactory.getJavaAstMethodCall().setMethodReceiver(handler, init);
-        
+
         // 4. Statement
 
         Assignment invoke = (Assignment) method.statements[3];
-        javaFactory.getJavaAstMethodCall().setMethodReceiver(handler,
-                (MessageSend) invoke.expression);
+        javaFactory.getJavaAstMethodCall().setMethodReceiver(handler, (MessageSend) invoke.expression);
 
         // 5. Statement
 
@@ -615,13 +733,11 @@ class NabuccoToJavaServiceVisitorSupport implements ServerConstants {
             JavaAstContainter<MethodDeclaration> container) throws JavaModelException {
 
         if (exception != null) {
-            TypeReference serviceException = JavaAstModelProducer.getInstance()
-                    .createTypeReference(exception, false);
-            JavaAstElementFactory.getInstance().getJavaAstMethod().setException(method,
-                    serviceException);
+            TypeReference serviceException = JavaAstModelProducer.getInstance().createTypeReference(exception, false);
+            JavaAstElementFactory.getInstance().getJavaAstMethod().setException(method, serviceException);
             container.getImports().add(exception);
         } else {
-            container.getImports().add(SERVICE_EXCEPTION);
+            container.getImports().add(IMPORT_SERVICE_EXCEPTION);
         }
     }
 
@@ -637,10 +753,10 @@ class NabuccoToJavaServiceVisitorSupport implements ServerConstants {
      * 
      * @throws JavaModelException
      */
-    private static MethodDeclaration createServiceOperation(TypeDeclaration type,
-            JavaAstMethodSignature signature) throws JavaModelException {
-        MethodDeclaration method = (MethodDeclaration) JavaAstElementFactory.getInstance()
-                .getJavaAstType().getMethod(type, signature);
+    private static MethodDeclaration createServiceOperation(TypeDeclaration type, JavaAstMethodSignature signature)
+            throws JavaModelException {
+        MethodDeclaration method = (MethodDeclaration) JavaAstElementFactory.getInstance().getJavaAstType()
+                .getMethod(type, signature);
         return method;
     }
 

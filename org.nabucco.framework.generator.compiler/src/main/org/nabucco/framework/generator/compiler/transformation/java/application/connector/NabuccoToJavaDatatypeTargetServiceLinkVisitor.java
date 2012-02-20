@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,7 +34,7 @@ import org.eclipse.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.SwitchStatement;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
-import org.nabucco.framework.generator.compiler.template.NabuccoJavaTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoJavaTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.java.application.connector.util.DatatypeCollector;
 import org.nabucco.framework.generator.compiler.transformation.java.application.connector.util.ServiceLinkResolver;
 import org.nabucco.framework.generator.compiler.transformation.java.visitor.NabuccoToJavaVisitorContext;
@@ -84,8 +84,8 @@ class NabuccoToJavaDatatypeTargetServiceLinkVisitor extends NabuccoToJavaVisitor
     private static final JavaAstMethodSignature SIGNATURE_POST_OPERATION = new JavaAstMethodSignature(
             "postServiceOperation", "ServiceMessageTemplate");
 
-    private static final JavaAstMethodSignature SIGNATURE_INVOKE = new JavaAstMethodSignature(
-            "invoke", "ServiceMessageTemplate");
+    private static final JavaAstMethodSignature SIGNATURE_INVOKE = new JavaAstMethodSignature("invoke",
+            "ServiceMessageTemplate");
 
     /**
      * Creates a new {@link NabuccoToJavaDatatypeTargetServiceLinkVisitor} instance.
@@ -93,9 +93,8 @@ class NabuccoToJavaDatatypeTargetServiceLinkVisitor extends NabuccoToJavaVisitor
      * @param visitorContext
      *            the visitor context
      */
-    public NabuccoToJavaDatatypeTargetServiceLinkVisitor(
-            NabuccoToJavaVisitorContext visitorContext, ApplicationStatement application,
-            JavaCompilationUnit unit) {
+    public NabuccoToJavaDatatypeTargetServiceLinkVisitor(NabuccoToJavaVisitorContext visitorContext,
+            ApplicationStatement application, JavaCompilationUnit unit) {
         super(visitorContext);
 
         this.application = application;
@@ -105,8 +104,7 @@ class NabuccoToJavaDatatypeTargetServiceLinkVisitor extends NabuccoToJavaVisitor
     @Override
     public void visit(ConnectorStatement connector, MdaModel<JavaModel> target) {
         try {
-            DatatypeCollector collector = new DatatypeCollector(super.getVisitorContext(),
-                    this.application);
+            DatatypeCollector collector = new DatatypeCollector(super.getVisitorContext(), this.application);
 
             collector.accept(connector);
 
@@ -115,16 +113,14 @@ class NabuccoToJavaDatatypeTargetServiceLinkVisitor extends NabuccoToJavaVisitor
 
             for (String targetName : collector.getTargetMap().keySet()) {
 
-                template = super
-                        .extractAst(NabuccoJavaTemplateConstants.CONNECTOR_CALLBACK_TEMPLATE);
+                template = super.extractAst(NabuccoJavaTemplateConstants.CONNECTOR_CALLBACK_TEMPLATE);
 
                 resolver = collector.getMaintainServices().get(targetName);
                 this.createInternalMaintainStatements(collector, targetName, template);
                 this.createAbstractMethods(resolver, template);
                 this.createInvokeMethod(resolver, template);
 
-                template = super
-                        .extractAst(NabuccoJavaTemplateConstants.CONNECTOR_CALLBACK_TEMPLATE);
+                template = super.extractAst(NabuccoJavaTemplateConstants.CONNECTOR_CALLBACK_TEMPLATE);
 
                 resolver = collector.getResolveServices().get(targetName);
                 this.createInternalResolveStatements(collector, targetName, template);
@@ -157,11 +153,11 @@ class NabuccoToJavaDatatypeTargetServiceLinkVisitor extends NabuccoToJavaVisitor
         JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
-        AbstractMethodDeclaration internalMaintain = javaFactory.getJavaAstType().getMethod(
-                this.unit.getType(), SIGNATURE_INTERNAL_MAINTAIN);
+        AbstractMethodDeclaration internalMaintain = javaFactory.getJavaAstType().getMethod(this.unit.getType(),
+                SIGNATURE_INTERNAL_MAINTAIN);
 
-        AbstractMethodDeclaration internalConnectTemlate = javaFactory.getJavaAstType().getMethod(
-                template.getType(), SIGNATURE_INTERNAL_CONNECT);
+        AbstractMethodDeclaration internalConnectTemlate = javaFactory.getJavaAstType().getMethod(template.getType(),
+                SIGNATURE_INTERNAL_CONNECT);
 
         IfStatement ifStatement = (IfStatement) internalMaintain.statements[0];
         Block thenStatement = (Block) ifStatement.thenStatement;
@@ -178,11 +174,8 @@ class NabuccoToJavaDatatypeTargetServiceLinkVisitor extends NabuccoToJavaVisitor
             statementList = new ArrayList<Statement>(Arrays.asList(switchStatement.statements));
         }
 
-        String sourceType = collector.getSourceType();
-        String targetType = collector.getTargetMap().get(targetName);
-
-        CaseStatement caseStatement = producer.createCaseStatement(sourceType.toUpperCase()
-                + CONSTANT_SEPARATOR + targetType.toUpperCase());
+        CaseStatement caseStatement = producer.createCaseStatement(collector.getSourceName().toUpperCase()
+                + CONSTANT_SEPARATOR + targetName.toUpperCase());
 
         ServiceLinkResolver resolver = collector.getMaintainServices().get(targetName);
         Statement[] statements = this.createStatements(resolver, internalConnectTemlate);
@@ -214,11 +207,11 @@ class NabuccoToJavaDatatypeTargetServiceLinkVisitor extends NabuccoToJavaVisitor
         JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
-        AbstractMethodDeclaration internalResolve = javaFactory.getJavaAstType().getMethod(
-                this.unit.getType(), SIGNATURE_INTERNAL_RESOLVE);
+        AbstractMethodDeclaration internalResolve = javaFactory.getJavaAstType().getMethod(this.unit.getType(),
+                SIGNATURE_INTERNAL_RESOLVE);
 
-        AbstractMethodDeclaration internalConnectTemlate = javaFactory.getJavaAstType().getMethod(
-                template.getType(), SIGNATURE_INTERNAL_CONNECT);
+        AbstractMethodDeclaration internalConnectTemlate = javaFactory.getJavaAstType().getMethod(template.getType(),
+                SIGNATURE_INTERNAL_CONNECT);
 
         IfStatement ifStatement = (IfStatement) internalResolve.statements[0];
         Block thenStatement = (Block) ifStatement.thenStatement;
@@ -235,11 +228,8 @@ class NabuccoToJavaDatatypeTargetServiceLinkVisitor extends NabuccoToJavaVisitor
             statementList = new ArrayList<Statement>(Arrays.asList(switchStatement.statements));
         }
 
-        String sourceType = collector.getSourceType();
-        String targetType = collector.getTargetMap().get(targetName);
-
-        CaseStatement caseStatement = producer.createCaseStatement(sourceType.toUpperCase()
-                + CONSTANT_SEPARATOR + targetType.toUpperCase());
+        CaseStatement caseStatement = producer.createCaseStatement(collector.getSourceName().toUpperCase()
+                + CONSTANT_SEPARATOR + targetName.toUpperCase());
 
         ServiceLinkResolver resolver = collector.getResolveServices().get(targetName);
         Statement[] statements = this.createStatements(resolver, internalConnectTemlate);
@@ -265,8 +255,8 @@ class NabuccoToJavaDatatypeTargetServiceLinkVisitor extends NabuccoToJavaVisitor
      * 
      * @throws JavaModelException
      */
-    private Statement[] createStatements(ServiceLinkResolver resolver,
-            AbstractMethodDeclaration template) throws JavaModelException {
+    private Statement[] createStatements(ServiceLinkResolver resolver, AbstractMethodDeclaration template)
+            throws JavaModelException {
 
         JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
@@ -355,11 +345,11 @@ class NabuccoToJavaDatatypeTargetServiceLinkVisitor extends NabuccoToJavaVisitor
         String rqMsg = resolver.getRequestMessage();
         String rsMsg = resolver.getResponseMessage();
 
-        MethodDeclaration preOperation = (MethodDeclaration) javaFactory.getJavaAstType()
-                .getMethod(template.getType(), SIGNATURE_PRE_OPERATION);
+        MethodDeclaration preOperation = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(template.getType(),
+                SIGNATURE_PRE_OPERATION);
 
-        MethodDeclaration postOperation = (MethodDeclaration) javaFactory.getJavaAstType()
-                .getMethod(template.getType(), SIGNATURE_POST_OPERATION);
+        MethodDeclaration postOperation = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(
+                template.getType(), SIGNATURE_POST_OPERATION);
 
         this.createAbstractMethod(rqMsg, preName, preOperation);
         this.createAbstractMethod(rsMsg, postName, postOperation);
@@ -377,8 +367,8 @@ class NabuccoToJavaDatatypeTargetServiceLinkVisitor extends NabuccoToJavaVisitor
      * 
      * @throws JavaModelException
      */
-    private void createAbstractMethod(String messageName, String operationName,
-            MethodDeclaration operation) throws JavaModelException {
+    private void createAbstractMethod(String messageName, String operationName, MethodDeclaration operation)
+            throws JavaModelException {
 
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
         JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
@@ -414,8 +404,8 @@ class NabuccoToJavaDatatypeTargetServiceLinkVisitor extends NabuccoToJavaVisitor
 
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
-        MethodDeclaration invoke = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(
-                template.getType(), SIGNATURE_INVOKE);
+        MethodDeclaration invoke = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(template.getType(),
+                SIGNATURE_INVOKE);
 
         this.createInvokeSignature(resolver, invoke);
         this.createInvokeStatements(resolver, invoke);
@@ -453,8 +443,7 @@ class NabuccoToJavaDatatypeTargetServiceLinkVisitor extends NabuccoToJavaVisitor
             rsMsg = producer.createTypeReference(message, false);
         }
 
-        String methodName = INVOKE
-                + NabuccoTransformationUtility.firstToUpper(resolver.getServiceOperation());
+        String methodName = INVOKE + NabuccoTransformationUtility.firstToUpper(resolver.getServiceOperation());
 
         javaFactory.getJavaAstMethod().setMethodName(invoke, methodName);
         javaFactory.getJavaAstMethod().setReturnType(invoke, rsMsg);
@@ -484,8 +473,7 @@ class NabuccoToJavaDatatypeTargetServiceLinkVisitor extends NabuccoToJavaVisitor
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
         String componentImport = resolver.getComponent();
-        String component = componentImport
-                .substring(componentImport.lastIndexOf(PKG_SEPARATOR) + 1);
+        String component = componentImport.substring(componentImport.lastIndexOf(PKG_SEPARATOR) + 1);
 
         String componentLocator = component + LOCATOR;
         String componentLocatorImport = componentImport + LOCATOR;
@@ -495,12 +483,10 @@ class NabuccoToJavaDatatypeTargetServiceLinkVisitor extends NabuccoToJavaVisitor
         String serviceOperation = resolver.getServiceOperation();
 
         String requestMsgImport = resolver.getRequestMessage();
-        String requestMsg = requestMsgImport
-                .substring(requestMsgImport.lastIndexOf(PKG_SEPARATOR) + 1);
+        String requestMsg = requestMsgImport.substring(requestMsgImport.lastIndexOf(PKG_SEPARATOR) + 1);
 
         String responseMsgImport = resolver.getResponseMessage();
-        String responseMsg = responseMsgImport.substring(responseMsgImport
-                .lastIndexOf(PKG_SEPARATOR) + 1);
+        String responseMsg = responseMsgImport.substring(responseMsgImport.lastIndexOf(PKG_SEPARATOR) + 1);
 
         javaFactory.getJavaAstUnit().addImport(this.unit.getUnitDeclaration(),
                 producer.createImportReference(componentImport));

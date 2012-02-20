@@ -1,0 +1,8 @@
+/*
+ * Sample NABUCCO File
+ */
+package org.nabucco.framework;
+
+public Basetype Description {
+
+}

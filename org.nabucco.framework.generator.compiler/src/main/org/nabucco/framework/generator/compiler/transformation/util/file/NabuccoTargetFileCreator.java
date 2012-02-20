@@ -1,27 +1,28 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.util.file;
 
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationException;
-
 import org.nabucco.framework.mda.model.MdaModel;
 import org.nabucco.framework.mda.model.ModelException;
 import org.nabucco.framework.mda.model.java.JavaModel;
 import org.nabucco.framework.mda.model.java.file.JavaFileCreator;
+import org.nabucco.framework.mda.model.text.confluence.ConfluenceModel;
+import org.nabucco.framework.mda.model.text.confluence.file.ConfluenceFileCreator;
 import org.nabucco.framework.mda.model.xml.XmlModel;
 import org.nabucco.framework.mda.model.xml.file.XmlFileCreator;
 
@@ -64,8 +65,8 @@ public class NabuccoTargetFileCreator {
      * 
      * @throws NabuccoTransformationException
      */
-    public void createJavaFiles(MdaModel<JavaModel> model, String rootDir,
-            String formatterConfigFile) throws NabuccoTransformationException {
+    public void createJavaFiles(MdaModel<JavaModel> model, String rootDir, String formatterConfigFile)
+            throws NabuccoTransformationException {
         try {
             JavaFileCreator fileCreator = new JavaFileCreator(model, rootDir, formatterConfigFile);
             fileCreator.createFiles();
@@ -82,10 +83,26 @@ public class NabuccoTargetFileCreator {
      * @param rootDir
      *            the root directory
      */
-    public void createXmlFiles(MdaModel<XmlModel> model, String rootDir)
-            throws NabuccoTransformationException {
+    public void createXmlFiles(MdaModel<XmlModel> model, String rootDir) throws NabuccoTransformationException {
         try {
             XmlFileCreator fileCreator = new XmlFileCreator(model, rootDir);
+            fileCreator.createFiles();
+        } catch (ModelException e) {
+            throw new NabuccoTransformationException("Error creating xml files.", e);
+        }
+    }
+    
+    /**
+     * Creates .xml files for an XML model.
+     * 
+     * @param model
+     *            the XML model
+     * @param rootDir
+     *            the root directory
+     */
+    public void createConfluenceFiles(MdaModel<ConfluenceModel> model, String rootDir) throws NabuccoTransformationException {
+        try {
+            ConfluenceFileCreator fileCreator = new ConfluenceFileCreator(model, rootDir);
             fileCreator.createFiles();
         } catch (ModelException e) {
             throw new NabuccoTransformationException("Error creating xml files.", e);
@@ -102,10 +119,8 @@ public class NabuccoTargetFileCreator {
      * 
      * @throws NabuccoTransformationException
      */
-    public void mergeFragments(String rootDir, String componentName)
-            throws NabuccoTransformationException {
-        MdaModel<XmlModel> model = NabuccoXmlFragmentMerger.getInstance().mergeFragments(rootDir,
-                componentName);
+    public void mergeFragments(String rootDir, String componentName) throws NabuccoTransformationException {
+        MdaModel<XmlModel> model = NabuccoXmlFragmentMerger.getInstance().mergeFragments(rootDir, componentName);
         this.createXmlFiles(model, rootDir);
     }
 

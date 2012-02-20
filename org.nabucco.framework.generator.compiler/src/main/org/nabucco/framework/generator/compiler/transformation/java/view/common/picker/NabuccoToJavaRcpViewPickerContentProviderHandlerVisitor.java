@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,7 +27,7 @@ import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
-import org.nabucco.framework.generator.compiler.template.NabuccoJavaTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoJavaTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotation;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationMapper;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationType;
@@ -48,7 +48,6 @@ import org.nabucco.framework.generator.parser.syntaxtree.ListPickerDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.NodeToken;
 import org.nabucco.framework.generator.parser.syntaxtree.PickerDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.SearchViewStatement;
-
 import org.nabucco.framework.mda.model.MdaModel;
 import org.nabucco.framework.mda.model.java.JavaCompilationUnit;
 import org.nabucco.framework.mda.model.java.JavaModel;
@@ -63,8 +62,8 @@ import org.nabucco.framework.mda.template.java.JavaTemplateException;
  * 
  * @author Stefanie Feld, PRODYNA AG
  */
-public class NabuccoToJavaRcpViewPickerContentProviderHandlerVisitor extends
-        NabuccoToJavaVisitorSupport implements ViewConstants {
+public class NabuccoToJavaRcpViewPickerContentProviderHandlerVisitor extends NabuccoToJavaVisitorSupport implements
+        ViewConstants {
 
     /**
      * the annotation declaration of the view.
@@ -105,8 +104,7 @@ public class NabuccoToJavaRcpViewPickerContentProviderHandlerVisitor extends
      * @param annotationDeclaration
      *            the annotationDeclaration of the view from which the constructor is called.
      */
-    public NabuccoToJavaRcpViewPickerContentProviderHandlerVisitor(
-            NabuccoToJavaVisitorContext visitorContext,
+    public NabuccoToJavaRcpViewPickerContentProviderHandlerVisitor(NabuccoToJavaVisitorContext visitorContext,
             AnnotationDeclaration annotationDeclaration,
             Map<String, Map<String, JavaAstContainter<TypeReference>>> fieldNameToTypeReference,
             Map<String, Map<String, Map<String, JavaAstContainter<TypeReference>>>> fieldNameToFieldTypeProperties) {
@@ -172,13 +170,11 @@ public class NabuccoToJavaRcpViewPickerContentProviderHandlerVisitor extends
      * @param target
      *            the java target model
      */
-    private void createPickerContentProvider(String name, AnnotationDeclaration annotations,
-            MdaModel<JavaModel> target) {
+    private void createPickerContentProvider(String name, AnnotationDeclaration annotations, MdaModel<JavaModel> target) {
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
         name = NabuccoTransformationUtility.firstToUpper(name) + CONTENT_PROVIDER_HANDLER;
-        String pkg = super.getVisitorContext().getPackage().replace(UI, UI_RCP)
-                + PKG_SEPARATOR + VIEW_PACKAGE;
+        String pkg = super.getVisitorContext().getPackage().replace(UI, UI_RCP) + PKG_SEPARATOR + VIEW_PACKAGE;
 
         String projectName = super.getComponentName(NabuccoClientType.RCP);
 
@@ -195,12 +191,12 @@ public class NabuccoToJavaRcpViewPickerContentProviderHandlerVisitor extends
             // JavaDocAnnotations
             JavaAstSupport.convertJavadocAnnotations(annotations, type);
 
-            JavaAstSupport.convertAstNodes(unit, getVisitorContext().getContainerList(),
-                    getVisitorContext().getImportList());
+            JavaAstSupport.convertAstNodes(unit, getVisitorContext().getContainerList(), getVisitorContext()
+                    .getImportList());
 
             // define the right Datatype
-            NabuccoAnnotation mappedFieldAnn = NabuccoAnnotationMapper.getInstance()
-                    .mapToAnnotation(annotations, NabuccoAnnotationType.MAPPED_FIELD);
+            NabuccoAnnotation mappedFieldAnn = NabuccoAnnotationMapper.getInstance().mapToAnnotation(annotations,
+                    NabuccoAnnotationType.MAPPED_FIELD);
 
             if (mappedFieldAnn != null && mappedFieldAnn.getValue() != null) {
                 String newDatatype;
@@ -216,8 +212,7 @@ public class NabuccoToJavaRcpViewPickerContentProviderHandlerVisitor extends
 
                     Map<String, Map<String, JavaAstContainter<TypeReference>>> datatypeMap = this.fieldNameToFieldTypeProperties
                             .get(mappedDatatype);
-                    Map<String, JavaAstContainter<TypeReference>> datatypeSubMap = datatypeMap
-                            .get(DATATYPE);
+                    Map<String, JavaAstContainter<TypeReference>> datatypeSubMap = datatypeMap.get(DATATYPE);
 
                     JavaAstContainter<TypeReference> javacontainer = datatypeSubMap.get(mappedType);
                     TypeReference ref = javacontainer.getAstNode();
@@ -240,8 +235,8 @@ public class NabuccoToJavaRcpViewPickerContentProviderHandlerVisitor extends
                 // select the method loadAllDatatypes()
                 JavaAstMethodSignature signature = new JavaAstMethodSignature(LOAD_ALL_DATATYPES);
 
-                MethodDeclaration methodLoadAllDatatypes = (MethodDeclaration) javaFactory
-                        .getJavaAstType().getMethod(type, signature);
+                MethodDeclaration methodLoadAllDatatypes = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(
+                        type, signature);
 
                 // Add the parameter
                 Argument viewModelType = modelProducer.createArgument("viewModel",
@@ -249,10 +244,9 @@ public class NabuccoToJavaRcpViewPickerContentProviderHandlerVisitor extends
                 javaFactory.getJavaAstMethod().addArgument(methodLoadAllDatatypes, viewModelType);
 
                 // Import of the Model Datatype
-                ImportReference modelImportReference = modelProducer
-                        .createImportReference(this.modelPackage + '.' + this.modelName);
-                javaFactory.getJavaAstUnit().addImport(unit.getUnitDeclaration(),
-                        modelImportReference);
+                ImportReference modelImportReference = modelProducer.createImportReference(this.modelPackage
+                        + '.' + this.modelName);
+                javaFactory.getJavaAstUnit().addImport(unit.getUnitDeclaration(), modelImportReference);
 
                 // change the name of the method
                 methodLoadAllDatatypes.selector = (LOAD_ALL + newDatatype).toCharArray();
@@ -275,8 +269,8 @@ public class NabuccoToJavaRcpViewPickerContentProviderHandlerVisitor extends
             target.getModel().getUnitList().add(unit);
 
         } catch (JavaModelException jme) {
-            throw new NabuccoVisitorException(
-                    "Error during Java AST editview picker content provider modification.", jme);
+            throw new NabuccoVisitorException("Error during Java AST editview picker content provider modification.",
+                    jme);
         } catch (JavaTemplateException te) {
             throw new NabuccoVisitorException(
                     "Error during Java template editview picker content provider processing.", te);
@@ -298,13 +292,12 @@ public class NabuccoToJavaRcpViewPickerContentProviderHandlerVisitor extends
     }
 
     private void setModelName(String input) {
-        this.modelName = input.replace(NabuccoJavaTemplateConstants.VIEW,
-                NabuccoJavaTemplateConstants.VIEW + NabuccoJavaTemplateConstants.MODEL);
+        this.modelName = input.replace(NabuccoJavaTemplateConstants.VIEW, NabuccoJavaTemplateConstants.VIEW
+                + NabuccoJavaTemplateConstants.MODEL);
     }
 
     private void setPackage() {
-        this.modelPackage = super.getVisitorContext().getPackage()
-                .replace(PKG_SEPARATOR + UI, PKG_SEPARATOR + UI_RCP)
+        this.modelPackage = super.getVisitorContext().getPackage().replace(PKG_SEPARATOR + UI, PKG_SEPARATOR + UI_RCP)
                 + PKG_SEPARATOR + MODEL_PACKAGE;
     }
 }

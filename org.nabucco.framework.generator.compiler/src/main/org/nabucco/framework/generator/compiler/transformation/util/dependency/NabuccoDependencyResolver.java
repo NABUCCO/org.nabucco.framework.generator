@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -65,8 +65,8 @@ public class NabuccoDependencyResolver {
      * 
      * @return the dependend models
      */
-    public List<MdaModel<NabuccoModel>> resolveDependencies(MdaModel<NabuccoModel> model,
-            String rootDirectory, String outDirectory) {
+    public List<MdaModel<NabuccoModel>> resolveDependencies(MdaModel<NabuccoModel> model, String rootDirectory,
+            String outDirectory) {
 
         List<MdaModel<NabuccoModel>> referenceList = new ArrayList<MdaModel<NabuccoModel>>();
 
@@ -94,8 +94,8 @@ public class NabuccoDependencyResolver {
      * @throws NabuccoTransformationException
      *             if the dependency cannot be resolved
      */
-    public MdaModel<NabuccoModel> resolveDependency(String rootDirectory, String pkg,
-            String importString, String outDirectory) throws NabuccoTransformationException {
+    public MdaModel<NabuccoModel> resolveDependency(String rootDirectory, String pkg, String importString,
+            String outDirectory) throws NabuccoTransformationException {
         return NabuccoDependencySupport.loadModel(rootDirectory, pkg, importString, outDirectory);
     }
 
@@ -112,10 +112,36 @@ public class NabuccoDependencyResolver {
      * @throws NabuccoTransformationException
      *             if the dependency cannot be resolved
      */
-    public MdaModel<NabuccoModel> resolveDependency(NabuccoVisitorContext context, String pkg,
-            String importString) throws NabuccoTransformationException {
-        return NabuccoDependencySupport.loadModel(context.getRootDir(), pkg, importString,
+    public MdaModel<NabuccoModel> resolveDependency(NabuccoVisitorContext context, String pkg, String importString)
+            throws NabuccoTransformationException {
+        return NabuccoDependencySupport.loadModel(context.getRootDir(), context.getPackage(), importString,
                 context.getOutDir());
+    }
+
+    /**
+     * Loads all possible NABUCCO dependencies.
+     * <p/>
+     * <b>Warning:</b> This method may cause a huge performance lag. Use carefully.
+     * 
+     * @param model
+     *            the current model
+     * @param rootDirectory
+     *            the root directory
+     * @param outDirectory
+     *            the out directory
+     * 
+     * @return the dependend models
+     */
+    public List<MdaModel<NabuccoModel>> resolveAllDependencies(MdaModel<NabuccoModel> model, String rootDirectory,
+            String outDirectory) {
+
+        List<MdaModel<NabuccoModel>> referenceList = new ArrayList<MdaModel<NabuccoModel>>();
+
+        NabuccoDependencyVisitor visitor = new NabuccoDependencyVisitor(rootDirectory, outDirectory);
+
+        model.getModel().getUnit().accept(visitor, referenceList);
+
+        return referenceList;
     }
 
     /**

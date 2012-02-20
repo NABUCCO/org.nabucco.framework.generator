@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -52,10 +52,29 @@ public class NabuccoParseException extends NabuccoModelException {
      */
     public NabuccoParseException(String fileName, ParseException pe) {
         super(fileName, NabuccoParseExceptionMapper.createErrorMessage(pe));
-        this.lineStart = pe.currentToken.beginLine;
-        this.lineEnd = pe.currentToken.next.beginLine;
-        this.columnStart = pe.currentToken.beginColumn;
-        this.columnEnd = pe.currentToken.next.beginColumn;
+
+        if (pe == null) {
+            return;
+        }
+        
+        if (pe.currentToken != null) {
+            this.lineStart = pe.currentToken.beginLine;
+            this.columnStart = pe.currentToken.beginColumn;
+
+            if (pe.currentToken.next != null) {
+                this.lineEnd = pe.currentToken.next.beginLine;
+                this.columnEnd = pe.currentToken.next.beginColumn;
+            }
+        } else {
+            String[] tokens = pe.getMessage().split("\\D+");
+
+            if (tokens.length > 1) {
+                this.lineStart = Integer.parseInt(tokens[1]);
+            }
+            if (tokens.length > 2) {
+                this.columnStart = Integer.parseInt(tokens[2]);
+            }
+        }
     }
 
     /**
@@ -75,12 +94,12 @@ public class NabuccoParseException extends NabuccoModelException {
         while (matcher.find()) {
             tokens.add(matcher.group());
         }
-            
+
         if (tokens.size() >= 2) {
             this.lineStart = Integer.parseInt(tokens.get(0));
             this.columnStart = Integer.parseInt(tokens.get(1));
         }
-        
+
         this.lineEnd = -1;
         this.columnEnd = -1;
     }

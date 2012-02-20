@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,6 +34,12 @@ public enum BasetypeMapping implements JavaBasetypeMapping {
     N_CHAR("NChar", "org.nabucco.framework.base.facade.datatype.NChar", "Character"),
 
     N_DATE("NDate", "org.nabucco.framework.base.facade.datatype.NDate", "java.util.Date"),
+
+    N_TIME("NTime", "org.nabucco.framework.base.facade.datatype.NTime", "java.util.Date"),
+
+    N_TIMESTAMP("NTimestamp", "org.nabucco.framework.base.facade.datatype.NTimestamp", "Long"),
+
+    N_DECIMAL("NDecimal", "org.nabucco.framework.base.facade.datatype.NDecimal", "java.math.BigDecimal"),
 
     N_DOUBLE("NDouble", "org.nabucco.framework.base.facade.datatype.NDouble", "Double"),
 
@@ -88,6 +94,7 @@ public enum BasetypeMapping implements JavaBasetypeMapping {
      * 
      * @return Returns the name.
      */
+    @Override
     public String getName() {
         return name;
     }
@@ -97,6 +104,7 @@ public enum BasetypeMapping implements JavaBasetypeMapping {
      * 
      * @return Returns the wrapperClass.
      */
+    @Override
     public String getWrapperClass() {
         return wrapperClass;
     }
@@ -106,6 +114,7 @@ public enum BasetypeMapping implements JavaBasetypeMapping {
      * 
      * @return Returns the primitiveType.
      */
+    @Override
     public String getPrimitiveType() {
         return primitiveType;
     }

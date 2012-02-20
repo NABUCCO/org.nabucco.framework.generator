@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java.common.javadoc;
 
 import java.util.ArrayList;
@@ -27,7 +27,6 @@ import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotation;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationGroupType;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationType;
-
 import org.nabucco.framework.mda.logger.MdaLogger;
 import org.nabucco.framework.mda.logger.MdaLoggingFactory;
 import org.nabucco.framework.mda.model.java.JavaModelException;
@@ -45,8 +44,7 @@ public class NabuccoToJavaJavadocCreator {
 
     private static final String NABUCCO_GENERATOR = "NABUCCO Generator, PRODYNA AG";
 
-    private static MdaLogger logger = MdaLoggingFactory.getInstance().getLogger(
-            NabuccoToJavaJavadocCreator.class);
+    private static MdaLogger logger = MdaLoggingFactory.getInstance().getLogger(NabuccoToJavaJavadocCreator.class);
 
     /**
      * Private constructor must not be invoked.
@@ -65,8 +63,8 @@ public class NabuccoToJavaJavadocCreator {
      * 
      * @throws NabuccoJavadocTransformationException
      */
-    public static void createJavadoc(List<NabuccoAnnotation> annotationList,
-            TypeDeclaration typeDeclaration) throws NabuccoJavadocTransformationException {
+    public static void createJavadoc(List<NabuccoAnnotation> annotationList, TypeDeclaration typeDeclaration)
+            throws NabuccoJavadocTransformationException {
         if (annotationList == null) {
             throw new IllegalArgumentException("Annotation list must be defined.");
         }
@@ -76,8 +74,7 @@ public class NabuccoToJavaJavadocCreator {
 
         try {
             StringBuilder description = new StringBuilder();
-            description.append(JavaAstElementFactory.getInstance().getJavaAstType().getTypeName(
-                    typeDeclaration));
+            description.append(JavaAstElementFactory.getInstance().getJavaAstType().getTypeName(typeDeclaration));
 
             String name = null;
             String company = null;
@@ -88,8 +85,7 @@ public class NabuccoToJavaJavadocCreator {
             for (NabuccoAnnotation annotation : annotationList) {
 
                 if (annotation.getGroupType() != NabuccoAnnotationGroupType.DOCUMENTATION) {
-                    logger.warning("NabuccoAnnotation is not of type Javadoc: ", annotation
-                            .getName());
+                    logger.warning("NabuccoAnnotation is not of type Javadoc: ", annotation.getName());
                     continue;
                 }
 
@@ -108,8 +104,8 @@ public class NabuccoToJavaJavadocCreator {
                     date = annotation.getValue();
 
                 } else {
-                    parameterList.add(JavaAstModelProducer.getInstance().createJavadocParameter(
-                            annotation.getName(), annotation.getValue()));
+                    parameterList.add(JavaAstModelProducer.getInstance().createJavadocParameter(annotation.getName(),
+                            annotation.getValue()));
                 }
             }
 
@@ -124,14 +120,12 @@ public class NabuccoToJavaJavadocCreator {
 
             parameterList.add(parameter);
 
-            Javadoc javadoc = JavaAstModelProducer.getInstance().createJavadoc(
-                    description.toString(), parameterList);
+            Javadoc javadoc = JavaAstModelProducer.getInstance().createJavadoc(description.toString(), parameterList);
 
             typeDeclaration.javadoc = javadoc;
 
         } catch (JavaModelException e) {
-            throw new NabuccoJavadocTransformationException(
-                    "Error creating TypeDeclaration javadoc.", e);
+            throw new NabuccoJavadocTransformationException("Error creating TypeDeclaration javadoc.", e);
         }
     }
 
@@ -145,8 +139,8 @@ public class NabuccoToJavaJavadocCreator {
      * 
      * @throws NabuccoJavadocTransformationException
      */
-    public static void createJavadoc(List<NabuccoAnnotation> annotationList,
-            AbstractMethodDeclaration method) throws NabuccoJavadocTransformationException {
+    public static void createJavadoc(List<NabuccoAnnotation> annotationList, AbstractMethodDeclaration method)
+            throws NabuccoJavadocTransformationException {
         if (annotationList == null) {
             throw new IllegalArgumentException("Annotation list must be defined.");
         }
@@ -164,12 +158,11 @@ public class NabuccoToJavaJavadocCreator {
                 description = annotation.getValue();
             }
         }
-        
+
         try {
             NabuccoToJavaJavadocCreator.createJavadoc(description, method);
         } catch (JavaModelException e) {
-            throw new NabuccoJavadocTransformationException("Cannot create javadoc for: "
-                    + description, e);
+            throw new NabuccoJavadocTransformationException("Cannot create javadoc for: " + description, e);
         }
 
     }
@@ -207,12 +200,10 @@ public class NabuccoToJavaJavadocCreator {
 
             if (description != null) {
                 try {
-                    Javadoc javadoc = JavaAstModelProducer.getInstance().createJavadoc(
-                            description.toString(), null);
+                    Javadoc javadoc = JavaAstModelProducer.getInstance().createJavadoc(description.toString(), null);
                     field.javadoc = javadoc;
                 } catch (JavaModelException e) {
-                    throw new NabuccoJavadocTransformationException(
-                            "Error creating FieldDeclaration javadoc.", e);
+                    throw new NabuccoJavadocTransformationException("Error creating FieldDeclaration javadoc.", e);
                 }
             }
         }
@@ -228,14 +219,12 @@ public class NabuccoToJavaJavadocCreator {
      * 
      * @throws JavaModelException
      */
-    public static void createJavadoc(String description, TypeDeclaration type)
-            throws JavaModelException {
+    public static void createJavadoc(String description, TypeDeclaration type) throws JavaModelException {
 
         JavadocParameter parameter = JavaAstModelProducer.getInstance().createJavadocParameter(
                 NabuccoAnnotationType.AUTHOR.getName(), NABUCCO_GENERATOR);
 
-        Javadoc javadoc = JavaAstModelProducer.getInstance().createJavadoc(description,
-                Arrays.asList(parameter));
+        Javadoc javadoc = JavaAstModelProducer.getInstance().createJavadoc(description, Arrays.asList(parameter));
 
         type.javadoc = javadoc;
     }
@@ -250,8 +239,7 @@ public class NabuccoToJavaJavadocCreator {
      * 
      * @throws JavaModelException
      */
-    public static void createJavadoc(String description, AbstractMethodDeclaration method)
-            throws JavaModelException {
+    public static void createJavadoc(String description, AbstractMethodDeclaration method) throws JavaModelException {
 
         if (description == null) {
             description = "Missing description at method " + String.valueOf(method.selector) + ".";
@@ -271,8 +259,7 @@ public class NabuccoToJavaJavadocCreator {
             parameterList.addAll(result);
         }
 
-        Javadoc javadoc = JavaAstModelProducer.getInstance().createJavadoc(description.toString(),
-                parameterList);
+        Javadoc javadoc = JavaAstModelProducer.getInstance().createJavadoc(description.toString(), parameterList);
         method.javadoc = javadoc;
     }
 }

@@ -2,7 +2,7 @@
 <!-- Copyright 2010 PRODYNA AG Licensed under the Eclipse Public License 
 	(EPL), Version 1.0 (the "License"); you may not use this file except in compliance 
 	with the License. You may obtain a copy of the License at http://www.opensource.org/licenses/eclipse-1.0.php 
-	or http://www.nabucco-source.org/nabucco-license.html Unless required by 
+	or http://nabuccosource.org/License.html Unless required by 
 	applicable law or agreed to in writing, software distributed under the License 
 	is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY 
 	KIND, either express or implied. See the License for the specific language 
@@ -12,9 +12,27 @@
 	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd"
 	version="1.0">
 
+	<persistence-unit-metadata>
+		<persistence-unit-defaults>
+			<entity-listeners>
+				<entity-listener
+					class="org.nabucco.framework.base.impl.service.entitylistener.NabuccoEntityListener">
+					<pre-persist method-name="prePersist" />
+					<post-persist method-name="postPersist" />
+					<pre-remove method-name="preRemove" />
+					<post-remove method-name="postRemove" />
+					<pre-update method-name="preUpdate" />
+					<post-update method-name="postUpdate" />
+					<post-load method-name="postLoad" />
+				</entity-listener>
+			</entity-listeners>
+		</persistence-unit-defaults>
+	</persistence-unit-metadata>
+
 	<mapped-superclass class="org.nabucco.framework.base.facade.datatype.NString">
 		<attributes>
 			<basic name="value" />
+            <transient name="valueAsString"/>
 		</attributes>
 	</mapped-superclass>
 
@@ -22,18 +40,28 @@
 		class="org.nabucco.framework.base.facade.datatype.NInteger">
 		<attributes>
 			<basic name="value" />
+            <transient name="valueAsString"/>
 		</attributes>
 	</mapped-superclass>
 
 	<mapped-superclass class="org.nabucco.framework.base.facade.datatype.NLong">
 		<attributes>
 			<basic name="value" />
+            <transient name="valueAsString"/>
 		</attributes>
 	</mapped-superclass>
 
 	<mapped-superclass class="org.nabucco.framework.base.facade.datatype.NDouble">
 		<attributes>
 			<basic name="value" />
+            <transient name="valueAsString"/>
+		</attributes>
+	</mapped-superclass>
+
+	<mapped-superclass class="org.nabucco.framework.base.facade.datatype.NDecimal">
+		<attributes>
+			<basic name="value" />
+            <transient name="valueAsString"/>
 		</attributes>
 	</mapped-superclass>
 
@@ -41,6 +69,7 @@
 		class="org.nabucco.framework.base.facade.datatype.NBoolean">
 		<attributes>
 			<basic name="value" />
+            <transient name="valueAsString"/>
 		</attributes>
 	</mapped-superclass>
 
@@ -49,6 +78,7 @@
 			<basic name="value">
 				<lob />
 			</basic>
+            <transient name="valueAsString"/>
 		</attributes>
 	</mapped-superclass>
 
@@ -58,14 +88,37 @@
 			<basic name="value">
 				<lob />
 			</basic>
+            <transient name="valueAsString"/>
 		</attributes>
 	</mapped-superclass>
 
-	<mapped-superclass class="org.nabucco.framework.base.facade.datatype.NDate">
-		<attributes>
-			<basic name="value" />
-		</attributes>
-	</mapped-superclass>
+    <mapped-superclass class="org.nabucco.framework.base.facade.datatype.NDate">
+        <attributes>
+            <basic name="valueJPA">
+          		<temporal>DATE</temporal>
+            </basic>
+            <transient name="valueAsString"/>
+            <transient name="value"/>
+        </attributes>
+    </mapped-superclass>
+    <mapped-superclass class="org.nabucco.framework.base.facade.datatype.NTime">
+        <attributes>
+            <basic name="valueJPA">
+            	<temporal>TIME</temporal>
+            </basic>
+            <transient name="valueAsString"/>
+            <transient name="value"/>
+        </attributes>
+    </mapped-superclass>
+    <mapped-superclass class="org.nabucco.framework.base.facade.datatype.NTimestamp">
+        <attributes>
+            <basic name="valueJPA">
+            	<temporal>TIMESTAMP</temporal>
+            </basic>
+            <transient name="valueAsString"/>
+            <transient name="value"/>
+        </attributes>
+    </mapped-superclass>
 
 	<mapped-superclass
 		class="org.nabucco.framework.base.facade.datatype.DatatypeSupport">
@@ -76,26 +129,24 @@
 		</attributes>
 	</mapped-superclass>
 
-	<mapped-superclass
-		class="org.nabucco.framework.base.facade.datatype.componentrelation.ComponentRelation">
-		<attributes>
-			<id name="id">
-				<column length="30" name="id" nullable="false" />
-				<generated-value />
-			</id>
-			<basic name="type">
-				<column nullable="false" name="relationType" />
-			</basic>
-			<version name="version" />
-			<embedded name="sourceId">
-				<attribute-override name="value">
-					<column length="255" name="sourceId" nullable="false" />
-				</attribute-override>
-			</embedded>
-			<transient name="relationType" />
-			<transient name="relationState" />
-			<transient name="target" />
-		</attributes>
-	</mapped-superclass>
+	<mapped-superclass class="org.nabucco.framework.base.facade.datatype.componentrelation.ComponentRelation"> 
+        <attributes> 
+            <basic name="type">
+                <column name="functional_type" nullable="false"/>
+            </basic> 
+            <basic name="relationType">
+                <column name="relation_type" nullable="false"/>
+                <enumerated>STRING</enumerated>
+            </basic>
+            <embedded name="sourceId">
+                <attribute-override name="value">
+                    <column length="255" name="source_id" nullable="false"/>
+                </attribute-override>
+            </embedded>
+            <transient name="functionalType"/>
+            <transient name="properties"/>
+            <transient name="target"/>
+        </attributes>
+    </mapped-superclass>
 
 </entity-mappings>

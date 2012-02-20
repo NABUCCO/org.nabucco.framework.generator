@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.parser.file;
 
 import java.io.File;
@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.nabucco.framework.generator.parser.model.ComponentFinder;
-
 
 /**
  * NabuccoFile
@@ -53,6 +52,7 @@ public class NabuccoFile implements Serializable, NabuccoFileConstants {
      *            the IO file
      * 
      * @throws IOException
+     *             when the canonical path cannot be constructed
      */
     public NabuccoFile(File file) throws IOException {
         if (file == null || !file.exists()) {
@@ -72,6 +72,7 @@ public class NabuccoFile implements Serializable, NabuccoFileConstants {
      * Initializes filePath and projectName of the corresponding file.
      * 
      * @throws IOException
+     *             when the canonical path cannot be constructed
      */
     private void initFileInformation() throws IOException {
         File componentDir = ComponentFinder.getComponentFile(this.getSourceFile());
@@ -130,7 +131,7 @@ public class NabuccoFile implements Serializable, NabuccoFileConstants {
      * 
      * @return the modification time
      */
-    public long lastModified(){
+    public long lastModified() {
         return this.sourceFile.lastModified();
     }
 
@@ -149,7 +150,8 @@ public class NabuccoFile implements Serializable, NabuccoFileConstants {
      * 
      * @return the list of files
      * 
-     * @throws IOException if the
+     * @throws IOException
+     *             if the
      */
     public List<NabuccoFile> listNabuccoFiles() throws IOException {
         List<NabuccoFile> fileList = new ArrayList<NabuccoFile>();
@@ -179,9 +181,9 @@ public class NabuccoFile implements Serializable, NabuccoFileConstants {
      * @return the canonical path
      * 
      * @throws IOException
-     *             if the file does not exist
+     *             when the canonical path cannot be constructed
      */
-    public String getCanonicalPath() throws IOException{
+    public String getCanonicalPath() throws IOException {
         return this.sourceFile.getCanonicalPath();
     }
 
@@ -196,7 +198,7 @@ public class NabuccoFile implements Serializable, NabuccoFileConstants {
     public FileReader getFileReader() throws FileNotFoundException {
         return new FileReader(sourceFile);
     }
-    
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();

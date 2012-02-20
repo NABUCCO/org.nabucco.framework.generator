@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java.enumeration;
 
 import java.util.Arrays;
@@ -22,10 +22,14 @@ import java.util.Set;
 
 import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.ForeachStatement;
 import org.eclipse.jdt.internal.compiler.ast.Literal;
+import org.eclipse.jdt.internal.compiler.ast.MessageSend;
+import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
-import org.nabucco.framework.generator.compiler.template.NabuccoJavaTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoJavaTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationMapper;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationType;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.JavaAstSupport;
@@ -38,7 +42,6 @@ import org.nabucco.framework.generator.compiler.visitor.NabuccoVisitorException;
 import org.nabucco.framework.generator.parser.model.NabuccoModelType;
 import org.nabucco.framework.generator.parser.syntaxtree.EnumerationLiteralDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.EnumerationStatement;
-
 import org.nabucco.framework.mda.logger.MdaLogger;
 import org.nabucco.framework.mda.logger.MdaLoggingFactory;
 import org.nabucco.framework.mda.model.MdaModel;
@@ -66,8 +69,9 @@ public class NabuccoToJavaEnumerationVisitor extends NabuccoToJavaVisitorSupport
 
     private static final String CONSTRUCTOR_ARGUMENT = "String";
 
-    private static MdaLogger logger = MdaLoggingFactory.getInstance().getLogger(
-            NabuccoToJavaEnumerationVisitor.class);
+    private static final JavaAstMethodSignature VALUE_OF_ID = new JavaAstMethodSignature("valueOfId", "String");
+
+    private static MdaLogger logger = MdaLoggingFactory.getInstance().getLogger(NabuccoToJavaEnumerationVisitor.class);
 
     public NabuccoToJavaEnumerationVisitor(NabuccoToJavaVisitorContext visitorContext) {
         super(visitorContext);
@@ -91,8 +95,7 @@ public class NabuccoToJavaEnumerationVisitor extends NabuccoToJavaVisitorSupport
 
             // Name and Package
             javaFactory.getJavaAstType().setTypeName(type, name);
-            javaFactory.getJavaAstUnit().setPackage(unit.getUnitDeclaration(),
-                    super.getVisitorContext().getPackage());
+            javaFactory.getJavaAstUnit().setPackage(unit.getUnitDeclaration(), super.getVisitorContext().getPackage());
 
             // Super-classes
             super.createSuperClass();
@@ -100,14 +103,17 @@ public class NabuccoToJavaEnumerationVisitor extends NabuccoToJavaVisitorSupport
             // Annotations
             JavaAstSupport.convertJavadocAnnotations(nabuccoEnum.annotationDeclaration, type);
 
-            JavaAstSupport.convertAstNodes(unit, this.getVisitorContext().getContainerList(), this
-                    .getVisitorContext().getImportList());
+            JavaAstSupport.convertAstNodes(unit, this.getVisitorContext().getContainerList(), this.getVisitorContext()
+                    .getImportList());
 
             // Sort enumeration fields
             javaFactory.getJavaAstType().beautify(type);
 
             this.removeDummyLiteral(type);
             this.removeSuperConstructorCall(type);
+
+            // Method 'valueOfId'
+            this.valueOfId(type);
 
             // File creation
             unit.setProjectName(projectName);
@@ -116,10 +122,8 @@ public class NabuccoToJavaEnumerationVisitor extends NabuccoToJavaVisitorSupport
             target.getModel().getUnitList().add(unit);
 
         } catch (JavaModelException jme) {
-            logger.error(jme, "Error during Java AST enum modification.");
             throw new NabuccoVisitorException("Error during Java AST enum modification.", jme);
         } catch (JavaTemplateException te) {
-            logger.error(te, "Error during Java template enum processing.");
             throw new NabuccoVisitorException("Error during Java template enum processing.", te);
         }
 
@@ -142,6 +146,33 @@ public class NabuccoToJavaEnumerationVisitor extends NabuccoToJavaVisitorSupport
     }
 
     /**
+     * Change the static method 'valueOfId'.
+     * 
+     * @param type
+     *            the java enum type
+     * 
+     * @throws JavaModelException
+     */
+    private void valueOfId(TypeDeclaration type) throws JavaModelException {
+        JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
+        MethodDeclaration valueOfId = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(type, VALUE_OF_ID);
+
+        String typeName = javaFactory.getJavaAstType().getTypeName(type);
+        TypeReference typeReference = JavaAstModelProducer.getInstance().createTypeReference(typeName, false);
+
+        javaFactory.getJavaAstMethod().setReturnType(valueOfId, typeReference);
+
+        if (valueOfId.statements == null || valueOfId.statements.length == 0) {
+            throw new JavaModelException("Cannot find first statement in method 'valueOfId' in EnumTemplate.");
+        }
+
+        ForeachStatement foreach = (ForeachStatement) valueOfId.statements[0];
+        foreach.elementVariable.type = typeReference;
+        MessageSend getValues = (MessageSend) foreach.collection;
+        getValues.receiver = typeReference;
+    }
+
+    /**
      * Removes the super constructor call generated by default.
      * 
      * @param type
@@ -155,8 +186,7 @@ public class NabuccoToJavaEnumerationVisitor extends NabuccoToJavaVisitorSupport
         String name = javaFactory.getJavaAstType().getTypeName(type);
 
         JavaAstMethodSignature signature = new JavaAstMethodSignature(name, CONSTRUCTOR_ARGUMENT);
-        ConstructorDeclaration constructor = javaFactory.getJavaAstType().getConstructor(type,
-                signature);
+        ConstructorDeclaration constructor = javaFactory.getJavaAstType().getConstructor(type, signature);
 
         constructor.constructorCall = null;
     }
@@ -167,38 +197,33 @@ public class NabuccoToJavaEnumerationVisitor extends NabuccoToJavaVisitorSupport
         String name = nabuccoEnumLiteral.nodeToken.tokenImage;
 
         if (this.literals.contains(name)) {
-            throw new NabuccoVisitorException("Literal ["
-                    + name + "] must not exist more than once.");
+            throw new NabuccoVisitorException("Literal [" + name + "] must not exist more than once.");
         }
 
         this.literals.add(name);
 
         try {
             JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
-            FieldDeclaration literal = producer.createFieldDeclaration(name,
-                    ClassFileConstants.AccDefault);
+            FieldDeclaration literal = producer.createFieldDeclaration(name, ClassFileConstants.AccDefault);
 
             String literalId = NabuccoAnnotationMapper.getInstance()
-                    .mapToAnnotation(nabuccoEnumLiteral.annotationDeclaration,
-                            NabuccoAnnotationType.LITERAL_ID).getValue();
+                    .mapToAnnotation(nabuccoEnumLiteral.annotationDeclaration, NabuccoAnnotationType.LITERAL_ID)
+                    .getValue();
 
             if (this.literalIds.contains(literalId)) {
-                throw new NabuccoVisitorException("Literal ID ["
-                        + literalId + "] must not exist more than once.");
+                throw new NabuccoVisitorException("Literal ID [" + literalId + "] must not exist more than once.");
             }
 
             this.literalIds.add(literalId);
 
             Literal stringLiteral = producer.createLiteral(literalId, LiteralType.STRING_LITERAL);
-            literal.initialization = producer.createAllocationExpression(null, Arrays
-                    .asList(stringLiteral));
+            literal.initialization = producer.createAllocationExpression(null, Arrays.asList(stringLiteral));
 
             // Annotations
-            JavaAstSupport.convertJavadocAnnotations(nabuccoEnumLiteral.annotationDeclaration,
-                    literal);
+            JavaAstSupport.convertJavadocAnnotations(nabuccoEnumLiteral.annotationDeclaration, literal);
 
-            super.getVisitorContext().getContainerList().add(
-                    new JavaAstContainter<FieldDeclaration>(literal, JavaAstType.FIELD));
+            super.getVisitorContext().getContainerList()
+                    .add(new JavaAstContainter<FieldDeclaration>(literal, JavaAstType.FIELD));
         } catch (JavaModelException jme) {
             logger.error(jme, "Error during Java AST enum literal creation.");
             throw new NabuccoVisitorException("Error during Java AST enum literal creation.", jme);

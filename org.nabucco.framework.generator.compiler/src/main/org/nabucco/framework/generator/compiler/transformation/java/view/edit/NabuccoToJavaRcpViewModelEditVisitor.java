@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,14 +27,14 @@ import org.eclipse.jdt.internal.compiler.ast.ImportReference;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
-import org.nabucco.framework.generator.compiler.template.NabuccoJavaTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoJavaTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotation;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationMapper;
 import org.nabucco.framework.generator.compiler.transformation.common.collection.CollectionImplementationType;
 import org.nabucco.framework.generator.compiler.transformation.common.collection.CollectionType;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.JavaAstSupport;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.container.JavaAstContainter;
-import org.nabucco.framework.generator.compiler.transformation.java.common.ast.util.GetterSetterOptions;
+import org.nabucco.framework.generator.compiler.transformation.java.common.ast.util.FieldOptions;
 import org.nabucco.framework.generator.compiler.transformation.java.constants.ViewConstants;
 import org.nabucco.framework.generator.compiler.transformation.java.view.NabuccoToJavaRcpViewModelSupport;
 import org.nabucco.framework.generator.compiler.transformation.java.view.NabuccoToJavaRcpViewVisitorSupport;
@@ -72,8 +72,7 @@ import org.nabucco.framework.mda.template.java.JavaTemplateException;
  * 
  * @author Silas Schwarz, Stefanie Feld, PRODYNA AG
  */
-public class NabuccoToJavaRcpViewModelEditVisitor extends NabuccoToJavaVisitorSupport implements
-        ViewConstants {
+public class NabuccoToJavaRcpViewModelEditVisitor extends NabuccoToJavaVisitorSupport implements ViewConstants {
 
     private NabuccoToJavaRcpViewVisitorSupport util;
 
@@ -97,21 +96,16 @@ public class NabuccoToJavaRcpViewModelEditVisitor extends NabuccoToJavaVisitorSu
         // children first, we need the datatypes
         super.visit(editViewStatement, target);
 
-        String pkg = super.getVisitorContext().getPackage()
-                .replace(ViewConstants.UI, ViewConstants.UI_RCP)
-                + ViewConstants.PKG_SEPARATOR
-                + ViewConstants.MODEL_PACKAGE;
-        String name = editViewStatement.nodeToken2.tokenImage.replace(
-                NabuccoJavaTemplateConstants.VIEW, NabuccoJavaTemplateConstants.VIEW
-                        + NabuccoJavaTemplateConstants.MODEL);
+        String pkg = super.getVisitorContext().getPackage().replace(ViewConstants.UI, ViewConstants.UI_RCP)
+                + ViewConstants.PKG_SEPARATOR + ViewConstants.MODEL_PACKAGE;
+        String name = editViewStatement.nodeToken2.tokenImage.replace(NabuccoJavaTemplateConstants.VIEW,
+                NabuccoJavaTemplateConstants.VIEW + NabuccoJavaTemplateConstants.MODEL);
         String projectName = super.getComponentName(NabuccoClientType.RCP);
 
         try {
             // Load Template
-            JavaCompilationUnit unit = super
-                    .extractAst(NabuccoJavaTemplateConstants.EDIT_VIEW_MODEL_TEMPLATE);
-            TypeDeclaration type = unit
-                    .getType(NabuccoJavaTemplateConstants.EDIT_VIEW_MODEL_TEMPLATE);
+            JavaCompilationUnit unit = super.extractAst(NabuccoJavaTemplateConstants.EDIT_VIEW_MODEL_TEMPLATE);
+            TypeDeclaration type = unit.getType(NabuccoJavaTemplateConstants.EDIT_VIEW_MODEL_TEMPLATE);
             JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
             javaFactory.getJavaAstType().setTypeName(type, name);
@@ -129,8 +123,8 @@ public class NabuccoToJavaRcpViewModelEditVisitor extends NabuccoToJavaVisitorSu
             }
 
             // append AST nodes
-            JavaAstSupport.convertAstNodes(unit, super.getVisitorContext().getContainerList(),
-                    super.getVisitorContext().getImportList());
+            JavaAstSupport.convertAstNodes(unit, super.getVisitorContext().getContainerList(), super
+                    .getVisitorContext().getImportList());
 
             unit.setProjectName(projectName);
 
@@ -140,8 +134,7 @@ public class NabuccoToJavaRcpViewModelEditVisitor extends NabuccoToJavaVisitorSu
         } catch (JavaModelException jme) {
             throw new NabuccoVisitorException("Error during Java AST edit view modification.", jme);
         } catch (JavaTemplateException te) {
-            throw new NabuccoVisitorException("Error during Java template edit view processing.",
-                    te);
+            throw new NabuccoVisitorException("Error during Java template edit view processing.", te);
         }
     }
 
@@ -150,27 +143,23 @@ public class NabuccoToJavaRcpViewModelEditVisitor extends NabuccoToJavaVisitorSu
      * @param mappedFields
      * @throws JavaModelException
      */
-    private void modifyGetValues(TypeDeclaration type, Set<String> mappedFields)
-            throws JavaModelException {
+    private void modifyGetValues(TypeDeclaration type, Set<String> mappedFields) throws JavaModelException {
         JavaAstMethodSignature signature = new JavaAstMethodSignature(GET
                 + NabuccoTransformationUtility.firstToUpper(VALUES), new String[] {});
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
-        MethodDeclaration getValuesMethod = (MethodDeclaration) javaFactory.getJavaAstType()
-                .getMethod(type, signature);
+        MethodDeclaration getValuesMethod = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(type, signature);
         for (String field : mappedFields) {
             NabuccoToJavaRcpViewVisitorSupport.addGetValuesEntry(getValuesMethod, field);
         }
 
     }
 
-    private void modifyIdMethod(TypeDeclaration type, String pkg, String name)
-            throws JavaModelException {
+    private void modifyIdMethod(TypeDeclaration type, String pkg, String name) throws JavaModelException {
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
-        MethodDeclaration getIdMethod = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(
-                type, new JavaAstMethodSignature(ViewConstants.GET_ID_UPPERCASE, new String[] {}));
-        ((ReturnStatement) getIdMethod.statements[0]).expression = JavaAstModelProducer
-                .getInstance().createLiteral(pkg + ViewConstants.PKG_SEPARATOR + name,
-                        LiteralType.STRING_LITERAL);
+        MethodDeclaration getIdMethod = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(type,
+                new JavaAstMethodSignature(ViewConstants.GET_ID_UPPERCASE, new String[] {}));
+        ((ReturnStatement) getIdMethod.statements[0]).expression = JavaAstModelProducer.getInstance().createLiteral(
+                pkg + ViewConstants.PKG_SEPARATOR + name, LiteralType.STRING_LITERAL);
 
     }
 
@@ -185,26 +174,22 @@ public class NabuccoToJavaRcpViewModelEditVisitor extends NabuccoToJavaVisitorSu
         Boolean isMultiple = NabuccoMultiplicityTypeMapper.getInstance()
                 .mapToMultiplicity(datatypeDeclaration.nodeToken1.tokenImage).isMultiple();
 
-        List<JavaAstContainter<? extends ASTNode>> containerList = super.getVisitorContext()
-                .getContainerList();
+        List<JavaAstContainter<? extends ASTNode>> containerList = super.getVisitorContext().getContainerList();
 
         this.util.createMappingInformation(datatypeDeclaration, super.getVisitorContext());
 
         JavaAstContainter<FieldDeclaration> field;
 
         if (isMultiple) {
-            field = JavaAstSupport.createField(fieldType, fieldName, NabuccoModifierType.PRIVATE,
-                    CollectionType.SET);
+            field = JavaAstSupport.createField(fieldType, fieldName, NabuccoModifierType.PRIVATE, CollectionType.SET,
+                    CollectionImplementationType.DEFAULT);
         } else {
-            field = JavaAstSupport.createField(fieldType, fieldName, NabuccoModifierType.PRIVATE,
-                    false);
-            this.util.createGetterSetterForModelField(datatypeDeclaration,
-                    super.getVisitorContext());
+            field = JavaAstSupport.createField(fieldType, fieldName, NabuccoModifierType.PRIVATE);
+            this.util.createGetterSetterForModelField(datatypeDeclaration, super.getVisitorContext());
         }
 
-        JavaAstContainter<MethodDeclaration> getter = JavaAstSupport.createGetter(
-                field.getAstNode(),
-                GetterSetterOptions.valueOf(CollectionImplementationType.DEFAULT));
+        JavaAstContainter<MethodDeclaration> getter = JavaAstSupport.createGetter(field.getAstNode(),
+                FieldOptions.valueOf(CollectionImplementationType.DEFAULT));
 
         containerList.add(field);
         containerList.add(getter);
@@ -213,14 +198,13 @@ public class NabuccoToJavaRcpViewModelEditVisitor extends NabuccoToJavaVisitorSu
     @Override
     public void visit(InputFieldDeclaration inputField, MdaModel<JavaModel> target) {
         try {
-            JavaCompilationUnit unit = super
-                    .extractAst(NabuccoJavaTemplateConstants.COMMON_VIEW_MODEL_METHOD_TEMPLATE);
-            List<NabuccoAnnotation> annotationDeclarationList = NabuccoAnnotationMapper
-                    .getInstance().mapToAnnotations(inputField.annotationDeclaration);
+            JavaCompilationUnit unit = super.extractAst(NabuccoJavaTemplateConstants.COMMON_VIEW_MODEL_METHOD_TEMPLATE);
+            List<NabuccoAnnotation> annotationDeclarationList = NabuccoAnnotationMapper.getInstance()
+                    .mapToAnnotationList(inputField.annotationDeclaration);
             super.getVisitorContext()
                     .getContainerList()
-                    .addAll(NabuccoToJavaRcpViewModelSupport.createModelElement(
-                            annotationDeclarationList, unit, util, getVisitorContext()));
+                    .addAll(NabuccoToJavaRcpViewModelSupport.createModelElement(annotationDeclarationList, unit, util,
+                            getVisitorContext()));
         } catch (JavaTemplateException te) {
             throw new NabuccoVisitorException("Error during Java template editview processing.", te);
         }
@@ -230,14 +214,13 @@ public class NabuccoToJavaRcpViewModelEditVisitor extends NabuccoToJavaVisitorSu
     @Override
     public void visit(LabeledInputFieldDeclaration labeledInputField, MdaModel<JavaModel> target) {
         try {
-            JavaCompilationUnit unit = super
-                    .extractAst(NabuccoJavaTemplateConstants.COMMON_VIEW_MODEL_METHOD_TEMPLATE);
-            List<NabuccoAnnotation> annotationDeclarationList = NabuccoAnnotationMapper
-                    .getInstance().mapToAnnotations(labeledInputField.annotationDeclaration);
+            JavaCompilationUnit unit = super.extractAst(NabuccoJavaTemplateConstants.COMMON_VIEW_MODEL_METHOD_TEMPLATE);
+            List<NabuccoAnnotation> annotationDeclarationList = NabuccoAnnotationMapper.getInstance()
+                    .mapToAnnotationList(labeledInputField.annotationDeclaration);
             super.getVisitorContext()
                     .getContainerList()
-                    .addAll(NabuccoToJavaRcpViewModelSupport.createModelElement(
-                            annotationDeclarationList, unit, util, getVisitorContext()));
+                    .addAll(NabuccoToJavaRcpViewModelSupport.createModelElement(annotationDeclarationList, unit, util,
+                            getVisitorContext()));
         } catch (JavaTemplateException te) {
             throw new NabuccoVisitorException("Error during Java template editview processing.", te);
         }
@@ -247,14 +230,13 @@ public class NabuccoToJavaRcpViewModelEditVisitor extends NabuccoToJavaVisitorSu
     @Override
     public void visit(LabeledPickerDeclaration labeledPicker, MdaModel<JavaModel> target) {
         try {
-            JavaCompilationUnit unit = super
-                    .extractAst(NabuccoJavaTemplateConstants.COMMON_VIEW_MODEL_METHOD_TEMPLATE);
-            List<NabuccoAnnotation> annotationDeclarationList = NabuccoAnnotationMapper
-                    .getInstance().mapToAnnotations(labeledPicker.annotationDeclaration);
+            JavaCompilationUnit unit = super.extractAst(NabuccoJavaTemplateConstants.COMMON_VIEW_MODEL_METHOD_TEMPLATE);
+            List<NabuccoAnnotation> annotationDeclarationList = NabuccoAnnotationMapper.getInstance()
+                    .mapToAnnotationList(labeledPicker.annotationDeclaration);
             super.getVisitorContext()
                     .getContainerList()
-                    .addAll(NabuccoToJavaRcpViewModelSupport.createModelElement(
-                            annotationDeclarationList, unit, util, getVisitorContext()));
+                    .addAll(NabuccoToJavaRcpViewModelSupport.createModelElement(annotationDeclarationList, unit, util,
+                            getVisitorContext()));
         } catch (JavaTemplateException te) {
             throw new NabuccoVisitorException("Error during Java template editview processing.", te);
         }
@@ -264,14 +246,13 @@ public class NabuccoToJavaRcpViewModelEditVisitor extends NabuccoToJavaVisitorSu
     @Override
     public void visit(PickerDeclaration picker, MdaModel<JavaModel> target) {
         try {
-            JavaCompilationUnit unit = super
-                    .extractAst(NabuccoJavaTemplateConstants.COMMON_VIEW_MODEL_METHOD_TEMPLATE);
-            List<NabuccoAnnotation> annotationDeclarationList = NabuccoAnnotationMapper
-                    .getInstance().mapToAnnotations(picker.annotationDeclaration);
+            JavaCompilationUnit unit = super.extractAst(NabuccoJavaTemplateConstants.COMMON_VIEW_MODEL_METHOD_TEMPLATE);
+            List<NabuccoAnnotation> annotationDeclarationList = NabuccoAnnotationMapper.getInstance()
+                    .mapToAnnotationList(picker.annotationDeclaration);
             super.getVisitorContext()
                     .getContainerList()
-                    .addAll(NabuccoToJavaRcpViewModelSupport.createModelElement(
-                            annotationDeclarationList, unit, util, getVisitorContext()));
+                    .addAll(NabuccoToJavaRcpViewModelSupport.createModelElement(annotationDeclarationList, unit, util,
+                            getVisitorContext()));
         } catch (JavaTemplateException te) {
             throw new NabuccoVisitorException("Error during Java template editview processing.", te);
         }
@@ -281,14 +262,13 @@ public class NabuccoToJavaRcpViewModelEditVisitor extends NabuccoToJavaVisitorSu
     @Override
     public void visit(LabeledListPickerDeclaration picker, MdaModel<JavaModel> target) {
         try {
-            JavaCompilationUnit unit = super
-                    .extractAst(NabuccoJavaTemplateConstants.COMMON_VIEW_MODEL_METHOD_TEMPLATE);
-            List<NabuccoAnnotation> annotationDeclarationList = NabuccoAnnotationMapper
-                    .getInstance().mapToAnnotations(picker.annotationDeclaration);
+            JavaCompilationUnit unit = super.extractAst(NabuccoJavaTemplateConstants.COMMON_VIEW_MODEL_METHOD_TEMPLATE);
+            List<NabuccoAnnotation> annotationDeclarationList = NabuccoAnnotationMapper.getInstance()
+                    .mapToAnnotationList(picker.annotationDeclaration);
             super.getVisitorContext()
                     .getContainerList()
-                    .addAll(NabuccoToJavaRcpViewModelSupport.createModelElementListPicker(
-                            annotationDeclarationList, unit, util));
+                    .addAll(NabuccoToJavaRcpViewModelSupport.createModelElementListPicker(annotationDeclarationList,
+                            unit, util));
         } catch (JavaTemplateException te) {
             throw new NabuccoVisitorException("Error during Java template editview processing.", te);
         }
@@ -298,14 +278,13 @@ public class NabuccoToJavaRcpViewModelEditVisitor extends NabuccoToJavaVisitorSu
     @Override
     public void visit(ListPickerDeclaration picker, MdaModel<JavaModel> target) {
         try {
-            JavaCompilationUnit unit = super
-                    .extractAst(NabuccoJavaTemplateConstants.COMMON_VIEW_MODEL_METHOD_TEMPLATE);
-            List<NabuccoAnnotation> annotationDeclarationList = NabuccoAnnotationMapper
-                    .getInstance().mapToAnnotations(picker.annotationDeclaration);
+            JavaCompilationUnit unit = super.extractAst(NabuccoJavaTemplateConstants.COMMON_VIEW_MODEL_METHOD_TEMPLATE);
+            List<NabuccoAnnotation> annotationDeclarationList = NabuccoAnnotationMapper.getInstance()
+                    .mapToAnnotationList(picker.annotationDeclaration);
             super.getVisitorContext()
                     .getContainerList()
-                    .addAll(NabuccoToJavaRcpViewModelSupport.createModelElementListPicker(
-                            annotationDeclarationList, unit, util));
+                    .addAll(NabuccoToJavaRcpViewModelSupport.createModelElementListPicker(annotationDeclarationList,
+                            unit, util));
         } catch (JavaTemplateException te) {
             throw new NabuccoVisitorException("Error during Java template editview processing.", te);
         }
@@ -315,14 +294,13 @@ public class NabuccoToJavaRcpViewModelEditVisitor extends NabuccoToJavaVisitorSu
     @Override
     public void visit(LabeledComboBoxDeclaration labeledComboBox, MdaModel<JavaModel> target) {
         try {
-            JavaCompilationUnit unit = super
-                    .extractAst(NabuccoJavaTemplateConstants.COMMON_VIEW_MODEL_METHOD_TEMPLATE);
-            List<NabuccoAnnotation> annotationDeclarationList = NabuccoAnnotationMapper
-                    .getInstance().mapToAnnotations(labeledComboBox.annotationDeclaration);
+            JavaCompilationUnit unit = super.extractAst(NabuccoJavaTemplateConstants.COMMON_VIEW_MODEL_METHOD_TEMPLATE);
+            List<NabuccoAnnotation> annotationDeclarationList = NabuccoAnnotationMapper.getInstance()
+                    .mapToAnnotationList(labeledComboBox.annotationDeclaration);
             super.getVisitorContext()
                     .getContainerList()
-                    .addAll(NabuccoToJavaRcpViewModelSupport.createModelElementComboBox(
-                            annotationDeclarationList, unit, util));
+                    .addAll(NabuccoToJavaRcpViewModelSupport.createModelElementComboBox(annotationDeclarationList,
+                            unit, util));
         } catch (JavaTemplateException te) {
             throw new NabuccoVisitorException("Error during Java template editview processing.", te);
         }
@@ -332,14 +310,13 @@ public class NabuccoToJavaRcpViewModelEditVisitor extends NabuccoToJavaVisitorSu
     @Override
     public void visit(ComboBoxDeclaration comboBox, MdaModel<JavaModel> target) {
         try {
-            JavaCompilationUnit unit = super
-                    .extractAst(NabuccoJavaTemplateConstants.COMMON_VIEW_MODEL_METHOD_TEMPLATE);
-            List<NabuccoAnnotation> annotationDeclarationList = NabuccoAnnotationMapper
-                    .getInstance().mapToAnnotations(comboBox.annotationDeclaration);
+            JavaCompilationUnit unit = super.extractAst(NabuccoJavaTemplateConstants.COMMON_VIEW_MODEL_METHOD_TEMPLATE);
+            List<NabuccoAnnotation> annotationDeclarationList = NabuccoAnnotationMapper.getInstance()
+                    .mapToAnnotationList(comboBox.annotationDeclaration);
             super.getVisitorContext()
                     .getContainerList()
-                    .addAll(NabuccoToJavaRcpViewModelSupport.createModelElementComboBox(
-                            annotationDeclarationList, unit, util));
+                    .addAll(NabuccoToJavaRcpViewModelSupport.createModelElementComboBox(annotationDeclarationList,
+                            unit, util));
         } catch (JavaTemplateException te) {
             throw new NabuccoVisitorException("Error during Java template editview processing.", te);
         }

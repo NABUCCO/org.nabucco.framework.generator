@@ -1,23 +1,23 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java.service;
 
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
-import org.nabucco.framework.generator.compiler.template.NabuccoJavaTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoJavaTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.JavaAstSupport;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.container.JavaAstContainter;
 import org.nabucco.framework.generator.compiler.transformation.java.constants.ServerConstants;
@@ -31,7 +31,6 @@ import org.nabucco.framework.generator.parser.syntaxtree.NodeSequence;
 import org.nabucco.framework.generator.parser.syntaxtree.NodeToken;
 import org.nabucco.framework.generator.parser.syntaxtree.Parameter;
 import org.nabucco.framework.generator.parser.syntaxtree.ServiceStatement;
-
 import org.nabucco.framework.mda.model.MdaModel;
 import org.nabucco.framework.mda.model.java.JavaCompilationUnit;
 import org.nabucco.framework.mda.model.java.JavaModel;
@@ -44,8 +43,10 @@ import org.nabucco.framework.mda.template.java.JavaTemplateException;
  * 
  * @author Nicolas Moser, PRODYNA AG
  */
-class NabuccoToJavaServiceInterfaceVisitor extends NabuccoToJavaVisitorSupport implements
-        ServerConstants {
+class NabuccoToJavaServiceInterfaceVisitor extends NabuccoToJavaVisitorSupport implements ServerConstants {
+
+    /** Flag indicating wether the service has operations or not. */
+    private boolean hasMethods = false;
 
     /**
      * Creates a new {@link NabuccoToJavaServiceInterfaceVisitor} instance.
@@ -66,27 +67,34 @@ class NabuccoToJavaServiceInterfaceVisitor extends NabuccoToJavaVisitorSupport i
         String name = nabuccoService.nodeToken2.tokenImage;
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
-        String componentName = super
-                .getProjectName(NabuccoModelType.SERVICE, NabuccoModifierComponentMapper
-                        .getModifierType(nabuccoService.nodeToken.tokenImage));
+        String componentName = super.getProjectName(NabuccoModelType.SERVICE,
+                NabuccoModifierComponentMapper.getModifierType(nabuccoService.nodeToken.tokenImage));
 
         try {
             // Load Template
-            JavaCompilationUnit unit = super
-                    .extractAst(NabuccoJavaTemplateConstants.SERVICE_INTERFACE_TEMPLATE);
-            TypeDeclaration type = unit
-                    .getType(NabuccoJavaTemplateConstants.SERVICE_INTERFACE_TEMPLATE);
+            JavaCompilationUnit unit = super.extractAst(NabuccoJavaTemplateConstants.SERVICE_INTERFACE_TEMPLATE);
+            TypeDeclaration type = unit.getType(NabuccoJavaTemplateConstants.SERVICE_INTERFACE_TEMPLATE);
 
             // Name and Package
             javaFactory.getJavaAstType().setTypeName(type, name);
-            javaFactory.getJavaAstUnit().setPackage(unit.getUnitDeclaration(),
-                    super.getVisitorContext().getPackage());
+            javaFactory.getJavaAstUnit().setPackage(unit.getUnitDeclaration(), super.getVisitorContext().getPackage());
+
+            // Extensions
+            String superInterface = super.getVisitorContext().getNabuccoExtension();
+            if (superInterface != null) {
+                super.createInterface(superInterface);
+            }
 
             // Annotations
             JavaAstSupport.convertJavadocAnnotations(nabuccoService.annotationDeclaration, type);
 
-            JavaAstSupport.convertAstNodes(unit, this.getVisitorContext().getContainerList(), this
-                    .getVisitorContext().getImportList());
+            JavaAstSupport.convertAstNodes(unit, this.getVisitorContext().getContainerList(), this.getVisitorContext()
+                    .getImportList());
+
+            if (!this.hasMethods) {
+                super.removeImport(unit.getUnitDeclaration(), IMPORT_SERVICE_REQUEST);
+                super.removeImport(unit.getUnitDeclaration(), IMPORT_SERVICE_RESPONSE);
+            }
 
             // File creation
             unit.setProjectName(componentName);
@@ -104,12 +112,12 @@ class NabuccoToJavaServiceInterfaceVisitor extends NabuccoToJavaVisitorSupport i
     @Override
     public void visit(MethodDeclaration nabuccoMethod, MdaModel<JavaModel> target) {
 
+        this.hasMethods = true;
+
         try {
             // Load Template
-            JavaCompilationUnit unit = super
-                    .extractAst(NabuccoJavaTemplateConstants.SERVICE_OPERATION_TEMPLATE);
-            TypeDeclaration type = unit
-                    .getType(NabuccoJavaTemplateConstants.SERVICE_OPERATION_TEMPLATE);
+            JavaCompilationUnit unit = super.extractAst(NabuccoJavaTemplateConstants.SERVICE_OPERATION_TEMPLATE);
+            TypeDeclaration type = unit.getType(NabuccoJavaTemplateConstants.SERVICE_OPERATION_TEMPLATE);
 
             String name = nabuccoMethod.nodeToken1.tokenImage;
 
@@ -119,10 +127,9 @@ class NabuccoToJavaServiceInterfaceVisitor extends NabuccoToJavaVisitorSupport i
 
             JavaAstContainter<org.eclipse.jdt.internal.compiler.ast.MethodDeclaration> javaMethod = NabuccoToJavaServiceVisitorSupport
                     .createServiceInterfaceOperation(name, rq, rs, exception, type);
-            
-            JavaAstSupport.convertJavadocAnnotations(nabuccoMethod.annotationDeclaration,
-                    javaMethod.getAstNode());
-            
+
+            JavaAstSupport.convertJavadocAnnotations(nabuccoMethod.annotationDeclaration, javaMethod.getAstNode());
+
             this.getVisitorContext().getContainerList().add(javaMethod);
 
         } catch (JavaModelException jme) {
@@ -143,7 +150,7 @@ class NabuccoToJavaServiceInterfaceVisitor extends NabuccoToJavaVisitorSupport i
     private String getRequest(MethodDeclaration nabuccoMethod) {
         String requestMsg;
         if (nabuccoMethod.parameterList.nodeListOptional.nodes.isEmpty()) {
-            requestMsg = EMPTY_SERVICE_MSG;
+            requestMsg = EMPTY_SERVICE_MESSAGE;
         } else {
             Parameter param = (Parameter) nabuccoMethod.parameterList.nodeListOptional.nodes.get(0);
             requestMsg = param.nodeToken.tokenImage;

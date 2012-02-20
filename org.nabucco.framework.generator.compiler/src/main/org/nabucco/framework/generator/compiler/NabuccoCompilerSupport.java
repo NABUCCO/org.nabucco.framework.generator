@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,9 +20,10 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.nabucco.framework.generator.compiler.component.NabuccoComponentConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoComponentConstants;
 
 /**
  * NabuccoCompilerSupport
@@ -120,7 +121,7 @@ public final class NabuccoCompilerSupport implements NabuccoComponentConstants {
         if (componentName == null) {
             throw new IllegalArgumentException("Cannot resolve component name for [null].");
         }
-        
+
         String[] tokens = PATTERN.split(componentName);
 
         if (tokens.length > 0) {
@@ -156,6 +157,10 @@ public final class NabuccoCompilerSupport implements NabuccoComponentConstants {
      * @return <b>true</b> if the import points on another component, <b>false</b> if not
      */
     public static boolean isOtherComponent(String pkg, String importString) {
+        if (importString == null) {
+            return false;
+        }
+
         String firstComponent = getParentComponentName(pkg);
         String secondComponent = getParentComponentName(importString);
 
@@ -181,6 +186,38 @@ public final class NabuccoCompilerSupport implements NabuccoComponentConstants {
             throw new IllegalArgumentException("Root path does not point on a valid directory.");
         }
         return rootDir;
+    }
+
+    /**
+     * Resolves the import of type with a given visitor context.
+     * 
+     * @param <C>
+     *            the visitor context type
+     * @param type
+     *            the type to resolve
+     * @param imports
+     *            the type's imports
+     * 
+     * @return the resolved import
+     */
+    public static String resolveImport(String type, Set<String> imports) {
+
+        if (type == null || imports == null) {
+            return null;
+        }
+
+        String importString = null;
+
+        for (String nabuccoImport : imports) {
+            if (nabuccoImport.endsWith(type)) {
+                String[] importToken = nabuccoImport.split("\\.");
+                if (importToken[importToken.length - 1].equals(type)) {
+                    importString = nabuccoImport;
+                    break;
+                }
+            }
+        }
+        return importString;
     }
 
 }

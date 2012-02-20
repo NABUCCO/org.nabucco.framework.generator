@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java.visitor.util.spp;
 
 import java.util.Arrays;
@@ -29,7 +29,6 @@ import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.nabucco.framework.generator.compiler.transformation.util.NabuccoTransformationUtility;
-
 import org.nabucco.framework.mda.model.java.JavaModelException;
 import org.nabucco.framework.mda.model.java.ast.element.JavaAstElementFactory;
 import org.nabucco.framework.mda.model.java.ast.produce.JavaAstModelProducer;
@@ -71,15 +70,13 @@ public class StructuredPropertyPathViewModelElementFactory {
      * @return a getter methods
      * @throws JavaModelException
      */
-    public MethodDeclaration createGetter(StructuredPropertyPathEntry root, String name)
-            throws JavaModelException {
+    public MethodDeclaration createGetter(StructuredPropertyPathEntry root, String name) throws JavaModelException {
         String orginalPath = name;
         StructuredPropertyPathEntry entry = root.getEntry(name);
         JavaAstModelProducer modelProducer = JavaAstModelProducer.getInstance();
         JavaAstElementFactory elementFactory = JavaAstElementFactory.getInstance();
         name = OperationType.GETTER.format(convertToMethodName(name));
-        MethodDeclaration methodDeclaration = modelProducer.createMethodDeclaration(name, null,
-                false);
+        MethodDeclaration methodDeclaration = modelProducer.createMethodDeclaration(name, null, false);
 
         switch (entry.getEntryType()) {
         case BASETYPE: {
@@ -90,39 +87,32 @@ public class StructuredPropertyPathViewModelElementFactory {
                         .createReturnStatement(CommonOperationSupport.createNullSaveGetterChain(
                                 modelProducer.createThisReference(), orginalPath.concat(".value"))) };
             } else {
-                methodDeclaration.statements = new Statement[] { modelProducer
-                        .createReturnStatement(modelProducer
-                                .createFieldThisReference(convertToMethodName(orginalPath))) };
+                methodDeclaration.statements = new Statement[] { modelProducer.createReturnStatement(modelProducer
+                        .createFieldThisReference(convertToMethodName(orginalPath))) };
             }
             break;
         }
         case ENUMERATION: {
             elementFactory.getJavaAstMethod().setReturnType(methodDeclaration,
                     modelProducer.createTypeReference("String", false));
-            MessageSend getterChain = CommonOperationSupport.createGetterChain(
-                    modelProducer.createThisReference(), orginalPath);
-            getterChain = modelProducer.createMessageSend("name", getterChain,
-                    Collections.<Expression> emptyList());
-            methodDeclaration.statements = new Statement[] { modelProducer
-                    .createReturnStatement(CommonOperationSupport.getNullChecks(getterChain,
-                            OperationType.GETTER)) };
+            MessageSend getterChain = CommonOperationSupport.createGetterChain(modelProducer.createThisReference(),
+                    orginalPath);
+            getterChain = modelProducer.createMessageSend("name", getterChain, Collections.<Expression> emptyList());
+            methodDeclaration.statements = new Statement[] { modelProducer.createReturnStatement(CommonOperationSupport
+                    .getNullChecks(getterChain, OperationType.GETTER)) };
             break;
         }
         case DATATYPE: {
             if (entry.isMultiple()) {
-                TypeReference parameterizedTypeReference = modelProducer
-                        .createParameterizedTypeReference("Set", false,
-                                Arrays.asList(new TypeReference[] { entry.getTypeReference() }));
-                elementFactory.getJavaAstMethod().setReturnType(methodDeclaration,
-                        parameterizedTypeReference);
+                TypeReference parameterizedTypeReference = modelProducer.createParameterizedTypeReference("Set", false,
+                        Arrays.asList(new TypeReference[] { entry.getTypeReference() }));
+                elementFactory.getJavaAstMethod().setReturnType(methodDeclaration, parameterizedTypeReference);
 
             } else {
-                elementFactory.getJavaAstMethod().setReturnType(methodDeclaration,
-                        entry.getTypeReference());
+                elementFactory.getJavaAstMethod().setReturnType(methodDeclaration, entry.getTypeReference());
                 if (isRootEntry(root, orginalPath)) {
-                    methodDeclaration.statements = new Statement[] { modelProducer
-                            .createReturnStatement(modelProducer
-                                    .createFieldThisReference(orginalPath)) };
+                    methodDeclaration.statements = new Statement[] { modelProducer.createReturnStatement(modelProducer
+                            .createFieldThisReference(orginalPath)) };
                 } // no else case only getter for rooted datatypes
 
             }
@@ -131,8 +121,7 @@ public class StructuredPropertyPathViewModelElementFactory {
         }
         case ROOT:
         default: {
-            throw new IllegalStateException(
-                    "unreachable access in create getter for structured property support");
+            throw new IllegalStateException("unreachable access in create getter for structured property support");
         }
         }
         return methodDeclaration;
@@ -152,36 +141,29 @@ public class StructuredPropertyPathViewModelElementFactory {
      * @return a setter methods
      * @throws JavaModelException
      */
-    public MethodDeclaration createSetter(StructuredPropertyPathEntry root, String name)
-            throws JavaModelException {
+    public MethodDeclaration createSetter(StructuredPropertyPathEntry root, String name) throws JavaModelException {
         String orginalPath = name;
         StructuredPropertyPathEntry entry = root.getEntry(name);
         JavaAstModelProducer modelProducer = JavaAstModelProducer.getInstance();
         JavaAstElementFactory elementFactory = JavaAstElementFactory.getInstance();
         String propertyName = NabuccoTransformationUtility.firstToLower(convertToMethodName(name));
         name = OperationType.SETTER.format(propertyName);
-        MethodDeclaration methodDeclaration = modelProducer.createMethodDeclaration(name, null,
-                false);
+        MethodDeclaration methodDeclaration = modelProducer.createMethodDeclaration(name, null, false);
         switch (entry.getEntryType()) {
         case BASETYPE: {
             if (isParentSet(root, orginalPath)) {
-                elementFactory.getJavaAstMethod().addArgument(
-                        methodDeclaration,
-                        modelProducer.createArgument(propertyName,
-                                modelProducer.createTypeReference("String", false)));
+                elementFactory.getJavaAstMethod().addArgument(methodDeclaration,
+                        modelProducer.createArgument(propertyName, modelProducer.createTypeReference("String", false)));
                 ThisReference thisReference = modelProducer.createThisReference();
-                FieldReference fieldReference = modelProducer
-                        .createFieldThisReference(propertyName);
-                SingleNameReference parameterReference = modelProducer
-                        .createSingleNameReference(propertyName);
-                methodDeclaration.statements = new Statement[] { modelProducer.createMessageSend(
-                        "updateProperty", thisReference, Arrays.asList(new Expression[] {
+                FieldReference fieldReference = modelProducer.createFieldThisReference(propertyName);
+                SingleNameReference parameterReference = modelProducer.createSingleNameReference(propertyName);
+                methodDeclaration.statements = new Statement[] { modelProducer
+                        .createMessageSend("updateProperty", thisReference, Arrays.asList(new Expression[] {
                                 fieldReference,
                                 modelProducer.createAssignment(fieldReference, modelProducer
-                                        .createConditionalExpression(CommonOperationSupport
-                                                .createNullCheck(parameterReference),
-                                                parameterReference, CommonOperationSupport
-                                                        .getEmptyStringLiteral())) })) };
+                                        .createConditionalExpression(
+                                                CommonOperationSupport.createNullCheck(parameterReference),
+                                                parameterReference, CommonOperationSupport.getEmptyStringLiteral())) })) };
             } else {
 
             }
@@ -194,8 +176,8 @@ public class StructuredPropertyPathViewModelElementFactory {
             } else {
                 elementFactory.getJavaAstMethod().addArgument(
                         methodDeclaration,
-                        modelProducer.createArgument(propertyName, modelProducer
-                                .createTypeReference(entry.getTypeReference().toString(), false)));
+                        modelProducer.createArgument(propertyName,
+                                modelProducer.createTypeReference(entry.getTypeReference().toString(), false)));
             }
             break;
         }
@@ -226,8 +208,7 @@ public class StructuredPropertyPathViewModelElementFactory {
     }
 
     private String convertToMethodName(String path) {
-        StringTokenizer st = new StringTokenizer(path,
-                StructuredPropertyPathEntry.SEPARATOR.toString());
+        StringTokenizer st = new StringTokenizer(path, StructuredPropertyPathEntry.SEPARATOR.toString());
         path = "";
         while (st.hasMoreTokens()) {
             path = path.concat(NabuccoTransformationUtility.firstToUpper(st.nextToken()));

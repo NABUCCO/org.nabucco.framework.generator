@@ -1,0 +1,25 @@
+/*
+ * Sample NABUCCO File
+ */
+package org.nabucco.framework;
+
+public Service MaintainService {
+	
+	public void manual();
+
+	public void maintain() {
+	}
+	
+	public void maintain() {
+		HAHA
+	}
+
+	public void maintain() {
+		HAHA HAHA
+	}
+		
+	public void maintain() {
+		HAHA HAHA
+		HAHA HAHA
+	}
+}

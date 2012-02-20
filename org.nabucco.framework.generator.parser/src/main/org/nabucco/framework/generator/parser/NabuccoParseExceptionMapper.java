@@ -1,23 +1,24 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.parser;
 
 import org.nabucco.framework.generator.parser.model.NabuccoModelException;
-
+import org.nabucco.framework.mda.logger.MdaLogger;
+import org.nabucco.framework.mda.logger.MdaLoggingFactory;
 
 /**
  * NabuccoParseExceptionMapper
@@ -25,6 +26,10 @@ import org.nabucco.framework.generator.parser.model.NabuccoModelException;
  * @author Nicolas Moser, PRODYNA AG
  */
 class NabuccoParseExceptionMapper {
+
+    /** The Logger */
+    private static MdaLogger logger = MdaLoggingFactory.getInstance().getLogger(
+            NabuccoParseExceptionMapper.class);
 
     /**
      * Private constructor must not be invoked.
@@ -41,13 +46,37 @@ class NabuccoParseExceptionMapper {
      * @return the mapped NabuccoModelException
      */
     public static String createErrorMessage(ParseException pe) {
+        if (pe == null) {
+            return "Unexpected Error";
+        }
+
+        try {
+            return NabuccoParseExceptionMapper.extractMessage(pe);
+        } catch (Exception e) {
+            logger.debug(e, "Unexpected error during errormessage conversion.");
+            return pe.getMessage();
+        }
+    }
+
+    /**
+     * Extract the error message out of the parse exception.
+     * 
+     * @param pe
+     *            the parse exception
+     * 
+     * @return the error message
+     */
+    private static String extractMessage(ParseException pe) {
+        if (pe.currentToken == null || pe.currentToken.next == null) {
+            return pe.getMessage();
+        }
 
         int line = pe.currentToken.next.beginLine;
         int column = pe.currentToken.next.beginColumn;
 
         String expected = getExpectedToken(pe);
         String encountered = getEncounteredToken(pe);
-        
+
         StringBuilder message = new StringBuilder();
         message.append("Error at line ");
         message.append(line);
@@ -66,7 +95,7 @@ class NabuccoParseExceptionMapper {
 
         message.append(expected);
         message.append(" ].");
-        
+
         return message.toString();
     }
 
@@ -79,6 +108,9 @@ class NabuccoParseExceptionMapper {
      * @return the encountered token
      */
     private static String getEncounteredToken(ParseException pe) {
+        if (pe.currentToken == null) {
+            return null;
+        }
 
         int maxSize = calculateMax(pe);
 
@@ -111,6 +143,10 @@ class NabuccoParseExceptionMapper {
      * @return the expected token
      */
     private static String getExpectedToken(ParseException pe) {
+        if (pe.expectedTokenSequences == null) {
+            return null;
+        }
+
         StringBuilder expected = new StringBuilder();
 
         for (int i = 0; i < pe.expectedTokenSequences.length; i++) {
@@ -121,7 +157,7 @@ class NabuccoParseExceptionMapper {
                         || (j + 1) < pe.expectedTokenSequences[i].length) {
                     expected.append(", ");
                 }
-                
+
             }
         }
 
@@ -137,7 +173,12 @@ class NabuccoParseExceptionMapper {
      * @return the maximum number of tokens
      */
     private static int calculateMax(ParseException pe) {
+        if (pe.expectedTokenSequences == null) {
+            return 0;
+        }
+
         int maxSize = 0;
+
         for (int i = 0; i < pe.expectedTokenSequences.length; i++) {
             if (maxSize < pe.expectedTokenSequences[i].length) {
                 maxSize = pe.expectedTokenSequences[i].length;

@@ -1,25 +1,25 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.xml.exception;
 
 import java.io.File;
 import java.util.List;
 
-import org.nabucco.framework.generator.compiler.template.NabuccoXmlTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoXmlTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotation;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationMapper;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationType;
@@ -29,14 +29,13 @@ import org.nabucco.framework.generator.compiler.transformation.xml.visitor.Nabuc
 import org.nabucco.framework.generator.compiler.visitor.NabuccoVisitorException;
 import org.nabucco.framework.generator.parser.syntaxtree.AnnotationDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.ExceptionStatement;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
 import org.nabucco.framework.mda.model.MdaModel;
 import org.nabucco.framework.mda.model.xml.XmlDocument;
 import org.nabucco.framework.mda.model.xml.XmlModel;
 import org.nabucco.framework.mda.model.xml.XmlModelException;
 import org.nabucco.framework.mda.template.xml.XmlTemplateException;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
  * NabuccoToXmlExceptionVisitor
@@ -55,12 +54,10 @@ class NabuccoToXmlExceptionVisitor extends NabuccoToXmlVisitorSupport implements
      * @param componentName
      *            the component name where this exception is used
      */
-    public NabuccoToXmlExceptionVisitor(NabuccoToXmlVisitorContext visitorContext,
-            String componentName) {
+    public NabuccoToXmlExceptionVisitor(NabuccoToXmlVisitorContext visitorContext, String componentName) {
         super(visitorContext);
         if (componentName == null) {
-            throw new IllegalArgumentException(
-                    "Component Name is not defined for service exception.");
+            throw new IllegalArgumentException("Component Name is not defined for service exception.");
         }
         this.componentName = componentName;
     }
@@ -72,8 +69,7 @@ class NabuccoToXmlExceptionVisitor extends NabuccoToXmlVisitorSupport implements
 
         try {
             // Final document
-            XmlDocument document = super
-                    .extractDocument(NabuccoXmlTemplateConstants.EXCEPTION_FRAGMENT_TEMPLATE);
+            XmlDocument document = super.extractDocument(NabuccoXmlTemplateConstants.EXCEPTION_FRAGMENT_TEMPLATE);
 
             boolean rollback = isRollback(nabuccoException.annotationDeclaration);
 
@@ -102,8 +98,8 @@ class NabuccoToXmlExceptionVisitor extends NabuccoToXmlVisitorSupport implements
      */
     private boolean isRollback(AnnotationDeclaration annotation) {
 
-        NabuccoAnnotation rollbackAnnotation = NabuccoAnnotationMapper.getInstance()
-                .mapToAnnotation(annotation, NabuccoAnnotationType.ROLLBACK);
+        NabuccoAnnotation rollbackAnnotation = NabuccoAnnotationMapper.getInstance().mapToAnnotation(annotation,
+                NabuccoAnnotationType.ROLLBACK);
 
         // Default behaviour
         if (rollbackAnnotation == null) {
@@ -124,8 +120,7 @@ class NabuccoToXmlExceptionVisitor extends NabuccoToXmlVisitorSupport implements
      * 
      * @throws XmlModelException
      */
-    private void modifyFragment(XmlDocument document, String name, boolean isRollback)
-            throws XmlModelException {
+    private void modifyFragment(XmlDocument document, String name, boolean isRollback) throws XmlModelException {
 
         document.getDocument().getDocumentElement().setAttribute(NAME, name);
 

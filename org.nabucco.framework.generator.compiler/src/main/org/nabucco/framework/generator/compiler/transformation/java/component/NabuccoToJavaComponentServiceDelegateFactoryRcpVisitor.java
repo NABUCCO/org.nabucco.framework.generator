@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,26 +16,30 @@
  */
 package org.nabucco.framework.generator.compiler.transformation.java.component;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.Assignment;
 import org.eclipse.jdt.internal.compiler.ast.Block;
+import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
+import org.eclipse.jdt.internal.compiler.ast.ExplicitConstructorCall;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.IfStatement;
 import org.eclipse.jdt.internal.compiler.ast.ImportReference;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.ThrowStatement;
 import org.eclipse.jdt.internal.compiler.ast.TryStatement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
-import org.nabucco.framework.generator.compiler.template.NabuccoJavaTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoJavaTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.JavaAstSupport;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.container.JavaAstContainter;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.container.JavaAstType;
@@ -69,6 +73,8 @@ class NabuccoToJavaComponentServiceDelegateFactoryRcpVisitor extends NabuccoToJa
 
     private static String PKG_COMMUNICATION = PKG_SEPARATOR + "communication";
 
+    private static String FACTORY_SUPPORT_IMPORT = "org.nabucco.framework.plugin.base.component.communication.ServiceDelegateFactorySupport";
+
     private static final JavaAstMethodSignature GET_DELEGATE_SIGNATURE = new JavaAstMethodSignature(
             "getServiceDelegateTemplate", new String[] {});
 
@@ -78,8 +84,6 @@ class NabuccoToJavaComponentServiceDelegateFactoryRcpVisitor extends NabuccoToJa
             NabuccoToJavaVisitorContext visitorContext) {
         super(visitorContext);
     }
-
-    // TODO: Externalize Strings!
 
     @Override
     public void visit(ComponentStatement nabuccoComponent, MdaModel<JavaModel> target) {
@@ -113,16 +117,22 @@ class NabuccoToJavaComponentServiceDelegateFactoryRcpVisitor extends NabuccoToJa
             // handle getInstance()
             handleGetInstance(type, name);
 
-            // handle component field
-            handleComponentField(type, nabuccoComponent.nodeToken2.tokenImage);
+            // add import for ServiceDelegateFactorySupport
+            ImportReference serviceDelegateFactorySupportImport = JavaAstModelProducer
+                    .getInstance().createImportReference(FACTORY_SUPPORT_IMPORT);
+            javaFactory.getJavaAstUnit().addImport(unit.getUnitDeclaration(),
+                    serviceDelegateFactorySupportImport);
+
+            // handle type parameter for ServiceDelegateFactorySupport
+            handleFactorySupportParameter(type, nabuccoComponent.nodeToken2.tokenImage);
 
             // handle component field & add import for Locator
             javaFactory.getJavaAstUnit().addImport(unit.getUnitDeclaration(),
-                    handleInitComponentMethod(type, nabuccoComponent));
+                    handleConstrutor(type, nabuccoComponent));
 
             // handle getComponent() and import of Component
             javaFactory.getJavaAstUnit().addImport(unit.getUnitDeclaration(),
-                    handleGetComponent(type, nabuccoComponent));
+                    handleComponentImport(type, nabuccoComponent));
 
             // handle service fields
             JavaAstSupport.convertAstNodes(unit, super.getVisitorContext().getContainerList(),
@@ -146,44 +156,52 @@ class NabuccoToJavaComponentServiceDelegateFactoryRcpVisitor extends NabuccoToJa
 
     }
 
-    private ImportReference handleGetComponent(TypeDeclaration type,
+    private ImportReference handleComponentImport(TypeDeclaration type,
             ComponentStatement nabuccoComponent) throws JavaModelException {
-        final JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
-        final MethodDeclaration method = (MethodDeclaration) javaFactory.getJavaAstType()
-                .getMethod(type, new JavaAstMethodSignature("getComponent", new String[] {}));
-        final String componentName = nabuccoComponent.nodeToken2.tokenImage;
-        final TypeReference componentType = JavaAstModelProducer.getInstance().createTypeReference(
-                componentName, false);
-        javaFactory.getJavaAstMethod().setReturnType(method, componentType);
         final String componentPackage = super.getProjectName(NabuccoModelType.COMPONENT,
                 NabuccoModifierType.PUBLIC);
         return JavaAstModelProducer.getInstance().createImportReference(
                 componentPackage + PKG_SEPARATOR + componentName);
     }
 
-    private ImportReference handleInitComponentMethod(TypeDeclaration type,
+    private ImportReference handleConstrutor(TypeDeclaration type,
             ComponentStatement nabuccoComponent) throws JavaModelException {
-        final JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
-        final MethodDeclaration method = (MethodDeclaration) javaFactory.getJavaAstType()
-                .getMethod(type, new JavaAstMethodSignature("initComponent", new String[] {}));
-        final TypeReference locatorTypeReference = JavaAstModelProducer.getInstance()
-                .createTypeReference(nabuccoComponent.nodeToken2.tokenImage + LOCATOR, false);
-        ((MessageSend) ((MessageSend) ((Assignment) method.statements[2]).expression).receiver).receiver = locatorTypeReference;
-        final String locatorPackage = super.getProjectName(NabuccoModelType.COMPONENT,
+        JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
+        String locatorPackage = super.getProjectName(NabuccoModelType.COMPONENT,
                 NabuccoModifierType.PUBLIC);
+        String typeName = javaFactory.getJavaAstType().getTypeName(type);
+        ConstructorDeclaration constructor = javaFactory.getJavaAstType().getConstructor(type,
+                new JavaAstMethodSignature(typeName, new String[] {}));
+        TypeReference locatorTypeReference = JavaAstModelProducer.getInstance()
+                .createTypeReference(nabuccoComponent.nodeToken2.tokenImage + LOCATOR, false);
+        MessageSend locatorGetInstanceCall = JavaAstModelProducer.getInstance().createMessageSend(
+                SINGLETON_GETTER, locatorTypeReference,
+                Collections.<org.eclipse.jdt.internal.compiler.ast.Expression> emptyList());
+        ExplicitConstructorCall constructorCall = constructor.constructorCall;
+        constructorCall.arguments[0] = locatorGetInstanceCall;
 
         return JavaAstModelProducer.getInstance().createImportReference(
                 locatorPackage + PKG_SEPARATOR + nabuccoComponent.nodeToken2.tokenImage + LOCATOR);
     }
 
-    private void handleComponentField(TypeDeclaration type, String componentName)
-            throws JavaModelException {
-        final JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
-        final FieldDeclaration fieldDeclaration = javaFactory.getJavaAstType().getField(type,
-                NabuccoTransformationUtility.firstToLower(COMPONENT));
-        final TypeReference componentType = JavaAstModelProducer.getInstance().createTypeReference(
-                componentName, false);
-        javaFactory.getJavaAstField().setFieldType(fieldDeclaration, componentType);
+    /**
+     * @param type
+     * @param tokenImage
+     */
+    private void handleFactorySupportParameter(TypeDeclaration type, String tokenImage) {
+        JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
+        try {
+            TypeReference superClass = javaFactory.getJavaAstType().getSuperClass(type);
+            if (superClass instanceof ParameterizedSingleTypeReference) {
+                ParameterizedSingleTypeReference superType = (ParameterizedSingleTypeReference) superClass;
+                superType.typeArguments[0] = JavaAstModelProducer.getInstance()
+                        .createTypeReference(tokenImage, false);
+            }
+
+        } catch (JavaModelException jme) {
+            throw new NabuccoVisitorException("Error during Java AST Component modification.", jme);
+        }
+
     }
 
     private void handleGetInstance(TypeDeclaration type, String name) throws JavaModelException {
@@ -203,7 +221,7 @@ class NabuccoToJavaComponentServiceDelegateFactoryRcpVisitor extends NabuccoToJa
         final String delegateName = NabuccoTransformationUtility.firstToLower(delegateType);
 
         final JavaAstContainter<FieldDeclaration> field = JavaAstSupport.createField(delegateType,
-                delegateName, NabuccoModifierType.PRIVATE, false);
+                delegateName, NabuccoModifierType.PRIVATE);
 
         final JavaAstContainter<MethodDeclaration> getter = new JavaAstContainter<MethodDeclaration>(
                 handleGetterMethod(field.getAstNode()), JavaAstType.METHOD);

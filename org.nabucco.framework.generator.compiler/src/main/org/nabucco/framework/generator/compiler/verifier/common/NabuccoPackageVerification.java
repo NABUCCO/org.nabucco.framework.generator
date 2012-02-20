@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -40,10 +40,12 @@ public class NabuccoPackageVerification extends NabuccoModelVerificationVisitor 
         String location = convertToPackage(result.getModel().getPath());
 
         if (!location.endsWith(pkg)) {
-            int row = packageDeclaration.nodeToken1.beginLine;
-            int col = packageDeclaration.nodeToken1.beginColumn;
+            int beginLine = packageDeclaration.nodeToken1.beginLine;
+            int endLine = packageDeclaration.nodeToken1.endLine;
+            int beginColumn = packageDeclaration.nodeToken1.beginColumn;
+            int endColumn = packageDeclaration.nodeToken1.endColumn;
 
-            result.addError(VerificationErrorCriticality.ERROR, row, col,
+            result.addError(VerificationErrorCriticality.ERROR, beginLine, endLine, beginColumn, endColumn,
                     "Declared package missmatches the path.");
         }
     }

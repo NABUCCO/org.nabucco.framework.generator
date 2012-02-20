@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,6 +26,7 @@ import org.eclipse.jdt.internal.compiler.ast.BinaryExpression;
 import org.eclipse.jdt.internal.compiler.ast.Block;
 import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
+import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.IfStatement;
 import org.eclipse.jdt.internal.compiler.ast.Literal;
@@ -38,6 +39,7 @@ import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
+import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationException;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotation;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationMapper;
@@ -54,7 +56,6 @@ import org.nabucco.framework.generator.parser.syntaxtree.BasetypeDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.EnumerationDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.NabuccoUnit;
 import org.nabucco.framework.generator.parser.syntaxtree.NodeToken;
-
 import org.nabucco.framework.mda.logger.MdaLogger;
 import org.nabucco.framework.mda.logger.MdaLoggingFactory;
 import org.nabucco.framework.mda.model.java.JavaModelException;
@@ -70,7 +71,7 @@ import org.nabucco.framework.mda.model.java.ast.produce.JavaAstModelProducer;
  * 
  * @author Nicolas Moser, PRODYNA AG
  */
-final class NabuccoToJavaDatatypeVisitorSupport implements ServerConstants {
+final public class NabuccoToJavaDatatypeVisitorSupport implements ServerConstants {
 
     private static final String GET_VALUE = "getValue";
 
@@ -81,6 +82,8 @@ final class NabuccoToJavaDatatypeVisitorSupport implements ServerConstants {
     private static final String ENUM_ID_TYPE = "String";
 
     private static final String INIT_METHOD_NAME = "initDefaults";
+
+    private static final String SERIAL_VERSION_UID_FIELDNAME = "serialVersionUID";
 
     private static final JavaAstMethodSignature INIT_METHOD = new JavaAstMethodSignature(
             INIT_METHOD_NAME, new String[] {});
@@ -116,41 +119,33 @@ final class NabuccoToJavaDatatypeVisitorSupport implements ServerConstants {
             String methodName = PREFIX_GETTER
                     + NabuccoTransformationUtility.firstToUpper(fieldName);
 
-            JavaAstModelProducer modelProducer = JavaAstModelProducer.getInstance();
+            JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
+            JavaAstMethod methodFactory = JavaAstElementFactory.getInstance().getJavaAstMethod();
 
-            TypeReference type = modelProducer.createTypeReference(fieldType, false);
-            TypeReference delegateType = modelProducer.createTypeReference(basetypeType, false);
+            TypeReference delegateType = producer.createTypeReference(basetypeType, false);
+            MethodDeclaration method = producer.createMethodDeclaration(methodName, null, false);
 
-            MethodDeclaration method = modelProducer.createMethodDeclaration(methodName, null,
-                    false);
-
-            final JavaAstMethod methodFactory = JavaAstElementFactory.getInstance()
-                    .getJavaAstMethod();
             methodFactory.setMethodName(method, methodName);
             methodFactory.setReturnType(method, delegateType);
 
-            FieldReference fieldReference = modelProducer.createFieldThisReference(fieldName);
+            FieldReference fieldReference = producer.createFieldThisReference(fieldName);
 
             // If statement
 
-            FieldReference thisReference = modelProducer.createFieldThisReference(String
+            FieldReference thisReference = producer.createFieldThisReference(String
                     .valueOf(fieldName));
-            Literal nullLiteral = modelProducer.createLiteral(null, LiteralType.NULL_LITERAL);
+            Literal nullLiteral = producer.createLiteral(null, LiteralType.NULL_LITERAL);
 
-            BinaryExpression condition = modelProducer.createBinaryExpression(
+            BinaryExpression condition = producer.createBinaryExpression(
                     BinaryExpressionType.EQUAL_EXPRESSION, thisReference, nullLiteral,
                     EqualExpression.EQUAL_EQUAL);
 
-            AllocationExpression constructor = modelProducer.createAllocationExpression(type, null);
+            Block then = producer.createBlock(producer.createReturnStatement(nullLiteral));
 
-            Block thenStatement = modelProducer.createBlock(new Statement[] { modelProducer
-                    .createAssignment(fieldReference, constructor) });
+            IfStatement ifStatement = producer.createIfStatement(condition, then, null);
 
-            IfStatement ifStatement = modelProducer.createIfStatement(condition, thenStatement,
-                    null);
-
-            MessageSend getValue = modelProducer.createMessageSend(GET_VALUE, fieldReference, null);
-            ReturnStatement returnStatement = modelProducer.createReturnStatement(getValue);
+            MessageSend getValue = producer.createMessageSend(GET_VALUE, fieldReference, null);
+            ReturnStatement returnStatement = producer.createReturnStatement(getValue);
 
             method.statements = new Statement[] { ifStatement, returnStatement };
 
@@ -187,45 +182,58 @@ final class NabuccoToJavaDatatypeVisitorSupport implements ServerConstants {
             String methodName = PREFIX_SETTER
                     + NabuccoTransformationUtility.firstToUpper(fieldName);
 
-            JavaAstModelProducer modelProducer = JavaAstModelProducer.getInstance();
+            JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
+            JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
-            TypeReference type = modelProducer.createTypeReference(fieldType, false);
-            TypeReference delegateType = modelProducer.createTypeReference(basetypeType, false);
+            // Common
 
-            MethodDeclaration method = modelProducer.createMethodDeclaration(methodName, null,
-                    false);
+            TypeReference type = producer.createTypeReference(fieldType, false);
+            TypeReference delegateType = producer.createTypeReference(basetypeType, false);
 
-            JavaAstElementFactory.getInstance().getJavaAstMethod()
-                    .setMethodName(method, methodName);
+            Literal nullLiteral = producer.createLiteral(null, LiteralType.NULL_LITERAL);
 
-            Argument argument = modelProducer.createArgument(fieldName, delegateType);
-            JavaAstElementFactory.getInstance().getJavaAstMethod().addArgument(method, argument);
+            FieldReference fieldReference = producer.createFieldThisReference(fieldName);
+            SingleNameReference nameReference = producer.createSingleNameReference(fieldName);
 
-            FieldReference fieldReference = modelProducer.createFieldThisReference(fieldName);
-            SingleNameReference nameReference = modelProducer.createSingleNameReference(fieldName);
+            // Method Signature
 
-            // If statement
+            MethodDeclaration method = producer.createMethodDeclaration(methodName, null, false);
 
-            FieldReference thisReference = modelProducer.createFieldThisReference(String
+            javaFactory.getJavaAstMethod().setMethodName(method, methodName);
+
+            Argument argument = producer.createArgument(fieldName, delegateType);
+            javaFactory.getJavaAstMethod().addArgument(method, argument);
+
+            // 1. Inner If
+            BinaryExpression innerCondition = producer.createBinaryExpression(
+                    BinaryExpressionType.EQUAL_EXPRESSION, nameReference, nullLiteral,
+                    EqualExpression.EQUAL_EQUAL);
+
+            Block innerThen = producer.createBlock(producer.createReturnStatement(null));
+
+            IfStatement innerIf = producer.createIfStatement(innerCondition, innerThen);
+
+            // 2. Outer If
+            FieldReference thisReference = producer.createFieldThisReference(String
                     .valueOf(fieldName));
-            Literal nullLiteral = modelProducer.createLiteral(null, LiteralType.NULL_LITERAL);
 
-            BinaryExpression condition = modelProducer.createBinaryExpression(
+            BinaryExpression outerCondition = producer.createBinaryExpression(
                     BinaryExpressionType.EQUAL_EXPRESSION, thisReference, nullLiteral,
                     EqualExpression.EQUAL_EQUAL);
 
-            AllocationExpression constructor = modelProducer.createAllocationExpression(type, null);
+            AllocationExpression constructor = producer.createAllocationExpression(type, null);
+            Assignment assignment = producer.createAssignment(fieldReference, constructor);
 
-            Block thenStatement = modelProducer.createBlock(new Statement[] { modelProducer
-                    .createAssignment(fieldReference, constructor) });
+            Block outerThen = producer.createBlock(new Statement[] { innerIf, assignment });
 
-            IfStatement ifStatement = modelProducer.createIfStatement(condition, thenStatement,
-                    null);
+            IfStatement outerIf = producer.createIfStatement(outerCondition, outerThen, null);
 
-            MessageSend setValue = modelProducer.createMessageSend(SET_VALUE, fieldReference,
+            // Setter
+
+            MessageSend setValue = producer.createMessageSend(SET_VALUE, fieldReference,
                     Arrays.asList(nameReference));
 
-            method.statements = new Statement[] { ifStatement, setValue };
+            method.statements = new Statement[] { outerIf, setValue };
 
             return new JavaAstContainter<MethodDeclaration>(method, JavaAstType.METHOD);
 
@@ -340,11 +348,58 @@ final class NabuccoToJavaDatatypeVisitorSupport implements ServerConstants {
      * @param expressionList
      *            the list of expressions
      */
-    public static void handleInitDefaults(TypeDeclaration type, List<Expression> expressionList) {
+    public static void handleInitDefaults(TypeDeclaration type, List<Assignment> expressionList) {
 
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
+        JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
+
         try {
+            for (Assignment current : expressionList) {
+                if (current.lhs instanceof SingleNameReference) {
+                    SingleNameReference name = (SingleNameReference) current.lhs;
+                    String defaultFieldName = new String(name.token).toUpperCase().concat(
+                            "_DEFAULT");
+                    FieldDeclaration createFieldDeclaration = producer.createFieldDeclaration(
+                            defaultFieldName, ClassFileConstants.AccFinal
+                                    | ClassFileConstants.AccStatic
+                                    | ClassFileConstants.AccPrivate);
+                    TypeReference fieldType = null;
+                    if (current.expression instanceof QualifiedNameReference) {
+                        QualifiedNameReference qnr = (QualifiedNameReference) current.expression;
+                        fieldType = producer.createTypeReference(new String(qnr.tokens[0]), false);
+                    } else if (current.expression instanceof AllocationExpression) {
+                        AllocationExpression ae = (AllocationExpression) current.expression;
+                        fieldType = ae.type;
+                    }
+                    javaFactory.getJavaAstField().setFieldType(createFieldDeclaration, fieldType);
+                    javaFactory.getJavaAstField().setFieldInitializer(createFieldDeclaration,
+                            current.expression);
+
+                    // placement of the static field... should be below the serialVersionUID
+                    FieldDeclaration propConst = javaFactory.getJavaAstType().getField(type,
+                            SERIAL_VERSION_UID_FIELDNAME);
+
+                    type.fields = Arrays.copyOf(type.fields, type.fields.length + 1);
+                    int pos = -1;
+                    for (int i = 0; i < type.fields.length; i++) {
+                        if (type.fields[i] == propConst) {
+                            pos = i;
+                        }
+                    }
+                    FieldDeclaration[] tmp = Arrays.copyOfRange(type.fields, pos + 1,
+                            type.fields.length - 1);
+
+                    type.fields[pos + 1] = createFieldDeclaration;
+
+                    for (int i = 0; i < tmp.length; i++) {
+                        type.fields[pos + 2 + i] = tmp[i];
+                    }
+
+                    current.expression = producer.createSingleNameReference(defaultFieldName);
+                }
+            }
+
             MethodDeclaration setDefaultMethod = (MethodDeclaration) javaFactory.getJavaAstType()
                     .getMethod(type, INIT_METHOD);
 
@@ -358,7 +413,6 @@ final class NabuccoToJavaDatatypeVisitorSupport implements ServerConstants {
             throw new NabuccoVisitorException(
                     "Exception during appending of initDefaults() method content", e);
         }
-
     }
 
     /**
@@ -369,7 +423,7 @@ final class NabuccoToJavaDatatypeVisitorSupport implements ServerConstants {
      * 
      * @return the expression
      */
-    public static Expression createEnumInitializer(EnumerationDeclaration nabuccoEnum) {
+    public static Assignment createEnumInitializer(EnumerationDeclaration nabuccoEnum) {
 
         String name = nabuccoEnum.nodeToken2.tokenImage;
         String type = ((NodeToken) nabuccoEnum.nodeChoice1.choice).tokenImage;
@@ -407,7 +461,7 @@ final class NabuccoToJavaDatatypeVisitorSupport implements ServerConstants {
      * 
      * @return the expression
      */
-    public static Expression createBasetypeInitializer(BasetypeDeclaration nabuccoBasetype,
+    public static Assignment createBasetypeInitializer(BasetypeDeclaration nabuccoBasetype,
             String type) {
 
         String name = nabuccoBasetype.nodeToken3.tokenImage;
@@ -489,32 +543,24 @@ final class NabuccoToJavaDatatypeVisitorSupport implements ServerConstants {
             throw new IllegalArgumentException("Cannot prepare setter for ref ID [null].");
         }
 
+        JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
+        JavaAstMethod methodFactory = javaFactory.getJavaAstMethod();
+        JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
+
         MethodDeclaration methodDeclaration = container.getAstNode();
 
-        if (!(methodDeclaration.statements[0] instanceof Assignment)) {
-            return;
-        }
-
-        Assignment assignment = (Assignment) methodDeclaration.statements[0];
-        if (!(assignment.expression instanceof SingleNameReference)) {
-            return;
-        }
-
-        JavaAstMethod methodFactory = JavaAstElementFactory.getInstance().getJavaAstMethod();
-        JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
+        String name = javaFactory.getJavaAstArgument().getName(methodDeclaration.arguments[0]);
+        SingleNameReference nameReference = producer.createSingleNameReference(name);
 
         String methodName = methodFactory.getMethodName(methodDeclaration);
 
         Literal nullLiteral = producer.createLiteral(null, LiteralType.NULL_LITERAL);
-        SingleNameReference nameReference = (SingleNameReference) assignment.expression;
 
         BinaryExpression condition = producer.createBinaryExpression(
                 BinaryExpressionType.EQUAL_EXPRESSION, nameReference, nullLiteral,
                 BinaryExpression.NOT_EQUAL);
 
         ThisReference thisReference = producer.createThisReference();
-
-        // TODO: Validate whether the datatypes is of type NabuccoDatatype and has a method getId()
 
         MessageSend getId = producer.createMessageSend("getId", nameReference, null);
         MessageSend thenStatement = producer.createMessageSend(methodName + REF_ID, thisReference,

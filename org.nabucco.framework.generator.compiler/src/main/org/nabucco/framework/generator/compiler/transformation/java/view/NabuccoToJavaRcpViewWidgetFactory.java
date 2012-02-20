@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java.view;
 
 import java.util.ArrayList;
@@ -24,6 +24,7 @@ import java.util.Map;
 import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.Assignment;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.ImportReference;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
@@ -32,7 +33,7 @@ import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
-import org.nabucco.framework.generator.compiler.template.NabuccoJavaTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoJavaTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotation;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationMapper;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationType;
@@ -41,7 +42,6 @@ import org.nabucco.framework.generator.compiler.transformation.java.common.ast.c
 import org.nabucco.framework.generator.compiler.transformation.java.constants.ViewConstants;
 import org.nabucco.framework.generator.compiler.transformation.util.NabuccoTransformationUtility;
 import org.nabucco.framework.generator.compiler.visitor.NabuccoVisitorException;
-
 import org.nabucco.framework.mda.model.java.JavaCompilationUnit;
 import org.nabucco.framework.mda.model.java.JavaModelException;
 import org.nabucco.framework.mda.model.java.ast.element.JavaAstElementFactory;
@@ -76,9 +76,8 @@ public class NabuccoToJavaRcpViewWidgetFactory implements ViewConstants {
      *            name of the view.
      * @return List of all elements that are needed for a input field.
      */
-    public static List<JavaAstContainter<?>> createInputField(
-            List<NabuccoAnnotation> annotationDeclarationList, String name, boolean isLabeled,
-            JavaCompilationUnit template, Map<String, String> typeRefMap, String view) {
+    public static List<JavaAstContainter<?>> createInputField(List<NabuccoAnnotation> annotationDeclarationList,
+            String name, boolean isLabeled, JavaCompilationUnit template, Map<String, String> typeRefMap, String view) {
 
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
@@ -92,9 +91,8 @@ public class NabuccoToJavaRcpViewWidgetFactory implements ViewConstants {
                 containerList.addAll(createLabel(annotationDeclarationList, type, name));
             }
 
-            NabuccoAnnotation fieldEditModeAnn = NabuccoAnnotationMapper.getInstance()
-                    .mapToAnnotation(annotationDeclarationList,
-                            NabuccoAnnotationType.FIELD_EDIT_MODE);
+            NabuccoAnnotation fieldEditModeAnn = NabuccoAnnotationMapper.getInstance().mapToAnnotation(
+                    annotationDeclarationList, NabuccoAnnotationType.FIELD_EDIT_MODE);
 
             String fieldEditMode = fieldEditModeAnn == null ? null : fieldEditModeAnn.getValue();
 
@@ -106,10 +104,9 @@ public class NabuccoToJavaRcpViewWidgetFactory implements ViewConstants {
 
             if (isReadOnly) {
                 // create method createInputFieldReadOnly()
-                JavaAstMethodSignature signature = new JavaAstMethodSignature(
-                        CREATE_INPUT_FIELD_READ_ONLY, COMPOSITE);
-                MethodDeclaration createInputFieldMethod = (MethodDeclaration) javaFactory
-                        .getJavaAstType().getMethod(type, signature);
+                JavaAstMethodSignature signature = new JavaAstMethodSignature(CREATE_INPUT_FIELD_READ_ONLY, COMPOSITE);
+                MethodDeclaration createInputFieldMethod = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(
+                        type, signature);
 
                 JavaAstContainter<MethodDeclaration> container = new JavaAstContainter<MethodDeclaration>(
                         createInputFieldMethod, JavaAstType.METHOD);
@@ -120,18 +117,14 @@ public class NabuccoToJavaRcpViewWidgetFactory implements ViewConstants {
                 containerList.add(container);
             } else {
                 // create field MappedField
-                NabuccoAnnotation mappedFieldAnn = NabuccoAnnotationMapper.getInstance()
-                        .mapToAnnotation(annotationDeclarationList,
-                                NabuccoAnnotationType.MAPPED_FIELD);
+                NabuccoAnnotation mappedFieldAnn = NabuccoAnnotationMapper.getInstance().mapToAnnotation(
+                        annotationDeclarationList, NabuccoAnnotationType.MAPPED_FIELD);
 
                 String searchViewModel = view + MODEL;
 
                 String mappedField = mappedFieldAnn == null ? null : searchViewModel
-                        + PKG_SEPARATOR
-                        + PROPERTY
-                        + UNDERSCORE
-                        + mappedFieldAnn.getValue().toUpperCase()
-                                .replace(PKG_SEPARATOR, UNDERSCORE);
+                        + PKG_SEPARATOR + PROPERTY + UNDERSCORE
+                        + mappedFieldAnn.getValue().toUpperCase().replace(PKG_SEPARATOR, UNDERSCORE);
 
                 // create field OBSERVE_VALUE
                 String observeValue = OBSERVE_VALUE + UNDERSCORE + name.toUpperCase();
@@ -142,19 +135,17 @@ public class NabuccoToJavaRcpViewWidgetFactory implements ViewConstants {
                     String[] mappingInformation = mappedField.split(FIELD_SEPARATOR);
                     String modelTypeName = mappingInformation[0];
                     String modelTypeFieldConstant = mappingInformation[1];
-                    field.initialization = JavaAstModelProducer.getInstance()
-                            .createQualifiedNameReference(modelTypeName, modelTypeFieldConstant);
+                    field.initialization = JavaAstModelProducer.getInstance().createQualifiedNameReference(
+                            modelTypeName, modelTypeFieldConstant);
                 }
 
-                containerList
-                        .add(new JavaAstContainter<FieldDeclaration>(field, JavaAstType.FIELD));
+                containerList.add(new JavaAstContainter<FieldDeclaration>(field, JavaAstType.FIELD));
 
                 // create method createInputField()
-                JavaAstMethodSignature signature = new JavaAstMethodSignature(CREATE_INPUT_FIELD,
-                        COMPOSITE);
+                JavaAstMethodSignature signature = new JavaAstMethodSignature(CREATE_INPUT_FIELD, COMPOSITE);
 
-                MethodDeclaration createInputFieldMethod = (MethodDeclaration) javaFactory
-                        .getJavaAstType().getMethod(type, signature);
+                MethodDeclaration createInputFieldMethod = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(
+                        type, signature);
                 // rename method
                 javaFactory.getJavaAstMethod().setMethodName(createInputFieldMethod,
                         CREATE_INPUT_FIELD + NabuccoTransformationUtility.firstToUpper(name));
@@ -196,9 +187,8 @@ public class NabuccoToJavaRcpViewWidgetFactory implements ViewConstants {
      *            name of the view.
      * @return List of all elements that are needed for a picker.
      */
-    public static List<JavaAstContainter<?>> createPicker(List<NabuccoAnnotation> annotations,
-            String name, boolean isLabeled, JavaCompilationUnit template,
-            Map<String, String> typeRefMap, String view) {
+    public static List<JavaAstContainter<?>> createPicker(List<NabuccoAnnotation> annotations, String name,
+            boolean isLabeled, JavaCompilationUnit template, Map<String, String> typeRefMap, String view) {
         return createPicker(annotations, name, isLabeled, template, typeRefMap, view, false);
     }
 
@@ -222,9 +212,8 @@ public class NabuccoToJavaRcpViewWidgetFactory implements ViewConstants {
      * 
      * @return List of all elements that are needed for a picker.
      */
-    public static List<JavaAstContainter<?>> createPicker(List<NabuccoAnnotation> annotations,
-            String name, boolean isLabeled, JavaCompilationUnit template,
-            Map<String, String> typeRefMap, String view, boolean isList) {
+    public static List<JavaAstContainter<?>> createPicker(List<NabuccoAnnotation> annotations, String name,
+            boolean isLabeled, JavaCompilationUnit template, Map<String, String> typeRefMap, String view, boolean isList) {
 
         JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
@@ -240,12 +229,11 @@ public class NabuccoToJavaRcpViewWidgetFactory implements ViewConstants {
             }
 
             // change value of all constants
-            containerList.addAll(createStaticFieldsForPicker(annotations, name, type, typeRefMap,
-                    view));
+            containerList.addAll(createStaticFieldsForPicker(annotations, name, type, typeRefMap, view));
 
             // add method createElementPicker() to the container
-            MethodDeclaration method = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(
-                    type, SIGNATURE_CREATE_PICKER);
+            MethodDeclaration method = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(type,
+                    SIGNATURE_CREATE_PICKER);
 
             // set in createElementPicker() TITLE, MESSAGE,
             // SHELL_TITLE, MESSAGE_TABLE, MESSAGE_COMBO, PATH_LABEL
@@ -283,15 +271,14 @@ public class NabuccoToJavaRcpViewWidgetFactory implements ViewConstants {
             AllocationExpression handlerAllocation = (AllocationExpression) callAddElements.arguments[0];
             handlerAllocation.type = producer.createTypeReference(handlerName, false);
 
-            JavaAstContainter<MethodDeclaration> container = new JavaAstContainter<MethodDeclaration>(
-                    method, JavaAstType.METHOD);
+            JavaAstContainter<MethodDeclaration> container = new JavaAstContainter<MethodDeclaration>(method,
+                    JavaAstType.METHOD);
 
             if (isList) {
                 javaFactory.getJavaAstMethod().setMethodName(method,
                         CREATE_LIST_PICKER + NabuccoTransformationUtility.firstToUpper(name));
 
-                TypeReference listPickerType = producer.createTypeReference(LIST_PICKER_COMPOSITE,
-                        false);
+                TypeReference listPickerType = producer.createTypeReference(LIST_PICKER_COMPOSITE, false);
 
                 picker.type = listPickerType;
                 pickerAllocation.type = listPickerType;
@@ -328,9 +315,8 @@ public class NabuccoToJavaRcpViewWidgetFactory implements ViewConstants {
      *            name of the view.
      * @return List of all elements that are needed for a combo box.
      */
-    public static List<JavaAstContainter<?>> createComboBox(
-            List<NabuccoAnnotation> annotationDeclarationList, String name, boolean isLabeled,
-            JavaCompilationUnit template, Map<String, String> typeRefMap, String view) {
+    public static List<JavaAstContainter<?>> createComboBox(List<NabuccoAnnotation> annotationDeclarationList,
+            String name, boolean isLabeled, JavaCompilationUnit template, Map<String, String> typeRefMap, String view) {
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
         List<JavaAstContainter<?>> containerList = new ArrayList<JavaAstContainter<?>>();
@@ -343,16 +329,25 @@ public class NabuccoToJavaRcpViewWidgetFactory implements ViewConstants {
                 containerList.addAll(createLabel(annotationDeclarationList, type, name));
             }
 
+            // Add import for ElementPickerCombo
+            ImportReference elementPickerComboImport = JavaAstModelProducer.getInstance().createImportReference(
+                    "org.nabucco.framework.plugin.base.component.picker.combo.ElementPickerCombo");
+
+            JavaAstContainter<ImportReference> importContainer = new JavaAstContainter<ImportReference>(
+                    elementPickerComboImport, JavaAstType.IMPORT);
+
+            containerList.add(importContainer);
+
             // change value of all the constant OBSERVE_VALUE
-            containerList.add(new JavaAstContainter<FieldDeclaration>(getObserveValueField(
-                    annotationDeclarationList, name, type, typeRefMap, view), JavaAstType.FIELD));
+            containerList.add(new JavaAstContainter<FieldDeclaration>(getObserveValueField(annotationDeclarationList,
+                    name, type, typeRefMap, view), JavaAstType.FIELD));
 
             // add method createElementCombo() to the container
-            JavaAstMethodSignature signature = new JavaAstMethodSignature(CREATE_ELEMENT_COMBO,
-                    COMPOSITE, ELEMENT_PICKER_COMBO_PARAMETER);
+            JavaAstMethodSignature signature = new JavaAstMethodSignature(CREATE_ELEMENT_COMBO, COMPOSITE,
+                    ELEMENT_PICKER_COMBO_PARAMETER);
 
-            MethodDeclaration createElementPickerMethod = (MethodDeclaration) javaFactory
-                    .getJavaAstType().getMethod(type, signature);
+            MethodDeclaration createElementPickerMethod = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(
+                    type, signature);
             JavaAstContainter<MethodDeclaration> container = new JavaAstContainter<MethodDeclaration>(
                     createElementPickerMethod, JavaAstType.METHOD);
 
@@ -367,8 +362,7 @@ public class NabuccoToJavaRcpViewWidgetFactory implements ViewConstants {
                     .toCharArray();
 
             // set in createElementPicker() the DatatypePickerHandler
-            String modelType = view
-                    + NabuccoTransformationUtility.firstToUpper(name) + COMBO_BOX_HANDLER;
+            String modelType = view + NabuccoTransformationUtility.firstToUpper(name) + COMBO_BOX_HANDLER;
             ((SingleTypeReference) ((AllocationExpression) ((MessageSend) createElementPickerMethod.statements[7]).arguments[0]).type).token = modelType
                     .toCharArray();
 
@@ -392,9 +386,8 @@ public class NabuccoToJavaRcpViewWidgetFactory implements ViewConstants {
      *            the java compilation unit.
      * @return List of all elements that are needed for a column.
      */
-    public static List<JavaAstContainter<?>> createColumn(
-            List<NabuccoAnnotation> annotationDeclarationList, String name, boolean isLabeled,
-            JavaCompilationUnit template) {
+    public static List<JavaAstContainter<?>> createColumn(List<NabuccoAnnotation> annotationDeclarationList,
+            String name, boolean isLabeled, JavaCompilationUnit template) {
         List<JavaAstContainter<?>> containerList = new ArrayList<JavaAstContainter<?>>();
         return containerList;
     }
@@ -410,8 +403,8 @@ public class NabuccoToJavaRcpViewWidgetFactory implements ViewConstants {
      *            name of the element that is labeled.
      * @return List of all elements that are needed for a label.
      */
-    public static List<JavaAstContainter<?>> createLabel(List<NabuccoAnnotation> annotations,
-            TypeDeclaration type, String name) {
+    public static List<JavaAstContainter<?>> createLabel(List<NabuccoAnnotation> annotations, TypeDeclaration type,
+            String name) {
 
         JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
@@ -426,14 +419,13 @@ public class NabuccoToJavaRcpViewWidgetFactory implements ViewConstants {
             FieldDeclaration field = javaFactory.getJavaAstType().getField(type, LABEL);
             javaFactory.getJavaAstField().setFieldName(field, labelName);
 
-            NabuccoAnnotation labelId = NabuccoAnnotationMapper.getInstance().mapToAnnotation(
-                    annotations, NabuccoAnnotationType.FIELD_LABEL_ID);
+            NabuccoAnnotation labelId = NabuccoAnnotationMapper.getInstance().mapToAnnotation(annotations,
+                    NabuccoAnnotationType.FIELD_LABEL_ID);
 
             if (labelId != null) {
                 String value = labelId.getValue();
                 if (value != null) {
-                    field.initialization = producer
-                            .createLiteral(value, LiteralType.STRING_LITERAL);
+                    field.initialization = producer.createLiteral(value, LiteralType.STRING_LITERAL);
                 }
             }
 
@@ -442,8 +434,7 @@ public class NabuccoToJavaRcpViewWidgetFactory implements ViewConstants {
             // create method createLabel()
             JavaAstMethodSignature signature = new JavaAstMethodSignature(CREATE_LABEL, COMPOSITE);
 
-            MethodDeclaration method = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(
-                    type, signature);
+            MethodDeclaration method = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(type, signature);
 
             ReturnStatement returnStatement = (ReturnStatement) method.statements[0];
             MessageSend createLabelCall = (MessageSend) returnStatement.expression;
@@ -453,8 +444,8 @@ public class NabuccoToJavaRcpViewWidgetFactory implements ViewConstants {
             javaFactory.getJavaAstMethod().setMethodName(method,
                     CREATE_LABEL + NabuccoTransformationUtility.firstToUpper(name));
 
-            JavaAstContainter<MethodDeclaration> container = new JavaAstContainter<MethodDeclaration>(
-                    method, JavaAstType.METHOD);
+            JavaAstContainter<MethodDeclaration> container = new JavaAstContainter<MethodDeclaration>(method,
+                    JavaAstType.METHOD);
 
             container.getImports().addAll(addImportsLabel());
 
@@ -486,49 +477,49 @@ public class NabuccoToJavaRcpViewWidgetFactory implements ViewConstants {
      *             if an error occurred transforming the model.
      */
     private static List<JavaAstContainter<FieldDeclaration>> createStaticFieldsForPicker(
-            List<NabuccoAnnotation> annotations, String name, TypeDeclaration type,
-            Map<String, String> typeRefMap, String view) throws JavaModelException {
+            List<NabuccoAnnotation> annotations, String name, TypeDeclaration type, Map<String, String> typeRefMap,
+            String view) throws JavaModelException {
 
         List<JavaAstContainter<FieldDeclaration>> containerList = new ArrayList<JavaAstContainter<FieldDeclaration>>();
 
         // TITLE
         String value = NEW + TITLE;
         String fieldName = TITLE + UNDERSCORE + name.toUpperCase();
-        containerList.add(new JavaAstContainter<FieldDeclaration>(getStaticField(type, TITLE,
-                fieldName, value), JavaAstType.FIELD));
+        containerList.add(new JavaAstContainter<FieldDeclaration>(getStaticField(type, TITLE, fieldName, value),
+                JavaAstType.FIELD));
 
         // MESSAGE
         value = NEW + MESSAGE_UPPERCASE;
         fieldName = MESSAGE_UPPERCASE + UNDERSCORE + name.toUpperCase();
-        containerList.add(new JavaAstContainter<FieldDeclaration>(getStaticField(type,
-                MESSAGE_UPPERCASE, fieldName, value), JavaAstType.FIELD));
+        containerList.add(new JavaAstContainter<FieldDeclaration>(getStaticField(type, MESSAGE_UPPERCASE, fieldName,
+                value), JavaAstType.FIELD));
 
         // SHELL_TITLE
         value = NEW + SHELL_TITLE;
         fieldName = SHELL_TITLE + UNDERSCORE + name.toUpperCase();
-        containerList.add(new JavaAstContainter<FieldDeclaration>(getStaticField(type, SHELL_TITLE,
-                fieldName, value), JavaAstType.FIELD));
+        containerList.add(new JavaAstContainter<FieldDeclaration>(getStaticField(type, SHELL_TITLE, fieldName, value),
+                JavaAstType.FIELD));
 
         // MESSAGE_TABLE
         value = NEW + MESSAGE_TABLE;
         fieldName = MESSAGE_TABLE + UNDERSCORE + name.toUpperCase();
-        containerList.add(new JavaAstContainter<FieldDeclaration>(getStaticField(type,
-                MESSAGE_TABLE, fieldName, value), JavaAstType.FIELD));
+        containerList.add(new JavaAstContainter<FieldDeclaration>(
+                getStaticField(type, MESSAGE_TABLE, fieldName, value), JavaAstType.FIELD));
 
         // MESSAGE_COMBO
         value = NEW + MESSAGE_COMBO;
         fieldName = MESSAGE_COMBO + UNDERSCORE + name.toUpperCase();
-        containerList.add(new JavaAstContainter<FieldDeclaration>(getStaticField(type,
-                MESSAGE_COMBO, fieldName, value), JavaAstType.FIELD));
+        containerList.add(new JavaAstContainter<FieldDeclaration>(
+                getStaticField(type, MESSAGE_COMBO, fieldName, value), JavaAstType.FIELD));
 
         // PATH_LABEL
         value = NEW + PATH_LABEL;
         fieldName = PATH_LABEL + UNDERSCORE + name.toUpperCase();
-        containerList.add(new JavaAstContainter<FieldDeclaration>(getStaticField(type, PATH_LABEL,
-                fieldName, value), JavaAstType.FIELD));
+        containerList.add(new JavaAstContainter<FieldDeclaration>(getStaticField(type, PATH_LABEL, fieldName, value),
+                JavaAstType.FIELD));
 
-        containerList.add(new JavaAstContainter<FieldDeclaration>(getObserveValueField(annotations,
-                name, type, typeRefMap, view), JavaAstType.FIELD));
+        containerList.add(new JavaAstContainter<FieldDeclaration>(getObserveValueField(annotations, name, type,
+                typeRefMap, view), JavaAstType.FIELD));
 
         return containerList;
     }
@@ -552,9 +543,8 @@ public class NabuccoToJavaRcpViewWidgetFactory implements ViewConstants {
      * @throws JavaModelException
      *             if an error occurred transforming the model.
      */
-    private static FieldDeclaration getObserveValueField(
-            List<NabuccoAnnotation> annotationDeclarationList, String name, TypeDeclaration type,
-            Map<String, String> typeRefMap, String view) throws JavaModelException {
+    private static FieldDeclaration getObserveValueField(List<NabuccoAnnotation> annotationDeclarationList,
+            String name, TypeDeclaration type, Map<String, String> typeRefMap, String view) throws JavaModelException {
 
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
@@ -581,8 +571,8 @@ public class NabuccoToJavaRcpViewWidgetFactory implements ViewConstants {
             String[] mappingInformation = mappedField.split(FIELD_SEPARATOR);
             String modelTypeName = mappingInformation[0];
             String modelTypeFieldConstant = mappingInformation[1];
-            field.initialization = JavaAstModelProducer.getInstance().createQualifiedNameReference(
-                    modelTypeName, modelTypeFieldConstant);
+            field.initialization = JavaAstModelProducer.getInstance().createQualifiedNameReference(modelTypeName,
+                    modelTypeFieldConstant);
         }
 
         return field;
@@ -605,12 +595,11 @@ public class NabuccoToJavaRcpViewWidgetFactory implements ViewConstants {
      * @throws JavaModelException
      *             if the modification failed.
      */
-    private static FieldDeclaration getStaticField(TypeDeclaration type, String oldFieldName,
-            String newFieldName, String value) throws JavaModelException {
+    private static FieldDeclaration getStaticField(TypeDeclaration type, String oldFieldName, String newFieldName,
+            String value) throws JavaModelException {
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
         FieldDeclaration field = javaFactory.getJavaAstType().getField(type, oldFieldName);
-        field.initialization = JavaAstModelProducer.getInstance().createLiteral(value,
-                LiteralType.STRING_LITERAL);
+        field.initialization = JavaAstModelProducer.getInstance().createLiteral(value, LiteralType.STRING_LITERAL);
         javaFactory.getJavaAstField().setFieldName(field, newFieldName);
         return field;
     }
@@ -685,8 +674,7 @@ public class NabuccoToJavaRcpViewWidgetFactory implements ViewConstants {
         importList.add("org.eclipse.jface.databinding.swt.SWTObservables");
         importList.add("org.eclipse.swt.SWT");
         importList.add("org.nabucco.framework.plugin.base.component.picker.combo.ElementPickerCombo");
-        importList
-                .add("org.nabucco.framework.plugin.base.component.picker.combo.ElementPickerComboParameter");
+        importList.add("org.nabucco.framework.plugin.base.component.picker.combo.ElementPickerComboParameter");
         return importList;
     }
 

@@ -1,32 +1,31 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java;
 
 import java.util.Map.Entry;
 
-import org.nabucco.framework.generator.compiler.NabuccoCompilerOptions;
+import org.nabucco.framework.generator.compiler.NabuccoCompilerOptionType;
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformation;
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationContext;
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationException;
-import org.nabucco.framework.generator.compiler.transformation.java.visitor.NabuccoToJavaModelVisitor;
+import org.nabucco.framework.generator.compiler.transformation.java.visitor.NabuccoToJavaVisitor;
 import org.nabucco.framework.generator.compiler.transformation.java.visitor.NabuccoToJavaVisitorContext;
 import org.nabucco.framework.generator.compiler.visitor.NabuccoVisitorException;
 import org.nabucco.framework.generator.parser.model.NabuccoModel;
-
 import org.nabucco.framework.mda.model.MdaModel;
 import org.nabucco.framework.mda.model.java.JavaModel;
 import org.nabucco.framework.mda.template.MdaTemplate;
@@ -75,7 +74,7 @@ public abstract class NabuccoToJavaTransformation extends NabuccoTransformation<
 
         this.copyTemplates(context, visitorContext);
 
-        String outDir = context.getCompilerOptions().getOption(NabuccoCompilerOptions.OUT_DIR);
+        String outDir = context.getCompilerOptions().getOption(NabuccoCompilerOptionType.OUT_DIR);
 
         visitorContext.setRootDir(context.getRootDir());
         visitorContext.setOutDir(outDir);
@@ -94,22 +93,21 @@ public abstract class NabuccoToJavaTransformation extends NabuccoTransformation<
      * 
      * @throws NabuccoTransformationException
      */
-    private void copyTemplates(NabuccoTransformationContext context,
-            NabuccoToJavaVisitorContext visitorContext) throws NabuccoTransformationException {
+    private void copyTemplates(NabuccoTransformationContext context, NabuccoToJavaVisitorContext visitorContext)
+            throws NabuccoTransformationException {
         for (Entry<String, MdaTemplate<?>> entry : context.getTemplateMap().entrySet()) {
             try {
                 if (entry.getValue() instanceof JavaTemplate) {
                     visitorContext.putTemplate(entry.getKey(), (JavaTemplate) entry.getValue());
                 }
             } catch (JavaTemplateException e) {
-                throw new NabuccoTransformationException("Java template not valid: "
-                        + entry.getKey(), e);
+                throw new NabuccoTransformationException("Java template not valid: " + entry.getKey(), e);
             }
         }
     }
 
     /**
-     * Callback method to load templates for the appropriate {@link NabuccoToJavaModelVisitor}. The
+     * Callback method to load templates for the appropriate {@link NabuccoToJavaVisitor}. The
      * template are inserted into the {@link NabuccoToJavaVisitorContext} instance.
      * 
      * @throws NabuccoVisitorException

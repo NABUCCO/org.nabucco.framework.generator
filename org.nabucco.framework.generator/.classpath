@@ -6,8 +6,20 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/org.nabucco.framework.generator.compiler"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.nabucco.framework.generator.parser"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="lib" path="lib/ant.jar"/>
-	<classpathentry kind="lib" path="lib/org.nabucco.framework.mda.jar" sourcepath="/org.nabucco.framework.mda.model.java"/>
-	<classpathentry kind="lib" path="lib/ant-launcher.jar"/>
+	<classpathentry kind="lib" path="lib/generator/ant.jar"/>
+	<classpathentry kind="lib" path="lib/generator/log4j.jar"/>
+	<classpathentry kind="lib" path="lib/generator/org.eclipse.emf.common.jar"/>
+	<classpathentry kind="lib" path="lib/generator/org.eclipse.emf.ecore.jar"/>
+	<classpathentry kind="lib" path="lib/generator/org.eclipse.emf.ecore.xmi.jar"/>
+	<classpathentry kind="lib" path="lib/generator/org.eclipse.emf.mapping.ecore2xml.jar"/>
+	<classpathentry kind="lib" path="lib/generator/org.eclipse.equinox.common.jar"/>
+	<classpathentry kind="lib" path="lib/generator/org.eclipse.equinox.registry.jar"/>
+	<classpathentry kind="lib" path="lib/generator/org.eclipse.jdt.core.jar" sourcepath="D:/Downloads/Temp/Sources/org.eclipse.jdt.source-3.6.zip"/>
+	<classpathentry kind="lib" path="lib/generator/org.eclipse.text.jar"/>
+	<classpathentry kind="lib" path="lib/generator/org.eclipse.uml2.common.jar"/>
+	<classpathentry kind="lib" path="lib/generator/org.eclipse.uml2.jar"/>
+	<classpathentry kind="lib" path="lib/generator/org.eclipse.uml2.uml.jar"/>
+	<classpathentry kind="lib" path="lib/generator/org.eclipse.uml2.uml.resources.jar"/>
+	<classpathentry kind="lib" path="lib/generator/org.nabucco.framework.mda.jar"/>
 	<classpathentry kind="output" path="out/ide"/>
 </classpath>

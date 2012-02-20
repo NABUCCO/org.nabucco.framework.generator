@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -52,8 +52,7 @@ import org.nabucco.framework.mda.model.MdaModel;
 class NabuccoDependencyVisitor extends GJVoidDepthFirst<List<MdaModel<NabuccoModel>>> implements
         NabuccoTransformationConstants {
 
-    private static MdaLogger logger = MdaLoggingFactory.getInstance().getLogger(
-            NabuccoDependencyVisitor.class);
+    private static MdaLogger logger = MdaLoggingFactory.getInstance().getLogger(NabuccoDependencyVisitor.class);
 
     private String rootDir;
 
@@ -121,8 +120,7 @@ class NabuccoDependencyVisitor extends GJVoidDepthFirst<List<MdaModel<NabuccoMod
     }
 
     @Override
-    public void visit(ComponentDatatypeDeclaration nabucoDatatype,
-            List<MdaModel<NabuccoModel>> modelList) {
+    public void visit(ComponentDatatypeDeclaration nabucoDatatype, List<MdaModel<NabuccoModel>> modelList) {
         String name = ((NodeToken) nabucoDatatype.nodeChoice1.choice).tokenImage;
         this.resolveTypeDependency(modelList, name);
         super.visit(nabucoDatatype, modelList);
@@ -188,8 +186,8 @@ class NabuccoDependencyVisitor extends GJVoidDepthFirst<List<MdaModel<NabuccoMod
         }
 
         try {
-            MdaModel<NabuccoModel> model = NabuccoDependencySupport.loadModel(this.rootDir,
-                    this.pkg, importString, this.outDir);
+            MdaModel<NabuccoModel> model = NabuccoDependencySupport.loadModel(this.rootDir, this.pkg, importString,
+                    this.outDir);
             NabuccoDependencyContainer.getInstance().putModel(importString, model);
             modelList.add(model);
         } catch (NabuccoTransformationException e) {

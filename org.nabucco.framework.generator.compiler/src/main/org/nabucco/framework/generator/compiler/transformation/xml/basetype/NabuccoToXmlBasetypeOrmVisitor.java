@@ -1,33 +1,31 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.xml.basetype;
 
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.nabucco.framework.generator.compiler.template.NabuccoXmlTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoXmlTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.xml.constants.PersistenceConstants;
 import org.nabucco.framework.generator.compiler.transformation.xml.visitor.NabuccoToXmlVisitorContext;
 import org.nabucco.framework.generator.compiler.transformation.xml.visitor.NabuccoToXmlVisitorSupport;
 import org.nabucco.framework.generator.compiler.visitor.NabuccoVisitorException;
 import org.nabucco.framework.generator.parser.syntaxtree.BasetypeDeclaration;
-import org.w3c.dom.Element;
-
 import org.nabucco.framework.mda.logger.MdaLogger;
 import org.nabucco.framework.mda.logger.MdaLoggingFactory;
 import org.nabucco.framework.mda.model.MdaModel;
@@ -35,17 +33,16 @@ import org.nabucco.framework.mda.model.xml.XmlDocument;
 import org.nabucco.framework.mda.model.xml.XmlModel;
 import org.nabucco.framework.mda.template.xml.XmlTemplate;
 import org.nabucco.framework.mda.template.xml.XmlTemplateException;
+import org.w3c.dom.Element;
 
 /**
  * NabuccoToXmlBasetypeOrmVisitor
  * 
  * @author Nicolas Moser, PRODYNA AG
  */
-class NabuccoToXmlBasetypeOrmVisitor extends NabuccoToXmlVisitorSupport implements
-        PersistenceConstants {
+class NabuccoToXmlBasetypeOrmVisitor extends NabuccoToXmlVisitorSupport implements PersistenceConstants {
 
-    private static MdaLogger logger = MdaLoggingFactory.getInstance().getLogger(
-            NabuccoToXmlBasetypeOrmVisitor.class);
+    private static MdaLogger logger = MdaLoggingFactory.getInstance().getLogger(NabuccoToXmlBasetypeOrmVisitor.class);
 
     /** List for already visited basetypes */
     private Set<String> visitedBasetypes = new HashSet<String>();
@@ -60,8 +57,7 @@ class NabuccoToXmlBasetypeOrmVisitor extends NabuccoToXmlVisitorSupport implemen
      * @param componentName
      *            name of the component
      */
-    public NabuccoToXmlBasetypeOrmVisitor(NabuccoToXmlVisitorContext visitorContext,
-            String componentName) {
+    public NabuccoToXmlBasetypeOrmVisitor(NabuccoToXmlVisitorContext visitorContext, String componentName) {
         super(visitorContext);
         this.componentName = componentName;
     }
@@ -85,17 +81,15 @@ class NabuccoToXmlBasetypeOrmVisitor extends NabuccoToXmlVisitorSupport implemen
         }
 
         try {
-            XmlDocument document = super
-                    .extractDocument(NabuccoXmlTemplateConstants.ORM_FRAGMENT_TEMPLATE);
+            XmlDocument document = super.extractDocument(NabuccoXmlTemplateConstants.ORM_FRAGMENT_TEMPLATE);
 
             document.getDocument().getDocumentElement().setAttribute(NAME, type);
-            document.getDocument().getDocumentElement().setAttribute(ORDER,
-                    FRAGMENT_ORDER_EMBEDDABLE);
+            document.getDocument().getDocumentElement().setAttribute(ORDER, FRAGMENT_ORDER_EMBEDDABLE);
 
             Element embeddableElement = this.createEmbeddable(qualifiedType);
 
-            document.getDocument().getDocumentElement().appendChild(
-                    document.getDocument().importNode(embeddableElement, true));
+            document.getDocument().getDocumentElement()
+                    .appendChild(document.getDocument().importNode(embeddableElement, true));
 
             // File creation
             document.setProjectName(componentName);
@@ -124,9 +118,7 @@ class NabuccoToXmlBasetypeOrmVisitor extends NabuccoToXmlVisitorSupport implemen
      */
     private Element createEmbeddable(String qualifiedType) throws XmlTemplateException {
 
-        XmlTemplate ormTemplate = this.getVisitorContext().getTemplate(
-                NabuccoXmlTemplateConstants.ORM_TEMPLATE);
-
+        XmlTemplate ormTemplate = this.getVisitorContext().getTemplate(NabuccoXmlTemplateConstants.ORM_TEMPLATE);
         Element embeddable = (Element) ormTemplate.copyNodesByXPath(XPATH_EMBEDDABLE).get(0);
         embeddable.setAttribute(CLASS, qualifiedType);
 

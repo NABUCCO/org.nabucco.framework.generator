@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -67,6 +67,10 @@ public class NabuccoEditViewGeneratorTest extends AbstractNabuccoGeneratorTest {
 
     private static final File EDIT_VIEW_DIR_DYNAMICCODE_CODEGROUP = new File(
             "../../org.nabucco.framework.common.dynamiccode/org.nabucco.framework.common.dynamiccode/src/nbc/com/nabucco/framework/common/dynamiccode/ui/edit/codegroup");
+
+    // Component Support Scripting
+    private static final File EDIT_VIEW_DIR_SCRIPTING_SCRIPT = new File(
+            "../../org.nabucco.framework.support.scripting/org.nabucco.framework.support.scripting/src/nbc/org/nabucco/framework/support/scripting/ui/edit/script");
 
     // Authorizazion Bundle
     private static final File[] AUTHORIZATION_EDIT_VIEW_DIRS = { EDIT_VIEW_DIR_AUTHORIZATION_GROUP,
@@ -165,4 +169,10 @@ public class NabuccoEditViewGeneratorTest extends AbstractNabuccoGeneratorTest {
     public void testEditViewWorkflowDefinitionWorkflow() throws Exception {
         super.generateDir(EDIT_VIEW_DIR_WORKFLOW_DEFINITION_WORKFLOW);
     }
+
+    @Test
+    public void testEditViewScript() throws Exception {
+        super.generateDir(EDIT_VIEW_DIR_SCRIPTING_SCRIPT);
+    }
+
 }

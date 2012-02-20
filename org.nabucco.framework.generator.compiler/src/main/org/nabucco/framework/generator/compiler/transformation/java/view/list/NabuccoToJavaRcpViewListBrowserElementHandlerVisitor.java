@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java.view.list;
 
 import org.eclipse.jdt.internal.compiler.ast.Argument;
@@ -21,7 +21,7 @@ import org.eclipse.jdt.internal.compiler.ast.ImportReference;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
-import org.nabucco.framework.generator.compiler.template.NabuccoJavaTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoJavaTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.JavaAstSupport;
 import org.nabucco.framework.generator.compiler.transformation.java.constants.ViewConstants;
 import org.nabucco.framework.generator.compiler.transformation.java.visitor.NabuccoToJavaVisitorContext;
@@ -31,7 +31,6 @@ import org.nabucco.framework.generator.parser.model.client.NabuccoClientType;
 import org.nabucco.framework.generator.parser.syntaxtree.DatatypeDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.ListViewStatement;
 import org.nabucco.framework.generator.parser.syntaxtree.NodeToken;
-
 import org.nabucco.framework.mda.model.MdaModel;
 import org.nabucco.framework.mda.model.java.JavaCompilationUnit;
 import org.nabucco.framework.mda.model.java.JavaModel;
@@ -46,8 +45,8 @@ import org.nabucco.framework.mda.template.java.JavaTemplateException;
  * 
  * @author Stefanie Feld, PRODYNA AG
  */
-public class NabuccoToJavaRcpViewListBrowserElementHandlerVisitor extends
-        NabuccoToJavaVisitorSupport implements ViewConstants {
+public class NabuccoToJavaRcpViewListBrowserElementHandlerVisitor extends NabuccoToJavaVisitorSupport implements
+        ViewConstants {
 
     String datatypePkg;
 
@@ -57,8 +56,7 @@ public class NabuccoToJavaRcpViewListBrowserElementHandlerVisitor extends
      * @param visitorContext
      *            the context of the visitor.
      */
-    public NabuccoToJavaRcpViewListBrowserElementHandlerVisitor(
-            NabuccoToJavaVisitorContext visitorContext) {
+    public NabuccoToJavaRcpViewListBrowserElementHandlerVisitor(NabuccoToJavaVisitorContext visitorContext) {
         super(visitorContext);
     }
 
@@ -94,22 +92,19 @@ public class NabuccoToJavaRcpViewListBrowserElementHandlerVisitor extends
             changeMethodRemoveChild(datatypePkg, datatype, unit, type);
 
             // JavaDocAnnotations
-            JavaAstSupport.convertJavadocAnnotations(datatypeDeclaration.annotationDeclaration,
-                    type);
+            JavaAstSupport.convertJavadocAnnotations(datatypeDeclaration.annotationDeclaration, type);
 
-            JavaAstSupport.convertAstNodes(unit, getVisitorContext().getContainerList(),
-                    getVisitorContext().getImportList());
+            JavaAstSupport.convertAstNodes(unit, getVisitorContext().getContainerList(), getVisitorContext()
+                    .getImportList());
 
             unit.setProjectName(projectName);
             unit.setSourceFolder(super.getSourceFolder());
 
             target.getModel().getUnitList().add(unit);
         } catch (JavaModelException jme) {
-            throw new NabuccoVisitorException(
-                    "Error during Java AST browser element handler modification.", jme);
+            throw new NabuccoVisitorException("Error during Java AST browser element handler modification.", jme);
         } catch (JavaTemplateException te) {
-            throw new NabuccoVisitorException(
-                    "Error during Java template browser element handler processing.", te);
+            throw new NabuccoVisitorException("Error during Java template browser element handler processing.", te);
         }
     }
 
@@ -120,16 +115,15 @@ public class NabuccoToJavaRcpViewListBrowserElementHandlerVisitor extends
      * @param type
      * @throws JavaModelException
      */
-    private void changeMethodRemoveChild(String datatypePkg2, String datatype,
-            JavaCompilationUnit unit, TypeDeclaration type) throws JavaModelException {
+    private void changeMethodRemoveChild(String datatypePkg2, String datatype, JavaCompilationUnit unit,
+            TypeDeclaration type) throws JavaModelException {
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
         JavaAstModelProducer jamp = JavaAstModelProducer.getInstance();
         // select method createChildren(final EditViewModel viewModel, final EditViewBrowserElement
         // element)
-        JavaAstMethodSignature signature = new JavaAstMethodSignature(REMOVE_CHIILD,
-                BROWSER_ELEMENT, LIST_VIEW_BROWSER_ELEMENT);
-        MethodDeclaration removeChild = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(
-                type, signature);
+        JavaAstMethodSignature signature = new JavaAstMethodSignature(REMOVE_CHIILD, BROWSER_ELEMENT,
+                LIST_VIEW_BROWSER_ELEMENT);
+        MethodDeclaration removeChild = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(type, signature);
 
         // change type of first argument
         // TypeReference model = jamp.createTypeReference(datatype + LIST_VIEW_MODEL, false);
@@ -137,24 +131,22 @@ public class NabuccoToJavaRcpViewListBrowserElementHandlerVisitor extends
         // firstArgument.type = model;
 
         // change type of second argument
-        TypeReference element = jamp.createTypeReference(datatype + LIST_VIEW_BROWSER_ELEMENT,
-                false);
+        TypeReference element = jamp.createTypeReference(datatype + LIST_VIEW_BROWSER_ELEMENT, false);
         Argument secondArgument = removeChild.arguments[1];
         secondArgument.type = element;
 
     }
 
-    private void changeMethodCreateChildren(String datatypePkg, String datatype,
-            JavaCompilationUnit unit, TypeDeclaration type) throws JavaModelException {
+    private void changeMethodCreateChildren(String datatypePkg, String datatype, JavaCompilationUnit unit,
+            TypeDeclaration type) throws JavaModelException {
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
         JavaAstModelProducer jamp = JavaAstModelProducer.getInstance();
 
         // select method createChildren(final EditViewModel viewModel, final EditViewBrowserElement
         // element)
-        JavaAstMethodSignature signature = new JavaAstMethodSignature(CREATE_CHILDREN,
-                LIST_VIEW_MODEL, LIST_VIEW_BROWSER_ELEMENT);
-        MethodDeclaration createChildren = (MethodDeclaration) javaFactory.getJavaAstType()
-                .getMethod(type, signature);
+        JavaAstMethodSignature signature = new JavaAstMethodSignature(CREATE_CHILDREN, LIST_VIEW_MODEL,
+                LIST_VIEW_BROWSER_ELEMENT);
+        MethodDeclaration createChildren = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(type, signature);
 
         // change type of first argument
         TypeReference model = jamp.createTypeReference(datatype + LIST_VIEW_MODEL, false);
@@ -162,8 +154,7 @@ public class NabuccoToJavaRcpViewListBrowserElementHandlerVisitor extends
         firstArgument.type = model;
 
         // change type of second argument
-        TypeReference element = jamp.createTypeReference(datatype + LIST_VIEW_BROWSER_ELEMENT,
-                false);
+        TypeReference element = jamp.createTypeReference(datatype + LIST_VIEW_BROWSER_ELEMENT, false);
         Argument secondArgument = createChildren.arguments[1];
         secondArgument.type = element;
 
@@ -171,8 +162,7 @@ public class NabuccoToJavaRcpViewListBrowserElementHandlerVisitor extends
         // org.nabucco.framework.common.authorization.ui.rcp.edit.group.model.AuthorizationGroupEditViewModel
         ImportReference importReference = JavaAstModelProducer.getInstance().createImportReference(
                 datatypePkg.replace(UI, UI_RCP)
-                        + PKG_SEPARATOR + MODEL_PACKAGE + PKG_SEPARATOR + datatype
-                        + LIST_VIEW_MODEL);
+                        + PKG_SEPARATOR + MODEL_PACKAGE + PKG_SEPARATOR + datatype + LIST_VIEW_MODEL);
         javaFactory.getJavaAstUnit().addImport(unit.getUnitDeclaration(), importReference);
     }
 }

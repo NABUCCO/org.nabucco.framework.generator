@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -47,7 +47,7 @@ public abstract class NabuccoTransformation<T extends ModelImplementation> exten
 
     /** The transformation ID. */
     private long id = Math.abs(UUID.randomUUID().getMostSignificantBits());
-    
+
     /** The source model. */
     private MdaModel<NabuccoModel> source;
 
@@ -58,8 +58,7 @@ public abstract class NabuccoTransformation<T extends ModelImplementation> exten
     private NabuccoTransformationContext context;
 
     /** The logger. */
-    private static MdaLogger logger = MdaLoggingFactory.getInstance().getLogger(
-            NabuccoTransformation.class);
+    private static MdaLogger logger = MdaLoggingFactory.getInstance().getLogger(NabuccoTransformation.class);
 
     /**
      * Creates a new {@link NabuccoToJavaTransformation} instance to transform from source to
@@ -74,8 +73,7 @@ public abstract class NabuccoTransformation<T extends ModelImplementation> exten
      * 
      * @throws NabuccoTransformationThreadException
      */
-    public NabuccoTransformation(MdaModel<NabuccoModel> source, MdaModel<T> target,
-            NabuccoTransformationContext context) {
+    public NabuccoTransformation(MdaModel<NabuccoModel> source, MdaModel<T> target, NabuccoTransformationContext context) {
 
         if (source == null) {
             throw new IllegalArgumentException("Source model must be defined.");
@@ -100,8 +98,8 @@ public abstract class NabuccoTransformation<T extends ModelImplementation> exten
         String sourceType = this.source.getModel().getType().name();
         String targetType = this.target.getModel().getType().name();
 
-        logger.debug("Transformation [" + this.id + "]: Start transforming ", type, " '", name,
-                "' from '", sourceType, "' to '", targetType, "'.");
+        logger.debug("Transformation [" + this.id + "]: Start transforming ", type, " '", name, "' from '", sourceType,
+                "' to '", targetType, "'.");
 
         try {
             this.transformModel(this.source, this.target, this.context);
@@ -113,8 +111,8 @@ public abstract class NabuccoTransformation<T extends ModelImplementation> exten
         } catch (Exception e) {
             raiseException("Unexpected error during NABUCCO transformation.", this.source, e);
         } finally {
-            logger.debug("Transformation [" + this.id + "]: Finish transforming ", type, " '", name,
-                    "' from '", sourceType, "' to '", targetType, "'.");
+            logger.debug("Transformation [" + this.id + "]: Finish transforming ", type, " '", name, "' from '",
+                    sourceType, "' to '", targetType, "'.");
         }
 
         return null;

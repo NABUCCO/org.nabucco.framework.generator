@@ -1,4 +1,20 @@
 /*
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*
  * Copyright 2010 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
@@ -6,7 +22,7 @@
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://nabuccosource.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,13 +31,10 @@
  * limitations under the License.
  */
 
-import org.nabucco.framework.base.facade.datatype.validation.ValidationType;
-import org.nabucco.framework.base.facade.datatype.validation.ValidationResult;
 import org.nabucco.framework.base.facade.exception.NabuccoException;
-import org.nabucco.framework.base.impl.service.handler.ServiceHandler;
-import org.nabucco.framework.base.impl.service.handler.ServiceHandlerSupport;
+import org.nabucco.framework.base.impl.service.ServiceHandler;
+import org.nabucco.framework.base.impl.service.ServiceHandlerSupport;
 import org.nabucco.framework.base.facade.exception.service.ServiceException;
-import org.nabucco.framework.base.facade.exception.validation.ValidationException;
 import org.nabucco.framework.base.facade.message.ServiceRequest;
 import org.nabucco.framework.base.facade.message.ServiceResponse;
 
@@ -74,7 +87,7 @@ public abstract class AbstractServiceHandlerTemplate extends ServiceHandlerSuppo
             throw wrappedException;
         } catch (Exception e) {
             super.getLogger().error(e);
-            throw new ServiceException(e.getMessage());
+            throw new ServiceException("Error during service invocation.", e);
         }
     }
     
@@ -83,24 +96,5 @@ public abstract class AbstractServiceHandlerTemplate extends ServiceHandlerSuppo
      */
     protected abstract ServiceMessage serviceHandlerOperation(ServiceMessage msg)
             throws ServiceException;
-    
-    /**
-     * Validation method.
-     */
-    protected void validateRequest(ServiceRequest<?> rq) throws ValidationException {
-        super.validateRequest(rq);
-
-        try {
-            ValidationResult result = new ValidationResult();
-            rq.getRequestMessage().validate(result, ValidationType.DEEP);
-
-            if (!result.isEmpty()) {
-                throw new ValidationException("Error validating {0}() request.", result);
-            }
-
-        } catch (org.nabucco.framework.base.facade.datatype.validation.ValidationException ve) {
-            throw new ValidationException("Error validating {0}() request.", ve);
-        }
-    }
     
 }

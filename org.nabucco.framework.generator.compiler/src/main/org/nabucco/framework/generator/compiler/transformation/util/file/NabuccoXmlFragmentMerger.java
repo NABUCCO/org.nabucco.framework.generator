@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.nabucco.framework.generator.compiler.template.NabuccoXmlTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoXmlTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationException;
 import org.nabucco.framework.generator.compiler.transformation.xml.constants.EjbJarConstants;
 import org.nabucco.framework.generator.compiler.transformation.xml.constants.JBossConstants;
@@ -49,8 +49,7 @@ import org.w3c.dom.NodeList;
  * 
  * @author Nicolas Moser, PRODYNA AG
  */
-public class NabuccoXmlFragmentMerger implements EjbJarConstants, JBossConstants,
-        PersistenceConstants {
+public class NabuccoXmlFragmentMerger implements EjbJarConstants, JBossConstants, PersistenceConstants {
 
     private static final String XML_SUFFIX = PKG_SEPARATOR + XML;
 
@@ -163,14 +162,12 @@ public class NabuccoXmlFragmentMerger implements EjbJarConstants, JBossConstants
      * 
      * @throws XmlTemplateException
      */
-    private List<XmlDocument> merge(List<XmlModel> modelList, String path)
-            throws MdaTemplateException {
+    private List<XmlDocument> merge(List<XmlModel> modelList, String path) throws MdaTemplateException {
 
         List<XmlDocument> documentList = new ArrayList<XmlDocument>();
 
         XmlDocument ejbJarDocument = XmlTemplateLoader.getInstance()
-                .loadTemplate(NabuccoXmlTemplateConstants.EJB_JAR_EMPTY_TEMPLATE).extractModel()
-                .getDocuments().get(0);
+                .loadTemplate(NabuccoXmlTemplateConstants.EJB_JAR_EMPTY_TEMPLATE).extractModel().getDocuments().get(0);
 
         String ejbFolder = CONF + File.separatorChar + EJB + File.separatorChar;
 
@@ -178,23 +175,20 @@ public class NabuccoXmlFragmentMerger implements EjbJarConstants, JBossConstants
         ejbJarDocument.setConfFolder(ejbFolder);
 
         XmlDocument ormDocument = XmlTemplateLoader.getInstance()
-                .loadTemplate(NabuccoXmlTemplateConstants.ORM_EMPTY_TEMPLATE).extractModel()
-                .getDocuments().get(0);
+                .loadTemplate(NabuccoXmlTemplateConstants.ORM_EMPTY_TEMPLATE).extractModel().getDocuments().get(0);
 
         ormDocument.setProjectName(path);
         ormDocument.setConfFolder(ejbFolder);
 
         XmlDocument jbossDocument = XmlTemplateLoader.getInstance()
-                .loadTemplate(NabuccoXmlTemplateConstants.JBOSS_EMPTY_TEMPLATE).extractModel()
-                .getDocuments().get(0);
+                .loadTemplate(NabuccoXmlTemplateConstants.JBOSS_EMPTY_TEMPLATE).extractModel().getDocuments().get(0);
 
         jbossDocument.setProjectName(path);
         jbossDocument.setConfFolder(ejbFolder + JBOSS + File.separatorChar);
 
         for (XmlModel xmlModel : modelList) {
 
-            Element fragmentElement = xmlModel.getDocuments().get(0).getDocument()
-                    .getDocumentElement();
+            Element fragmentElement = xmlModel.getDocuments().get(0).getDocument().getDocumentElement();
 
             if (fragmentElement.getAttribute(TYPE).startsWith(EJB_JAR)) {
                 this.createEjbJar(ejbJarDocument, fragmentElement);

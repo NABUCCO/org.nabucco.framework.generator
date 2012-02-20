@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java.view.list;
 
 import java.util.ArrayList;
@@ -35,7 +35,7 @@ import org.eclipse.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.nabucco.framework.generator.compiler.NabuccoCompilerSupport;
-import org.nabucco.framework.generator.compiler.template.NabuccoJavaTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoJavaTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.JavaAstSupport;
 import org.nabucco.framework.generator.compiler.transformation.java.constants.ViewConstants;
 import org.nabucco.framework.generator.compiler.transformation.java.view.browsersupport.BrowserElementSupport;
@@ -46,7 +46,6 @@ import org.nabucco.framework.generator.parser.model.client.NabuccoClientType;
 import org.nabucco.framework.generator.parser.syntaxtree.DatatypeDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.ListViewStatement;
 import org.nabucco.framework.generator.parser.syntaxtree.NodeToken;
-
 import org.nabucco.framework.mda.model.MdaModel;
 import org.nabucco.framework.mda.model.java.JavaCompilationUnit;
 import org.nabucco.framework.mda.model.java.JavaModel;
@@ -61,8 +60,7 @@ import org.nabucco.framework.mda.template.java.JavaTemplateException;
  * 
  * @author Stefanie Feld, PRODYNA AG
  */
-class NabuccoToJavaRcpViewListBrowserElementVisitor extends NabuccoToJavaVisitorSupport implements
-        ViewConstants {
+class NabuccoToJavaRcpViewListBrowserElementVisitor extends NabuccoToJavaVisitorSupport implements ViewConstants {
 
     String datatypePkg;
 
@@ -99,8 +97,7 @@ class NabuccoToJavaRcpViewListBrowserElementVisitor extends NabuccoToJavaVisitor
             try {
                 JavaCompilationUnit unit = super
                         .extractAst(NabuccoJavaTemplateConstants.BROWSER_VIEW_LIST_ELEMENT_TEMPLATE);
-                TypeDeclaration type = unit
-                        .getType(NabuccoJavaTemplateConstants.BROWSER_VIEW_LIST_ELEMENT_TEMPLATE);
+                TypeDeclaration type = unit.getType(NabuccoJavaTemplateConstants.BROWSER_VIEW_LIST_ELEMENT_TEMPLATE);
 
                 javaFactory.getJavaAstType().setTypeName(type, name);
                 javaFactory.getJavaAstUnit().setPackage(unit.getUnitDeclaration(), pkg);
@@ -114,18 +111,16 @@ class NabuccoToJavaRcpViewListBrowserElementVisitor extends NabuccoToJavaVisitor
                 BrowserElementSupport.addImport(super.resolveImport(datatype), unit);
 
                 // add import of ListViewModel
-                ImportReference importReference = JavaAstModelProducer.getInstance()
-                        .createImportReference(
-                                datatypePkg.replace(UI, UI_RCP) + PKG_SEPARATOR + MODEL_PACKAGE
-                                        + PKG_SEPARATOR + datatype + LIST_VIEW_MODEL);
+                ImportReference importReference = JavaAstModelProducer.getInstance().createImportReference(
+                        datatypePkg.replace(UI, UI_RCP)
+                                + PKG_SEPARATOR + MODEL_PACKAGE + PKG_SEPARATOR + datatype + LIST_VIEW_MODEL);
                 javaFactory.getJavaAstUnit().addImport(unit.getUnitDeclaration(), importReference);
 
                 // JavaDocAnnotations
-                JavaAstSupport.convertJavadocAnnotations(nabuccoDatatype.annotationDeclaration,
-                        type);
+                JavaAstSupport.convertJavadocAnnotations(nabuccoDatatype.annotationDeclaration, type);
 
-                JavaAstSupport.convertAstNodes(unit, getVisitorContext().getContainerList(),
-                        getVisitorContext().getImportList());
+                JavaAstSupport.convertAstNodes(unit, getVisitorContext().getContainerList(), getVisitorContext()
+                        .getImportList());
 
                 unit.setProjectName(projectName);
                 unit.setSourceFolder(super.getSourceFolder());
@@ -133,11 +128,9 @@ class NabuccoToJavaRcpViewListBrowserElementVisitor extends NabuccoToJavaVisitor
                 target.getModel().getUnitList().add(unit);
 
             } catch (JavaModelException jme) {
-                throw new NabuccoVisitorException(
-                        "Error during Java AST list browser element modification.", jme);
+                throw new NabuccoVisitorException("Error during Java AST list browser element modification.", jme);
             } catch (JavaTemplateException te) {
-                throw new NabuccoVisitorException(
-                        "Error during Java template list browser element processing.", te);
+                throw new NabuccoVisitorException("Error during Java template list browser element processing.", te);
             }
         }
     }
@@ -152,14 +145,12 @@ class NabuccoToJavaRcpViewListBrowserElementVisitor extends NabuccoToJavaVisitor
      * @throws JavaModelException
      *             if an error occurred transforming the model.
      */
-    private void changeGenericOfSuperclass(String datatype, TypeDeclaration type)
-            throws JavaModelException {
+    private void changeGenericOfSuperclass(String datatype, TypeDeclaration type) throws JavaModelException {
         JavaAstModelProducer jamp = JavaAstModelProducer.getInstance();
         TypeReference model = jamp.createTypeReference(datatype + LIST_VIEW_MODEL, false);
         List<TypeReference> parameters = new ArrayList<TypeReference>();
         parameters.add(model);
-        TypeReference superclass = jamp.createParameterizedTypeReference(BROWSER_LIST_ELEMENT,
-                false, parameters);
+        TypeReference superclass = jamp.createParameterizedTypeReference(BROWSER_LIST_ELEMENT, false, parameters);
         type.superclass = superclass;
     }
 
@@ -173,8 +164,7 @@ class NabuccoToJavaRcpViewListBrowserElementVisitor extends NabuccoToJavaVisitor
      * @throws JavaModelException
      *             if an error occurred transforming the model.
      */
-    private void changeFieldHandler(String datatype, TypeDeclaration type)
-            throws JavaModelException {
+    private void changeFieldHandler(String datatype, TypeDeclaration type) throws JavaModelException {
         JavaAstModelProducer jamp = JavaAstModelProducer.getInstance();
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
@@ -182,8 +172,7 @@ class NabuccoToJavaRcpViewListBrowserElementVisitor extends NabuccoToJavaVisitor
         FieldDeclaration datatypeField = javaFactory.getJavaAstType().getField(type,
                 LIST_VIEW_BROWSER_ELEMENT_HANDLER_FIELD);
 
-        TypeReference handler = jamp.createTypeReference(datatype
-                + LIST_VIEW_BROWSER_ELEMENT_HANDLER, false);
+        TypeReference handler = jamp.createTypeReference(datatype + LIST_VIEW_BROWSER_ELEMENT_HANDLER, false);
 
         // change its type
         datatypeField.type = handler;
@@ -201,21 +190,18 @@ class NabuccoToJavaRcpViewListBrowserElementVisitor extends NabuccoToJavaVisitor
      * @throws JavaModelException
      *             if an error occurred transforming the model.
      */
-    private void changeConstructorArray(String name, String datatype, TypeDeclaration type)
-            throws JavaModelException {
+    private void changeConstructorArray(String name, String datatype, TypeDeclaration type) throws JavaModelException {
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
         JavaAstModelProducer jamp = JavaAstModelProducer.getInstance();
 
-        ClassLiteralAccess listViewBrowserElement = jamp.createClassLiteralAccess(datatype
-                + LIST_VIEW_BROWSER_ELEMENT);
+        ClassLiteralAccess listViewBrowserElement = jamp.createClassLiteralAccess(datatype + LIST_VIEW_BROWSER_ELEMENT);
         ClassLiteralAccess listViewBrowserElementHandler = jamp.createClassLiteralAccess(datatype
                 + LIST_VIEW_BROWSER_ELEMENT_HANDLER);
         TypeReference modelType = jamp.createTypeReference(datatype + LIST_VIEW_MODEL, false);
         AllocationExpression liestViewModel = jamp.createAllocationExpression(modelType, null);
 
         JavaAstMethodSignature signature = new JavaAstMethodSignature(name, DATATYPE);
-        ConstructorDeclaration constructor = javaFactory.getJavaAstType().getConstructor(type,
-                signature);
+        ConstructorDeclaration constructor = javaFactory.getJavaAstType().getConstructor(type, signature);
 
         // change type of parameter
         Argument parameter = constructor.arguments[0];
@@ -249,16 +235,14 @@ class NabuccoToJavaRcpViewListBrowserElementVisitor extends NabuccoToJavaVisitor
      * @throws JavaModelException
      *             if an error occurred transforming the model.
      */
-    private void changeConstructorList(String name, String datatype, TypeDeclaration type)
-            throws JavaModelException {
+    private void changeConstructorList(String name, String datatype, TypeDeclaration type) throws JavaModelException {
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
         JavaAstModelProducer jamp = JavaAstModelProducer.getInstance();
 
         TypeReference reference = jamp.createTypeReference(datatype, false);
 
         JavaAstMethodSignature signature = new JavaAstMethodSignature(name, LIST);
-        ConstructorDeclaration constructor = javaFactory.getJavaAstType().getConstructor(type,
-                signature);
+        ConstructorDeclaration constructor = javaFactory.getJavaAstType().getConstructor(type, signature);
 
         // change generic of parameter
         Argument parameter = constructor.arguments[0];

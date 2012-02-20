@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -97,6 +97,40 @@ public class NabuccoModel extends ModelImplementation implements Serializable {
         NabuccoModelNameVisitor nameVisitor = new NabuccoModelNameVisitor();
         this.unit.accept(nameVisitor, name);
         return name.toString();
+    }
+
+    /**
+     * Getter for the simple name of the NabuccoModel as given in the source code.
+     * 
+     * @return the simple name of the model
+     */
+    public String getSimpleName() {
+        return this.getName();
+    }
+
+    /**
+     * Getter for the canonical name of the NabuccoModel
+     * 
+     * @return
+     */
+    public String getCanonicalName() {
+        StringBuilder name = new StringBuilder();
+        name.append(this.getPackage());
+        name.append('.');
+        name.append(this.getName());
+        return name.toString();
+    }
+
+    /**
+     * Getter for the package name of this NABUCCO model.
+     * 
+     * @return the package representation as string
+     */
+    public String getPackage() {
+        if (this.unit.packageDeclaration == null || this.unit.packageDeclaration.nodeToken1 == null) {
+            return "";
+        }
+        return this.unit.packageDeclaration.nodeToken1.tokenImage;
     }
 
     /**

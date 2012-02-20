@@ -1,19 +1,19 @@
 /*
-* Copyright 2010 PRODYNA AG
-*
-* Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.opensource.org/licenses/eclipse-1.0.php or
-* http://www.nabucco-source.org/nabucco-license.html
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2012 PRODYNA AG
+ *
+ * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.opensource.org/licenses/eclipse-1.0.php or
+ * http://www.nabucco.org/License.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.nabucco.framework.generator.compiler.transformation.java.view.common.picker;
 
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
-import org.nabucco.framework.generator.compiler.template.NabuccoJavaTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoJavaTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotation;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationMapper;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationType;
@@ -48,7 +48,6 @@ import org.nabucco.framework.generator.parser.syntaxtree.LabeledListPickerDeclar
 import org.nabucco.framework.generator.parser.syntaxtree.LabeledPickerDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.ListPickerDeclaration;
 import org.nabucco.framework.generator.parser.syntaxtree.PickerDeclaration;
-
 import org.nabucco.framework.mda.model.MdaModel;
 import org.nabucco.framework.mda.model.java.JavaCompilationUnit;
 import org.nabucco.framework.mda.model.java.JavaModel;
@@ -63,8 +62,7 @@ import org.nabucco.framework.mda.template.java.JavaTemplateException;
  * 
  * @author Stefanie Feld, PRODYNA AG
  */
-public class NabuccoToJavaRcpViewPickerComparatorVisitor extends NabuccoToJavaVisitorSupport
-        implements ViewConstants {
+public class NabuccoToJavaRcpViewPickerComparatorVisitor extends NabuccoToJavaVisitorSupport implements ViewConstants {
 
     /**
      * the annotation declaration of the view.
@@ -85,8 +83,7 @@ public class NabuccoToJavaRcpViewPickerComparatorVisitor extends NabuccoToJavaVi
      *            the annotationDeclaration of the view from which the constructor is called.
      * @param fieldNameToFieldTypeProperties
      */
-    public NabuccoToJavaRcpViewPickerComparatorVisitor(
-            NabuccoToJavaVisitorContext visitorContext,
+    public NabuccoToJavaRcpViewPickerComparatorVisitor(NabuccoToJavaVisitorContext visitorContext,
             AnnotationDeclaration annotationDeclaration,
             Map<String, Map<String, Map<String, JavaAstContainter<TypeReference>>>> fieldNameToFieldTypeProperties) {
         super(visitorContext);
@@ -96,7 +93,7 @@ public class NabuccoToJavaRcpViewPickerComparatorVisitor extends NabuccoToJavaVi
 
     @Override
     public void visit(PickerDeclaration picker, MdaModel<JavaModel> target) {
-        
+
         AnnotationDeclaration annotations = picker.annotationDeclaration;
         String name = picker.nodeToken2.tokenImage;
 
@@ -105,7 +102,7 @@ public class NabuccoToJavaRcpViewPickerComparatorVisitor extends NabuccoToJavaVi
 
     @Override
     public void visit(LabeledPickerDeclaration picker, MdaModel<JavaModel> target) {
-        
+
         AnnotationDeclaration annotations = picker.annotationDeclaration;
         String name = picker.nodeToken2.tokenImage;
 
@@ -114,7 +111,7 @@ public class NabuccoToJavaRcpViewPickerComparatorVisitor extends NabuccoToJavaVi
 
     @Override
     public void visit(ListPickerDeclaration picker, MdaModel<JavaModel> target) {
-        
+
         AnnotationDeclaration annotations = picker.annotationDeclaration;
         String name = picker.nodeToken2.tokenImage;
 
@@ -123,7 +120,7 @@ public class NabuccoToJavaRcpViewPickerComparatorVisitor extends NabuccoToJavaVi
 
     @Override
     public void visit(LabeledListPickerDeclaration picker, MdaModel<JavaModel> target) {
-        
+
         AnnotationDeclaration annotations = picker.annotationDeclaration;
         String name = picker.nodeToken2.tokenImage;
 
@@ -140,32 +137,29 @@ public class NabuccoToJavaRcpViewPickerComparatorVisitor extends NabuccoToJavaVi
      * @param target
      *            the java target model
      */
-    private void createPickerComparator(String name, AnnotationDeclaration annotations,
-            MdaModel<JavaModel> target) {
+    private void createPickerComparator(String name, AnnotationDeclaration annotations, MdaModel<JavaModel> target) {
         name = NabuccoTransformationUtility.firstToUpper(name) + ViewConstants.COMPARATOR;
-        
-        try {
-            NabuccoAnnotation mappedFieldAnn = NabuccoAnnotationMapper.getInstance()
-                    .mapToAnnotation(annotations, NabuccoAnnotationType.MAPPED_FIELD);
 
-            if (mappedFieldAnn != null && mappedFieldAnn.getValue() != null
+        try {
+            NabuccoAnnotation mappedFieldAnn = NabuccoAnnotationMapper.getInstance().mapToAnnotation(annotations,
+                    NabuccoAnnotationType.MAPPED_FIELD);
+
+            if (mappedFieldAnn != null
+                    && mappedFieldAnn.getValue() != null
                     && mappedFieldAnn.getValue().split(FIELD_SEPARATOR).length == 3) {
 
                 JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
                 JavaAstModelProducer jamp = JavaAstModelProducer.getInstance();
 
-                String pkg = super.getVisitorContext().getPackage()
-                        .replace(ViewConstants.UI, ViewConstants.UI_RCP)
-                        + ViewConstants.PKG_SEPARATOR
-                        + ViewConstants.VIEW_PACKAGE
-                        + ViewConstants.PKG_SEPARATOR + ViewConstants.COMPARATOR_PACKAGE;
+                String pkg = super.getVisitorContext().getPackage().replace(ViewConstants.UI, ViewConstants.UI_RCP)
+                        + ViewConstants.PKG_SEPARATOR + ViewConstants.VIEW_PACKAGE + ViewConstants.PKG_SEPARATOR
+                        + ViewConstants.COMPARATOR_PACKAGE;
 
                 String projectName = super.getComponentName(NabuccoClientType.RCP);
 
                 JavaCompilationUnit unit = super
                         .extractAst(NabuccoJavaTemplateConstants.EDIT_VIEW_PICKER_COMPARATOR_TEMPLATE);
-                TypeDeclaration type = unit
-                        .getType(NabuccoJavaTemplateConstants.EDIT_VIEW_PICKER_COMPARATOR_TEMPLATE);
+                TypeDeclaration type = unit.getType(NabuccoJavaTemplateConstants.EDIT_VIEW_PICKER_COMPARATOR_TEMPLATE);
 
                 javaFactory.getJavaAstType().setTypeName(type, name);
                 javaFactory.getJavaAstUnit().setPackage(unit.getUnitDeclaration(), pkg);
@@ -173,8 +167,8 @@ public class NabuccoToJavaRcpViewPickerComparatorVisitor extends NabuccoToJavaVi
                 // JavaDocAnnotations
                 JavaAstSupport.convertJavadocAnnotations(annotations, type);
 
-                JavaAstSupport.convertAstNodes(unit, getVisitorContext().getContainerList(),
-                        getVisitorContext().getImportList());
+                JavaAstSupport.convertAstNodes(unit, getVisitorContext().getContainerList(), getVisitorContext()
+                        .getImportList());
 
                 String mappedDatatype = mappedFieldAnn.getValue().split(FIELD_SEPARATOR)[0];
                 String mappedType = mappedFieldAnn.getValue().split(FIELD_SEPARATOR)[1];
@@ -182,8 +176,7 @@ public class NabuccoToJavaRcpViewPickerComparatorVisitor extends NabuccoToJavaVi
 
                 Map<String, Map<String, JavaAstContainter<TypeReference>>> datatypeMap = this.fieldNameToFieldTypeProperties
                         .get(mappedDatatype);
-                Map<String, JavaAstContainter<TypeReference>> datatypeSubMap = datatypeMap
-                        .get(DATATYPE);
+                Map<String, JavaAstContainter<TypeReference>> datatypeSubMap = datatypeMap.get(DATATYPE);
 
                 JavaAstContainter<TypeReference> javacontainer = datatypeSubMap.get(mappedType);
                 TypeReference ref = javacontainer.getAstNode();
@@ -193,10 +186,9 @@ public class NabuccoToJavaRcpViewPickerComparatorVisitor extends NabuccoToJavaVi
                 // Add the imports
                 for (String current : imports) {
                     String importString = current;
-                    ImportReference importReference = JavaAstModelProducer.getInstance()
-                            .createImportReference(importString);
-                    javaFactory.getJavaAstUnit().addImport(unit.getUnitDeclaration(),
-                            importReference);
+                    ImportReference importReference = JavaAstModelProducer.getInstance().createImportReference(
+                            importString);
+                    javaFactory.getJavaAstUnit().addImport(unit.getUnitDeclaration(), importReference);
 
                 }
 
@@ -207,11 +199,10 @@ public class NabuccoToJavaRcpViewPickerComparatorVisitor extends NabuccoToJavaVi
                 ((ParameterizedSingleTypeReference) interfaces.get(0)).typeArguments[0] = newDatatypeReference;
 
                 // select the method elementSelected(TypedEvent aTypedEvent)
-                JavaAstMethodSignature signature = new JavaAstMethodSignature(
-                        ViewConstants.COMPARE, ViewConstants.DATATYPE, ViewConstants.DATATYPE);
+                JavaAstMethodSignature signature = new JavaAstMethodSignature(ViewConstants.COMPARE,
+                        ViewConstants.DATATYPE, ViewConstants.DATATYPE);
 
-                MethodDeclaration compare = (MethodDeclaration) javaFactory.getJavaAstType()
-                        .getMethod(type, signature);
+                MethodDeclaration compare = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(type, signature);
 
                 Argument arg = jamp.createArgument(ARGUMENT_FIRST, newDatatypeReference);
                 Argument[] arguments = compare.arguments;
@@ -221,17 +212,14 @@ public class NabuccoToJavaRcpViewPickerComparatorVisitor extends NabuccoToJavaVi
                 // change type of arguments
                 compare.arguments = arguments;
 
-                SingleNameReference secondReference = jamp
-                        .createSingleNameReference(ARGUMENT_SECOND);
-                MessageSend secondMS = jamp.createMessageSend(GET
-                        + NabuccoTransformationUtility.firstToUpper(mappedProperty),
-                        secondReference, null);
+                SingleNameReference secondReference = jamp.createSingleNameReference(ARGUMENT_SECOND);
+                MessageSend secondMS = jamp.createMessageSend(
+                        GET + NabuccoTransformationUtility.firstToUpper(mappedProperty), secondReference, null);
                 List<Expression> argumentList = new ArrayList<Expression>();
                 argumentList.add(secondMS);
                 SingleNameReference firstReference = jamp.createSingleNameReference(ARGUMENT_FIRST);
-                MessageSend firstMS = jamp.createMessageSend(GET
-                        + NabuccoTransformationUtility.firstToUpper(mappedProperty),
-                        firstReference, null);
+                MessageSend firstMS = jamp.createMessageSend(
+                        GET + NabuccoTransformationUtility.firstToUpper(mappedProperty), firstReference, null);
                 MessageSend expression = jamp.createMessageSend(COMPARE_TO, firstMS, argumentList);
                 ReturnStatement returnStatement = jamp.createReturnStatement(expression);
 
@@ -247,8 +235,8 @@ public class NabuccoToJavaRcpViewPickerComparatorVisitor extends NabuccoToJavaVi
 
             }
         } catch (JavaModelException jme) {
-            throw new NabuccoVisitorException(
-                    "Error during Java AST editview picker content provider modification.", jme);
+            throw new NabuccoVisitorException("Error during Java AST editview picker content provider modification.",
+                    jme);
         } catch (JavaTemplateException te) {
             throw new NabuccoVisitorException(
                     "Error during Java template editview picker content provider processing.", te);

@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,7 +19,7 @@ package org.nabucco.framework.generator.compiler.transformation.xml.component;
 import java.io.File;
 
 import org.nabucco.framework.generator.compiler.NabuccoCompilerSupport;
-import org.nabucco.framework.generator.compiler.template.NabuccoXmlTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoXmlTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.common.constants.ComponentRelationConstants;
 import org.nabucco.framework.generator.compiler.transformation.xml.constants.JBossConstants;
 import org.nabucco.framework.generator.compiler.transformation.xml.visitor.NabuccoToXmlVisitorContext;
@@ -33,15 +33,15 @@ import org.nabucco.framework.mda.model.xml.XmlModelException;
 import org.nabucco.framework.mda.template.xml.XmlTemplateException;
 
 /**
- * NabuccoToXmlComponentApplicationVisitor
+ * NabuccoToXmlComponentRelationJBossVisitor
  * 
  * @author Nicolas Moser, PRODYNA AG
  */
-class NabuccoToXmlComponentRelationJBossVisitor extends NabuccoToXmlVisitorSupport implements
-        JBossConstants, ComponentRelationConstants {
+class NabuccoToXmlComponentRelationJBossVisitor extends NabuccoToXmlVisitorSupport implements JBossConstants,
+        ComponentRelationConstants {
 
     /**
-     * Creates a new {@link NabuccoToXmlComponentEjbJarVisitor} instance.
+     * Creates a new {@link NabuccoToXmlAdapterEjbJarVisitor} instance.
      * 
      * @param visitorContext
      *            the visitor context
@@ -57,26 +57,26 @@ class NabuccoToXmlComponentRelationJBossVisitor extends NabuccoToXmlVisitorSuppo
         String componentName = super.getProjectName(null, null);
 
         try {
-            XmlDocument document = super
-                    .extractDocument(NabuccoXmlTemplateConstants.JBOSS_FRAGMENT_TEMPLATE);
+            XmlDocument document = super.extractDocument(NabuccoXmlTemplateConstants.JBOSS_FRAGMENT_TEMPLATE);
 
             String ejbName = interfacePackage + PKG_SEPARATOR + COMPONENT_RELATION_SERVICE;
             document.getDocument().getDocumentElement().setAttribute(NAME, COMPONENT_RELATION_SERVICE);
 
-            String component = NabuccoCompilerSupport.getParentComponentName(this
-                    .getVisitorContext().getPackage());
+            String component = NabuccoCompilerSupport.getParentComponentName(this.getVisitorContext().getPackage());
 
             StringBuilder jndiName = new StringBuilder();
-            jndiName.append(JNDI_ROOT);
+            jndiName.append(JNDI_PREFIX);
             jndiName.append(component);
             jndiName.append(XPATH_SEPARATOR);
             jndiName.append(interfacePackage);
             jndiName.append(PKG_SEPARATOR);
             jndiName.append(COMPONENT_RELATION_SERVICE);
+            jndiName.append(XPATH_SEPARATOR);
 
             document.getElementsByXPath(XPATH_JBOSS_EJB_NAME).get(0).setTextContent(ejbName);
-            document.getElementsByXPath(XPATH_JBOSS_JNDI_NAME).get(0)
-                    .setTextContent(jndiName.toString());
+            document.getElementsByXPath(XPATH_JBOSS_REMOTE_JNDI_NAME).get(0)
+                    .setTextContent(jndiName.toString() + REMOTE);
+            document.getElementsByXPath(XPATH_JBOSS_LOCAL_JNDI_NAME).get(0).setTextContent(jndiName.toString() + LOCAL);
 
             // File creation
             document.setProjectName(componentName);
@@ -90,12 +90,5 @@ class NabuccoToXmlComponentRelationJBossVisitor extends NabuccoToXmlVisitorSuppo
             throw new NabuccoVisitorException("Error during XML template service processing.", te);
         }
     }
-
-    // <session>
-    // <ejb-name>org.nabucco.hr.project.facade.service.componentrelation.ComponentRelationService</ejb-name>
-    // <remote-binding>
-    // <jndi-name>components/org.nabucco.hr.project/org.nabucco.hr.project.facade.service.componentrelation.ComponentRelationService</jndi-name>
-    // </remote-binding>
-    // </session>
 
 }

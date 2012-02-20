@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,7 +18,7 @@ package org.nabucco.framework.generator.compiler.transformation.java.basetype;
 
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
-import org.nabucco.framework.generator.compiler.template.NabuccoJavaTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoJavaTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.JavaAstSupport;
 import org.nabucco.framework.generator.compiler.transformation.java.common.ast.container.JavaAstContainter;
 import org.nabucco.framework.generator.compiler.transformation.java.common.constraint.NabuccoToJavaConstraintMapper;
@@ -70,8 +70,7 @@ class NabuccoToJavaBasetypeVisitor extends NabuccoToJavaVisitorSupport {
 
         try {
             // Load Template
-            JavaCompilationUnit unit = super
-                    .extractAst(NabuccoJavaTemplateConstants.BASETYPE_TEMPLATE);
+            JavaCompilationUnit unit = super.extractAst(NabuccoJavaTemplateConstants.BASETYPE_TEMPLATE);
             TypeDeclaration type = unit.getType(NabuccoJavaTemplateConstants.BASETYPE_TEMPLATE);
 
             // Name and Package
@@ -80,8 +79,7 @@ class NabuccoToJavaBasetypeVisitor extends NabuccoToJavaVisitorSupport {
 
             // Super-classes
             String superType = super.getVisitorContext().getNabuccoExtension();
-            JavaAstContainter<TypeReference> superClass = JavaAstSupport
-                    .createSuperClass(superType);
+            JavaAstContainter<TypeReference> superClass = JavaAstSupport.createSuperClass(superType);
 
             this.getVisitorContext().getContainerList().add(superClass);
 
@@ -89,27 +87,26 @@ class NabuccoToJavaBasetypeVisitor extends NabuccoToJavaVisitorSupport {
             JavaAstSupport.convertJavadocAnnotations(nabuccoBasetype.annotationDeclaration, type);
 
             // Default Values
-            NabuccoToJavaBasetypeVisitorSupport.createDefaultValues(
-                    nabuccoBasetype.annotationDeclaration, superType, type);
+            NabuccoToJavaBasetypeVisitorSupport.createDefaultValues(nabuccoBasetype.annotationDeclaration, superType,
+                    type);
 
             // Alternative constructor
             NabuccoToJavaBasetypeVisitorSupport.adjustAlternativeConstructor(name, superType, type);
 
             // Clone method
-            NabuccoToJavaBasetypeCloneVisitor cloneVisitor = new NabuccoToJavaBasetypeCloneVisitor(
-                    type, super.getVisitorContext());
+            NabuccoToJavaBasetypeCloneVisitor cloneVisitor = new NabuccoToJavaBasetypeCloneVisitor(type,
+                    super.getVisitorContext());
 
             nabuccoBasetype.accept(cloneVisitor, target);
 
             // Convert constraints
-            NabuccoToJavaConstraintMapper.getInstance().convertStatementConstraints(
-                    nabuccoBasetype, type);
+            NabuccoToJavaConstraintMapper.getInstance().convertStatementConstraints(nabuccoBasetype, type);
 
             // Adjust the getProperties() method of the basetype
-            NabuccoToJavaReflectionFacade.getInstance().createReflection(nabuccoBasetype, unit);
+            NabuccoToJavaReflectionFacade.getInstance().createReflectionMethods(nabuccoBasetype, unit);
 
-            JavaAstSupport.convertAstNodes(unit, this.getVisitorContext().getContainerList(), this
-                    .getVisitorContext().getImportList());
+            JavaAstSupport.convertAstNodes(unit, this.getVisitorContext().getContainerList(), this.getVisitorContext()
+                    .getImportList());
 
             // File creation
             unit.setProjectName(projectName);

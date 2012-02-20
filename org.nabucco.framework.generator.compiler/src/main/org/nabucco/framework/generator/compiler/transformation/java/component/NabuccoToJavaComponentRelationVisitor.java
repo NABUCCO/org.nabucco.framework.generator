@@ -1,12 +1,12 @@
 /*
- * Copyright 2010 PRODYNA AG
+ * Copyright 2012 PRODYNA AG
  *
  * Licensed under the Eclipse Public License (EPL), Version 1.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.opensource.org/licenses/eclipse-1.0.php or
- * http://www.nabucco-source.org/nabucco-license.html
+ * http://www.nabucco.org/License.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,7 +25,7 @@ import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
-import org.nabucco.framework.generator.compiler.template.NabuccoJavaTemplateConstants;
+import org.nabucco.framework.generator.compiler.constants.NabuccoJavaTemplateConstants;
 import org.nabucco.framework.generator.compiler.transformation.NabuccoTransformationException;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationMapper;
 import org.nabucco.framework.generator.compiler.transformation.common.annotation.NabuccoAnnotationType;
@@ -55,17 +55,14 @@ import org.nabucco.framework.mda.template.java.JavaTemplateException;
  * 
  * @author Nicolas Moser, PRODYNA AG
  */
-class NabuccoToJavaComponentRelationVisitor extends NabuccoToJavaVisitorSupport implements
-        ComponentRelationConstants {
+class NabuccoToJavaComponentRelationVisitor extends NabuccoToJavaVisitorSupport implements ComponentRelationConstants {
 
-    private static final JavaAstMethodSignature SIGNATURE_GET_TARGET = new JavaAstMethodSignature(
-            "getTarget");
+    private static final JavaAstMethodSignature SIGNATURE_GET_TARGET = new JavaAstMethodSignature("getTarget");
 
-    private static final JavaAstMethodSignature SIGNATURE_SET_TARGET = new JavaAstMethodSignature(
-            "setTarget", "DatatypeTemplate");
+    private static final JavaAstMethodSignature SIGNATURE_SET_TARGET = new JavaAstMethodSignature("setTarget",
+            "DatatypeTemplate");
 
-    private static final JavaAstMethodSignature SIGNATURE_CLONE_OBJECT = new JavaAstMethodSignature(
-            "cloneObject");
+    private static final JavaAstMethodSignature SIGNATURE_CLONE_OBJECT = new JavaAstMethodSignature("cloneObject");
 
     /**
      * Creates a new {@link NabuccoToJavaComponentRelationVisitor} instance.
@@ -79,8 +76,8 @@ class NabuccoToJavaComponentRelationVisitor extends NabuccoToJavaVisitorSupport 
 
     @Override
     public void visit(ComponentDatatypeDeclaration nabuccoDatatype, MdaModel<JavaModel> target) {
-        if (!NabuccoAnnotationMapper.getInstance().hasAnnotation(
-                nabuccoDatatype.annotationDeclaration, NabuccoAnnotationType.REFERENCEABLE)) {
+        if (!NabuccoAnnotationMapper.getInstance().hasAnnotation(nabuccoDatatype.annotationDeclaration,
+                NabuccoAnnotationType.REFERENCEABLE)) {
             return;
         }
 
@@ -88,13 +85,11 @@ class NabuccoToJavaComponentRelationVisitor extends NabuccoToJavaVisitorSupport 
         String importString = super.resolveImport(type);
 
         try {
-            MdaModel<NabuccoModel> model = NabuccoDependencyResolver.getInstance()
-                    .resolveDependency(super.getVisitorContext(),
-                            super.getVisitorContext().getPackage(), importString);
+            MdaModel<NabuccoModel> model = NabuccoDependencyResolver.getInstance().resolveDependency(
+                    super.getVisitorContext(), super.getVisitorContext().getPackage(), importString);
 
             if (model.getModel() == null) {
-                throw new IllegalStateException("Cannot resolve dependency "
-                        + type + ". NabuccoModel is corrupt.");
+                throw new IllegalStateException("Cannot resolve dependency " + type + ". NabuccoModel is corrupt.");
             }
 
             model.getModel().getUnit().accept(this, target);
@@ -111,20 +106,16 @@ class NabuccoToJavaComponentRelationVisitor extends NabuccoToJavaVisitorSupport 
         String relationName = datatypeType + COMPONENT_RELATION;
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
         String projectName = super.getProjectName(NabuccoModelType.DATATYPE,
-                NabuccoModifierComponentMapper
-                        .getModifierType(nabuccoDatatype.nodeToken.tokenImage));
+                NabuccoModifierComponentMapper.getModifierType(nabuccoDatatype.nodeToken.tokenImage));
 
         try {
             // Load Template
-            JavaCompilationUnit unit = super
-                    .extractAst(NabuccoJavaTemplateConstants.COMPONENT_RELATION_TEMPLATE);
-            TypeDeclaration type = unit
-                    .getType(NabuccoJavaTemplateConstants.COMPONENT_RELATION_TEMPLATE);
+            JavaCompilationUnit unit = super.extractAst(NabuccoJavaTemplateConstants.COMPONENT_RELATION_TEMPLATE);
+            TypeDeclaration type = unit.getType(NabuccoJavaTemplateConstants.COMPONENT_RELATION_TEMPLATE);
 
             // Name and Package
             javaFactory.getJavaAstType().setTypeName(type, relationName);
-            javaFactory.getJavaAstUnit().setPackage(unit.getUnitDeclaration(),
-                    super.getVisitorContext().getPackage());
+            javaFactory.getJavaAstUnit().setPackage(unit.getUnitDeclaration(), super.getVisitorContext().getPackage());
 
             this.modifyType(datatypeType, type);
 
@@ -158,8 +149,8 @@ class NabuccoToJavaComponentRelationVisitor extends NabuccoToJavaVisitorSupport 
         JavaAstModelProducer producer = JavaAstModelProducer.getInstance();
         JavaAstElementFactory javaFactory = JavaAstElementFactory.getInstance();
 
-        ParameterizedSingleTypeReference superClass = (ParameterizedSingleTypeReference) javaFactory
-                .getJavaAstType().getSuperClass(type);
+        ParameterizedSingleTypeReference superClass = (ParameterizedSingleTypeReference) javaFactory.getJavaAstType()
+                .getSuperClass(type);
 
         TypeReference datatypeTypeRef = producer.createTypeReference(datatypeType, false);
 
@@ -167,15 +158,15 @@ class NabuccoToJavaComponentRelationVisitor extends NabuccoToJavaVisitorSupport 
 
         // getTarget()
 
-        MethodDeclaration getTarget = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(
-                type, SIGNATURE_GET_TARGET);
+        MethodDeclaration getTarget = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(type,
+                SIGNATURE_GET_TARGET);
 
         javaFactory.getJavaAstMethod().setReturnType(getTarget, datatypeTypeRef);
 
         // setTarget()
 
-        MethodDeclaration setTarget = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(
-                type, SIGNATURE_SET_TARGET);
+        MethodDeclaration setTarget = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(type,
+                SIGNATURE_SET_TARGET);
 
         List<Argument> arguments = javaFactory.getJavaAstMethod().getAllArguments(setTarget);
 
@@ -187,8 +178,8 @@ class NabuccoToJavaComponentRelationVisitor extends NabuccoToJavaVisitorSupport 
 
         // cloneObject()
 
-        MethodDeclaration cloneObject = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(
-                type, SIGNATURE_CLONE_OBJECT);
+        MethodDeclaration cloneObject = (MethodDeclaration) javaFactory.getJavaAstType().getMethod(type,
+                SIGNATURE_CLONE_OBJECT);
 
         String typeName = javaFactory.getJavaAstType().getTypeName(type);
         TypeReference relationType = producer.createTypeReference(typeName, false);
