@@ -215,9 +215,9 @@ public final class NabuccoGenerator {
         heading.append("\n\n");
         heading.append(" ###############################################################################\n");
         heading.append(" #                                                                             #\n");
-        heading.append(" #    NABUCCO Framework Generator - (2009-2011) PRODYNA AG, Germany.           #\n");
+        heading.append(" #    NABUCCO Framework Generator - (2009-2012) PRODYNA AG, Germany.           #\n");
         heading.append(" #                                                                             #\n");
-        heading.append(" #    http://nabuccosource.org/          https://github.com/nabucco/           #\n");
+        heading.append(" #    http://nabucco.org/                https://github.com/nabucco/           #\n");
         heading.append(" #                                                                             #\n");
         heading.append(" ###############################################################################\n");
 
